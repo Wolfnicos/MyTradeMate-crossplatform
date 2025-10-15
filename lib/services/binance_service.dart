@@ -1,0 +1,206 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert' show utf8;
+
+import '../models/candle.dart';
+import '../services/technical_indicator_calculator.dart';
+
+class BinanceService {
+  static const String _baseHost = 'api.binance.com';
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
+  // Singleton pattern
+  static final BinanceService _instance = BinanceService._internal();
+  factory BinanceService() => _instance;
+  BinanceService._internal();
+
+  String? _apiKey;
+  String? _apiSecret;
+
+  /// Load API credentials from secure storage
+  Future<void> loadCredentials() async {
+    try {
+      _apiKey = await _secureStorage.read(key: 'binance_api_key');
+      _apiSecret = await _secureStorage.read(key: 'binance_api_secret');
+    } catch (e) {
+      debugPrint('Error loading credentials: $e');
+    }
+  }
+
+  /// Save API credentials to secure storage
+  Future<void> saveCredentials(String apiKey, String apiSecret) async {
+    await _secureStorage.write(key: 'binance_api_key', value: apiKey);
+    await _secureStorage.write(key: 'binance_api_secret', value: apiSecret);
+    _apiKey = apiKey;
+    _apiSecret = apiSecret;
+  }
+
+  /// Clear stored credentials
+  Future<void> clearCredentials() async {
+    await _secureStorage.delete(key: 'binance_api_key');
+    await _secureStorage.delete(key: 'binance_api_secret');
+    _apiKey = null;
+    _apiSecret = null;
+  }
+
+  /// Test API connection
+  Future<bool> testConnection() async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final queryString = 'timestamp=$timestamp';
+      final signature = _generateSignature(queryString);
+
+      final uri = Uri.https(_baseHost, '/api/v3/account', {
+        'timestamp': timestamp.toString(),
+        'signature': signature,
+      });
+
+      final response = await http.get(
+        uri,
+        headers: {'X-MBX-APIKEY': _apiKey!},
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Connection test failed: $e');
+      return false;
+    }
+  }
+
+  String _generateSignature(String queryString) {
+    final key = utf8.encode(_apiSecret!);
+    final bytes = utf8.encode(queryString);
+    final hmac = Hmac(sha256, key);
+    final digest = hmac.convert(bytes);
+    return digest.toString();
+  }
+
+  /// Fetches klines (OHLCV) for a spot symbol with configurable interval
+  /// Returns up to [limit] candles between [start] and [end].
+  Future<List<Candle>> fetchKlines(
+    String symbol, {
+    String interval = '1h',
+    DateTime? start,
+    DateTime? end,
+    int limit = 1000,
+  }) async {
+    final Map<String, String> query = {
+      'symbol': symbol,
+      'interval': interval,
+      'limit': limit.toString(),
+    };
+    if (start != null) query['startTime'] = start.millisecondsSinceEpoch.toString();
+    if (end != null) query['endTime'] = end.millisecondsSinceEpoch.toString();
+
+    final uri = Uri.https(_baseHost, '/api/v3/klines', query);
+    final http.Response res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Binance klines error ${res.statusCode}: ${res.body}');
+    }
+    final List<dynamic> raw = json.decode(res.body) as List<dynamic>;
+    return raw.map((e) => _parseKlineArray(e as List<dynamic>)).toList();
+  }
+
+  /// Fetches daily klines (OHLCV) for a spot symbol like 'BTCUSDT'.
+  Future<List<Candle>> fetchDailyKlines(
+    String symbol, {
+    DateTime? start,
+    DateTime? end,
+    int limit = 1000,
+  }) async {
+    return fetchKlines(symbol, interval: '1d', start: start, end: end, limit: limit);
+  }
+
+  /// Fetches hourly klines (OHLCV) for a spot symbol like 'BTCUSDT'.
+  Future<List<Candle>> fetchHourlyKlines(
+    String symbol, {
+    DateTime? start,
+    DateTime? end,
+    int limit = 60,
+  }) async {
+    return fetchKlines(symbol, interval: '1h', start: start, end: end, limit: limit);
+  }
+
+  /// Generic klines fetch for a custom interval like '15m', '1h', '4h'
+  Future<List<Candle>> fetchCustomKlines(String symbol, String interval, {int limit = 60}) async {
+    return fetchKlines(symbol, interval: interval, limit: limit);
+  }
+
+  /// Fetch 24h ticker data for a symbol. Returns lastPrice and priceChangePercent.
+  Future<Map<String, double>> fetchTicker24h(String symbol) async {
+    final uri = Uri.https(_baseHost, '/api/v3/ticker/24hr', {'symbol': symbol});
+    final http.Response res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Binance 24hr ticker error ${res.statusCode}: ${res.body}');
+    }
+    final Map<String, dynamic> data = json.decode(res.body) as Map<String, dynamic>;
+    final double lastPrice = double.tryParse((data['lastPrice']).toString()) ?? 0.0;
+    final double changePercent = double.tryParse((data['priceChangePercent']).toString()) ?? 0.0;
+    return {'lastPrice': lastPrice, 'priceChangePercent': changePercent};
+  }
+
+  /// Try multiple symbols until one works (useful for tokens with alt tickers like 1000TRUMPUSDT)
+  Future<Map<String, double>> fetchTicker24hWithFallback(List<String> symbols) async {
+    for (final String s in symbols) {
+      try {
+        return await fetchTicker24h(s);
+      } catch (_) {}
+    }
+    throw Exception('No working symbol among: ' + symbols.join(', '));
+  }
+
+  static Candle _parseKlineArray(List<dynamic> arr) {
+    // Binance kline fields:
+    // 0 Open time (ms), 1 Open, 2 High, 3 Low, 4 Close, 5 Volume,
+    // 6 Close time (ms), ... others not used
+    final DateTime openTime = DateTime.fromMillisecondsSinceEpoch(arr[0] as int, isUtc: true).toLocal();
+    final DateTime closeTime = DateTime.fromMillisecondsSinceEpoch(arr[6] as int, isUtc: true).toLocal();
+    return Candle(
+      openTime: openTime,
+      open: double.parse(arr[1] as String),
+      high: double.parse(arr[2] as String),
+      low: double.parse(arr[3] as String),
+      close: double.parse(arr[4] as String),
+      volume: double.parse(arr[5] as String),
+      closeTime: closeTime,
+    );
+  }
+
+  /// Convenience method to fetch last 1 year of daily candles.
+  Future<List<Candle>> fetchLastYearDaily(String symbol) async {
+    final DateTime end = DateTime.now().toUtc();
+    final DateTime start = DateTime(end.year - 1, end.month, end.day).toUtc();
+    return fetchDailyKlines(symbol, start: start, end: end, limit: 1000);
+  }
+
+  /// Fetches the last 60 hourly candles and calculates the 34 technical indicators
+  /// Returns a List<List<double>> ready for ML model input
+  Future<List<List<double>>> getFeaturesForModel(String symbol) async {
+    try {
+      // Fetch last 60 1h candles
+      final candles = await fetchHourlyKlines(symbol, limit: 60);
+
+      if (candles.length < 60) {
+        throw Exception('Insufficient data: got ${candles.length} candles, need 60');
+      }
+
+      // Calculate technical indicators for all 60 candles
+      final calculator = TechnicalIndicatorCalculator();
+      final features = calculator.calculateFeatures(candles);
+
+      debugPrint('✅ BinanceService: Calculated ${features.length} timesteps with ${features[0].length} features each');
+      return features;
+    } catch (e) {
+      debugPrint('❌ BinanceService: Error getting features → $e');
+      rethrow;
+    }
+  }
+}
+

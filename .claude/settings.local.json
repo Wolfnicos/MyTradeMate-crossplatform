@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter doctor:*)",
+      "Bash(flutter:*)",
+      "Bash(xcrun simctl list:*)",
+      "Bash(xcrun simctl boot:*)",
+      "Bash(open:*)",
+      "Read(//Users/lupudragos/Development/MyTradeMate/**)",
+      "Bash(nc:*)",
+      "Bash($ANDROID_HOME/cmdline-tools/latest/bin/avdmanager:*)",
+      "Bash($ANDROID_HOME/tools/bin/avdmanager:*)",
+      "Read(//Users/lupudragos/Library/Android/sdk/system-images/**)",
+      "Read(//Users/lupudragos/Library/Android/sdk/**)",
+      "Bash(/Users/lupudragos/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager:*)",
+      "Bash(export JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home)",
+      "Bash(/Users/lupudragos/Library/Android/sdk/emulator/emulator:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

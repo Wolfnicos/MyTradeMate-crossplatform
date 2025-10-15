@@ -1,0 +1,32 @@
+# Flutter & Dart
+.dart_tool/
+.packages
+.pub-cache/
+build/
+# iOS/macOS
+**/Pods/
+**/Generated.xcconfig
+**/Flutter-Generated.xcconfig
+**/ephemeral/
+ios/Flutter/flutter_export_environment.sh
+# Android
+**/local.properties
+android/key.properties
+# IDE
+**/*.iml
+.idea/
+.vscode/
+# OS/Logs
+.DS_Store
+*.log
+# Xcode
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+# IntelliJ
+*.ipr
+*.iws
+# Coverage
+coverage/
+# Other
+.sentryclirc

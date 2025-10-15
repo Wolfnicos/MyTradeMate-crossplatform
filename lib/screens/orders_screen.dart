@@ -21,6 +21,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   bool _loadingPairs = true;
   final TextEditingController _amountCtrl = TextEditingController();
   final TextEditingController _priceCtrl = TextEditingController();
+  final TextEditingController _totalCtrl = TextEditingController();
+  bool _updatingFields = false;
 
   @override
   void initState() {
@@ -157,6 +159,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             _buildAmountField(),
             const SizedBox(height: 16),
             _buildLimitPriceField(),
+            const SizedBox(height: 16),
+            _buildTotalFiatField(),
             _buildAmountSummary(),
             const SizedBox(height: 24),
             SizedBox(
@@ -253,7 +257,16 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             ),
             suffixText: base,
           ),
-          onChanged: (_) => setState(() {}),
+          onChanged: (_) {
+            if (_updatingFields) return;
+            _updatingFields = true;
+            final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+            final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+            final total = qty * price;
+            _totalCtrl.text = total > 0 ? total.toStringAsFixed(2) : '';
+            _updatingFields = false;
+            setState(() {});
+          },
         ),
       ],
     );
@@ -282,9 +295,19 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? ' 4 ' : '',
+            prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? '\$ ' : '',
             suffixText: quote,
           ),
+          onChanged: (_) {
+            if (_updatingFields) return;
+            _updatingFields = true;
+            final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+            final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+            final total = qty * price;
+            _totalCtrl.text = total > 0 ? total.toStringAsFixed(2) : '';
+            _updatingFields = false;
+            setState(() {});
+          },
         ),
       ],
     );
@@ -306,6 +329,49 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         alignment: Alignment.centerRight,
         child: Text('Total: ' + total.toStringAsFixed(2) + ' ' + quote),
       ),
+    );
+  }
+
+  Widget _buildTotalFiatField() {
+    final theme = Theme.of(context);
+    final String quote = _selectedPair.endsWith('USDT')
+        ? 'USDT'
+        : _selectedPair.endsWith('USDC')
+            ? 'USDC'
+            : 'EUR';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Total (' + quote + ")", style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _totalCtrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            hintText: '',
+            filled: true,
+            fillColor: theme.cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? '\$ ' : '',
+            suffixText: quote,
+          ),
+          onChanged: (_) {
+            if (_updatingFields) return;
+            _updatingFields = true;
+            final total = double.tryParse(_totalCtrl.text) ?? 0.0;
+            final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+            if (price > 0) {
+              final qty = total / price;
+              _amountCtrl.text = qty > 0 ? qty.toStringAsFixed(8) : '';
+            }
+            _updatingFields = false;
+            setState(() {});
+          },
+        ),
+      ],
     );
   }
 

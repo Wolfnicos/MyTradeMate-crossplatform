@@ -3,6 +3,7 @@ import '../widgets/risk_disclaimer.dart';
 import '../ml/ml_service.dart';
 import '../services/hybrid_strategies_service.dart';
 import 'ai_prediction_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
 class AiStrategiesScreen extends StatefulWidget {
@@ -16,11 +17,23 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   double? _lastProb;
   TradingSignal? _lastSignal;
   List<StrategySignal>? _liveSignals;
+  String _orderType = 'market'; // 'hybrid' | 'ai_model' | 'market'
 
   @override
   void initState() {
     super.initState();
     _simulateLiveTrading();
+    _loadOrderTypePref();
+    _syncOrderTypePref();
+  }
+
+  Future<void> _syncOrderTypePref() async {
+    // If any strategy is active, prefer 'hybrid' for Orders; else keep as-is.
+    final bool anyActive = hybridStrategiesService.strategies.any((s) => s.isActive);
+    final prefs = await SharedPreferences.getInstance();
+    if (anyActive) {
+      await prefs.setString('order_type', 'hybrid');
+    }
   }
 
   Future<void> _runInference() async {
@@ -97,6 +110,33 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       }
     }
   }
+
+  Future<void> _updateOrderTypePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool anyActive = hybridStrategiesService.strategies.any((s) => s.isActive);
+    if (anyActive) {
+      await prefs.setString('order_type', 'hybrid');
+      setState(() => _orderType = 'hybrid');
+    } else {
+      // If no strategies are active anymore, revert to user's last non-hybrid choice if exists, else market
+      final String current = prefs.getString('order_type') ?? 'market';
+      if (current == 'hybrid') {
+        await prefs.setString('order_type', 'market');
+        setState(() => _orderType = 'market');
+      }
+    }
+  }
+
+  Future<void> _loadOrderTypePref() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() => _orderType = prefs.getString('order_type') ?? 'market');
+  }
+
+  Future<void> _saveOrderType(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('order_type', value);
+    setState(() => _orderType = value);
+  }
   void _showRiskAcknowledgmentDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -155,6 +195,41 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                // Quick selector to reflect in Orders screen
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Order Type', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            ChoiceChip(
+                              label: const Text('Hybrid (Strategii)'),
+                              selected: _orderType == 'hybrid',
+                              onSelected: (_) => _saveOrderType('hybrid'),
+                            ),
+                            ChoiceChip(
+                              label: const Text('AI Model'),
+                              selected: _orderType == 'ai_model',
+                              onSelected: (_) => _saveOrderType('ai_model'),
+                            ),
+                            ChoiceChip(
+                              label: const Text('Piață (Market)'),
+                              selected: _orderType == 'market',
+                              onSelected: (_) => _saveOrderType('market'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const RiskDisclaimer(),
                 const SizedBox(height: 12),
                 Card(
@@ -225,6 +300,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                       setState(() {
                         hybridStrategiesService.toggleStrategy(strategy.name, !strategy.isActive);
                       });
+                      _updateOrderTypePreference();
                     },
                   );
                 }),

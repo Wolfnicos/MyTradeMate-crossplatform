@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../backtest/backtester.dart';
+import '../services/paper_broker.dart';
+import '../services/binance_service.dart';
+
+enum OrderType { hybrid, aiModel, market }
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -8,19 +14,77 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
   bool isBuy = true;
-  bool isPaperTrading = false;
+  OrderType _orderType = OrderType.market;
+  String _selectedPair = 'BTCUSDT';
+  List<Map<String, String>> _pairs = <Map<String, String>>[];
+  bool _loadingPairs = true;
+  final TextEditingController _amountCtrl = TextEditingController();
+  final TextEditingController _priceCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // Load last order type preference
+    _loadSavedOrderType();
+    _loadPairs();
+  }
+
+  Future<void> _loadSavedOrderType() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? saved = prefs.getString('order_type');
+    if (saved != null) {
+      setState(() {
+        switch (saved) {
+          case 'hybrid':
+            _orderType = OrderType.hybrid;
+            break;
+          case 'ai_model':
+            _orderType = OrderType.aiModel;
+            break;
+          default:
+            _orderType = OrderType.market;
+        }
+      });
+    }
+  }
+
+  Future<void> _loadPairs() async {
+    try {
+      final binance = BinanceService();
+      final all = await binance.fetchTradingPairs();
+      // Keep only user's bases + quotes: USDT/USDC/EUR
+      final Set<String> allowedBases = <String>{'BTC','ETH','BNB','SOL','WIF','1000TRUMP'};
+      final List<Map<String, String>> filtered = <Map<String, String>>[];
+      final Set<String> seen = <String>{};
+      for (final m in all) {
+        final base = (m['base'] ?? '').toUpperCase();
+        final quote = (m['quote'] ?? '').toUpperCase();
+        if ((quote == 'USDT' || quote == 'USDC' || quote == 'EUR') && allowedBases.contains(base)) {
+          final sym = (m['symbol'] ?? '').toUpperCase();
+          if (!seen.contains(sym)) {
+            seen.add(sym);
+            filtered.add({'symbol': sym, 'base': base, 'quote': quote});
+          }
+        }
+      }
+      filtered.sort((a, b) => (a['base'] ?? '').compareTo(b['base'] ?? ''));
+      setState(() {
+        _pairs = filtered;
+        _loadingPairs = false;
+        // default selected to first if current not in list
+        if (_pairs.isNotEmpty && !_pairs.any((p) => (p['symbol'] ?? '') == _selectedPair)) {
+          _selectedPair = _pairs.first['symbol'] ?? _selectedPair;
+        }
+      });
+    } catch (e) {
+      setState(() => _loadingPairs = false);
+    }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    // no controllers to dispose
     super.dispose();
   }
 
@@ -41,14 +105,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               child: Text('Orders', style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
             ),
           ),
-          // TabBar
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Trade'),
-              Tab(text: 'Paper Mode'),
-            ],
-          ),
+          // Removed tabs (Trade/Paper)
           // Content
           Expanded(
             child: SingleChildScrollView(
@@ -93,38 +150,53 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               ),
             ),
             const SizedBox(height: 24),
-            _buildTextField(label: 'Coin/Pair', hint: 'BTC/USDT', icon: Icons.search),
+            _buildPairSelector(context),
             const SizedBox(height: 16),
-            _buildTextField(label: 'Amount', hint: '0.05 BTC'),
+            _buildOrderTypeBanner(context),
             const SizedBox(height: 16),
-            _buildTextField(label: 'Limit Price', hint: '\$34,500'),
+            _buildAmountField(),
+            const SizedBox(height: 16),
+            _buildLimitPriceField(),
+            _buildAmountSummary(),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Paper Trading'),
-                Switch(
-                  value: isPaperTrading,
-                  onChanged: (value) {
-                    setState(() {
-                      isPaperTrading = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final bool paper = prefs.getBool('paper_trading') ?? false;
+                  final String orderTypePayload = _orderType == OrderType.hybrid
+                      ? 'hybrid'
+                      : _orderType == OrderType.aiModel
+                          ? 'ai_model'
+                          : 'market';
+
+                  if (paper) {
+                    // Execute with PaperBroker
+                    final priceText = _priceCtrl.text;
+                    final qtyText = _amountCtrl.text;
+                    final double price = double.tryParse(priceText) ?? 0.0;
+                    final double qty = double.tryParse(qtyText) ?? 0.0;
+                    final trade = Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty);
+                    final broker = PaperBroker();
+                    broker.execute(trade);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order (Paper) executed, type: ' + orderTypePayload)));
+                    }
+                  } else {
+                    // TODO: Implement real Binance order (signed POST /api/v3/order)
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order submitted to Binance (stub), type: ' + orderTypePayload)));
+                    }
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: activeColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   foregroundColor: Colors.white,
                 ),
-                child: Text(isBuy ? 'Buy BTC' : 'Sell BTC', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text((isBuy ? 'Buy ' : 'Sell ') + _formatPairLabel(_selectedPair).split('/').first, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             )
               ],
@@ -158,6 +230,255 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         ),
       ],
     );
+  }
+
+  Widget _buildAmountField() {
+    final theme = Theme.of(context);
+    final String base = _selectedPair.replaceAll(RegExp(r'(USDT|USDC|EUR)$'), '');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Amount', style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _amountCtrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            hintText: '',
+            filled: true,
+            fillColor: theme.cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            suffixText: base,
+          ),
+          onChanged: (_) => setState(() {}),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLimitPriceField() {
+    final theme = Theme.of(context);
+    final String quote = _selectedPair.endsWith('USDT')
+        ? 'USDT'
+        : _selectedPair.endsWith('USDC')
+            ? 'USDC'
+            : 'EUR';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Limit Price', style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _priceCtrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            hintText: '',
+            filled: true,
+            fillColor: theme.cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? ' 4 ' : '',
+            suffixText: quote,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmountSummary() {
+    if (_amountCtrl.text.isEmpty || _priceCtrl.text.isEmpty) return const SizedBox.shrink();
+    final double qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+    final double price = double.tryParse(_priceCtrl.text) ?? 0.0;
+    final double total = qty * price;
+    final String quote = _selectedPair.endsWith('USDT')
+        ? 'USDT'
+        : _selectedPair.endsWith('USDC')
+            ? 'USDC'
+            : 'EUR';
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Text('Total: ' + total.toStringAsFixed(2) + ' ' + quote),
+      ),
+    );
+  }
+
+  String _orderTypeLabel(OrderType t) {
+    switch (t) {
+      case OrderType.hybrid:
+        return 'Hybrid (Strategii)';
+      case OrderType.aiModel:
+        return 'AI Model';
+      case OrderType.market:
+        return 'Piață (Market)';
+    }
+  }
+
+  IconData _orderTypeIcon(OrderType t) {
+    switch (t) {
+      case OrderType.hybrid:
+        return Icons.auto_graph;
+      case OrderType.aiModel:
+        return Icons.smart_toy_outlined;
+      case OrderType.market:
+        return Icons.show_chart;
+    }
+  }
+
+  Future<void> _pickOrderType() async {
+    final theme = Theme.of(context);
+    final OrderType? selected = await showModalBottomSheet<OrderType>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        Widget tile(OrderType t, String title, String subtitle) {
+          final bool isSel = _orderType == t;
+          return ListTile(
+            leading: Icon(_orderTypeIcon(t), color: isSel ? theme.colorScheme.primary : null),
+            title: Text(title, style: TextStyle(fontWeight: isSel ? FontWeight.bold : FontWeight.w500)),
+            subtitle: Text(subtitle),
+            trailing: isSel ? Icon(Icons.check, color: theme.colorScheme.primary) : null,
+            onTap: () => Navigator.of(context).pop(t),
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              tile(OrderType.hybrid, 'Hybrid (Strategii)', 'Combină reguli + semnal ML'),
+              tile(OrderType.aiModel, 'AI Model', 'Folosește doar modelul TFLite'),
+              tile(OrderType.market, 'Piață (Market)', 'Execută imediat la prețul pieței'),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      setState(() => _orderType = selected);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('order_type', _orderType.name);
+    }
+  }
+
+  Widget _buildOrderTypeBanner(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: _pickOrderType,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(_orderTypeIcon(_orderType), color: theme.colorScheme.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Order Type', style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+                  const SizedBox(height: 2),
+                  Text(_orderTypeLabel(_orderType), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const Icon(Icons.keyboard_arrow_down_rounded),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPairSelector(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () async {
+        await showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          isScrollControlled: true,
+          builder: (context) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text('Alege perechea', style: Theme.of(context).textTheme.titleLarge),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: _loadingPairs
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            itemCount: _pairs.length,
+                            itemBuilder: (context, index) {
+                              final m = _pairs[index];
+                              final sym = m['symbol'] ?? '';
+                              final base = m['base'] ?? '';
+                              final quote = m['quote'] ?? '';
+                              return ListTile(
+                                title: Text(base + '/' + quote),
+                                subtitle: Text(sym),
+                                onTap: () {
+                                  setState(() => _selectedPair = sym);
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Coin/Pair', style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+                  const SizedBox(height: 2),
+                  Text(_formatPairLabel(_selectedPair), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const Icon(Icons.keyboard_arrow_down_rounded),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatPairLabel(String sym) {
+    if (sym.endsWith('USDT')) return sym.replaceAll('USDT', '/USDT');
+    if (sym.endsWith('USDC')) return sym.replaceAll('USDC', '/USDC');
+    if (sym.endsWith('EUR')) return sym.replaceAll('EUR', '/EUR');
+    return sym;
   }
 }
 

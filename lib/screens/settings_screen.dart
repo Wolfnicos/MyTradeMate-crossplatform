@@ -23,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _canCheckBiometrics = false;
   bool _isTestingConnection = false;
   bool _obscureSecret = true;
+  bool _paperTrading = false;
 
   @override
   void initState() {
@@ -54,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+      _paperTrading = prefs.getBool('paper_trading') ?? false;
     });
 
     // Load API credentials
@@ -193,6 +195,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: Text('Dispozitivul nu suportă această funcție'),
                   ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Trading Mode Section (moved below Security)
+          _buildSectionHeader('Trading'),
+          Card(
+            child: SwitchListTile(
+              title: const Text('Paper Trading'),
+              subtitle: const Text('Rulează ordinele în modul simulare'),
+              value: _paperTrading,
+              onChanged: (bool v) async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('paper_trading', v);
+                setState(() => _paperTrading = v);
+                _showSnackBar(v ? 'Paper Trading activat' : 'Paper Trading dezactivat', isError: false);
+              },
+              secondary: const Icon(Icons.description_outlined),
             ),
           ),
 

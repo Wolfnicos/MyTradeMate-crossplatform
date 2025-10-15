@@ -133,6 +133,30 @@ class BinanceService {
     return fetchKlines(symbol, interval: interval, limit: limit);
   }
 
+  /// Fetch tradable spot pairs (symbol, base, quote) from exchangeInfo
+  Future<List<Map<String, String>>> fetchTradingPairs() async {
+    final uri = Uri.https(_baseHost, '/api/v3/exchangeInfo');
+    final http.Response res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Binance exchangeInfo error ${res.statusCode}: ${res.body}');
+    }
+    final Map<String, dynamic> data = json.decode(res.body) as Map<String, dynamic>;
+    final List<dynamic> symbols = (data['symbols'] as List<dynamic>?) ?? <dynamic>[];
+    final List<Map<String, String>> pairs = <Map<String, String>>[];
+    for (final dynamic s in symbols) {
+      final Map<String, dynamic> m = s as Map<String, dynamic>;
+      final String status = (m['status'] ?? '').toString();
+      final bool spot = (m['isSpotTradingAllowed'] ?? false) == true;
+      if (status == 'TRADING' && spot) {
+        final String symbol = (m['symbol'] ?? '').toString();
+        final String base = (m['baseAsset'] ?? '').toString();
+        final String quote = (m['quoteAsset'] ?? '').toString();
+        pairs.add({'symbol': symbol, 'base': base, 'quote': quote});
+      }
+    }
+    return pairs;
+  }
+
   /// Fetch 24h ticker data for a symbol. Returns lastPrice and priceChangePercent.
   Future<Map<String, double>> fetchTicker24h(String symbol) async {
     final uri = Uri.https(_baseHost, '/api/v3/ticker/24hr', {'symbol': symbol});

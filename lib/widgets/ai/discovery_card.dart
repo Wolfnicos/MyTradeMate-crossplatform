@@ -25,27 +25,14 @@ class DiscoveryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(strategy.name, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(strategy.version, style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
-                  ],
-                ),
-              ),
-              Flexible(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: _MarketChips(markets: markets),
-                  ),
-                ),
-              ),
+              Text(strategy.name, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(strategy.version, style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+              const SizedBox(height: 8),
+              _MarketChips(markets: markets),
             ],
           ),
           const SizedBox(height: 16),

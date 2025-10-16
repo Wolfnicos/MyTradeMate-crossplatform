@@ -12,6 +12,7 @@ import 'screens/settings_screen.dart';
 import 'services/app_settings_service.dart';
 import 'design_system/app_theme.dart';
 import 'providers/navigation_provider.dart';
+import 'services/achievement_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ Future<void> main() async {
   await AppSettingsService().load();
   await globalPredictor.init();
   await globalMlService.loadModel();
+  await AchievementService().load();
 
   // Initialize theme provider
   final themeProvider = ThemeProvider();
@@ -30,6 +32,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider.value(value: AppSettingsService()),
+        ChangeNotifierProvider.value(value: AchievementService()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: const MyTradeMateApp(),

@@ -13,7 +13,7 @@ import '../services/app_settings_service.dart';
 import '../widgets/orders/tradingview_card.dart';
 import '../widgets/orders/ai_strategy_carousel.dart';
 import '../widgets/orders/risk_sliders_card.dart';
-import '../widgets/wizard/api_connection_wizard.dart';
+import '../widgets/orders/achievement_toast.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -175,8 +175,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         const SizedBox(height: 24),
                         TradingViewCard(symbol: _selectedPair),
                         const SizedBox(height: 16),
-                        const ApiConnectionWizard(),
-                        const SizedBox(height: 16),
                         SizedBox(
                           height: 110,
                           child: AiStrategyCarousel(
@@ -209,6 +207,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                   final price = double.tryParse(_priceCtrl.text) ?? 0.0;
                                   final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
                                   PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                                  AchievementToast.show(context, 'first_paper_trade', 'Achievement unlocked: First Paper Trade!');
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order (Paper) executed')));
                                   }

@@ -4,6 +4,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/theme_provider.dart';
 import '../services/binance_service.dart';
+import '../services/app_settings_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -24,6 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isTestingConnection = false;
   bool _obscureSecret = true;
   bool _paperTrading = false;
+  String _quote = 'USDT';
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
       _paperTrading = prefs.getBool('paper_trading') ?? false;
+      _quote = prefs.getString('quote_currency') ?? 'USDT';
     });
 
     // Load API credentials
@@ -199,6 +202,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const SizedBox(height: 24),
+
+          // Quote Currency (placed before Theme)
+          _buildSectionHeader('Monedă de referință'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('Selectează moneda de referință pentru prețuri și totaluri'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      'USDT','USDC','USD','EUR'
+                    ].map((q) => ChoiceChip(
+                      label: Text(q),
+                      selected: _quote == q,
+                      onSelected: (_) async {
+                        final svc = AppSettingsService();
+                        await svc.setQuoteCurrency(q);
+                        setState(() => _quote = q);
+                        _showSnackBar('Monedă setată: ' + q, isError: false);
+                      },
+                    )).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           // Trading Mode Section (moved below Security)
           _buildSectionHeader('Trading'),

@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../models/candle.dart';
 
 import '../services/binance_service.dart';
+import '../services/app_settings_service.dart';
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -20,20 +21,23 @@ class _MarketScreenState extends State<MarketScreen> {
   bool _loadingChart = true;
   String _chartError = '';
 
-  final List<List<String>> _symbols = const [
-    ['BTCUSDT'],
-    ['ETHUSDT'],
-    ['BNBUSDT'],
-    ['SOLUSDT'],
-    // WLFI may be WIF on Binance (Dogwifhat)
-    ['WIFUSDT', 'WIFUSDC', 'WIFBUSD'],
-    // TRUMP tokens have variants; try common future/spot proxies
-    ['1000TRUMPUSDT', 'TRUMPUSDT', 'DJTUSDT'],
-  ];
+  List<List<String>> get _symbols {
+    final q = AppSettingsService().quoteCurrency.toUpperCase();
+    return [
+      ['BTC$q'],
+      ['ETH$q'],
+      ['BNB$q'],
+      ['SOL$q'],
+      ['WLFI$q'],
+      ['TRUMP$q'],
+    ];
+  }
 
   @override
   void initState() {
     super.initState();
+    final q = AppSettingsService().quoteCurrency.toUpperCase();
+    _selectedSymbol = 'BTC' + q;
     _refreshTickers();
     _loadChart();
   }
@@ -78,9 +82,10 @@ class _MarketScreenState extends State<MarketScreen> {
   }
 
   String _labelForSymbol(String symbol) {
-    if (symbol.endsWith('USDT')) {
-      return symbol.replaceAll('USDT', '/USDT');
-    }
+    if (symbol.endsWith('USDT')) return symbol.replaceAll('USDT', '/USDT');
+    if (symbol.endsWith('USDC')) return symbol.replaceAll('USDC', '/USDC');
+    if (symbol.endsWith('USD')) return symbol.replaceAll('USD', '/USD');
+    if (symbol.endsWith('EUR')) return symbol.replaceAll('EUR', '/EUR');
     return symbol;
   }
 
@@ -91,6 +96,8 @@ class _MarketScreenState extends State<MarketScreen> {
   Widget build(BuildContext context) {
     final double rawCarouselHeight = MediaQuery.of(context).size.height * 0.16;
     final double carouselHeight = rawCarouselHeight < 110 ? 110 : rawCarouselHeight;
+    final quote = AppSettingsService().quoteCurrency;
+    final prefix = AppSettingsService.currencyPrefix(quote);
     return DefaultTabController(
       length: 4,
       child: Scaffold(
@@ -118,7 +125,7 @@ class _MarketScreenState extends State<MarketScreen> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: _buildTickerCards(),
+                children: _buildTickerCards(quote, prefix),
               ),
             ),
             const SizedBox(height: 16),
@@ -145,7 +152,7 @@ class _MarketScreenState extends State<MarketScreen> {
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              _candles.isNotEmpty ? '\$' + (_candles.last.close >= 100 ? _candles.last.close.toStringAsFixed(0) : _candles.last.close.toStringAsFixed(4)) : '—',
+                              _candles.isNotEmpty ? prefix + (_candles.last.close >= 100 ? _candles.last.close.toStringAsFixed(0) : _candles.last.close.toStringAsFixed(4)) : '—',
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: _candles.isNotEmpty && _candles.last.close > _candles.last.open
@@ -245,34 +252,37 @@ class CoinCard extends StatelessWidget {
 }
 
 extension on _MarketScreenState {
-  List<Widget> _buildTickerCards() {
-    Widget buildCard(String label, Map<String, double>? t) {
+  List<Widget> _buildTickerCards(String quote, String prefix) {
+    Widget buildCard(String base, Map<String, double>? t) {
       final double price = t?['lastPrice'] ?? 0.0;
       final double chg = t?['priceChangePercent'] ?? 0.0;
       final bool isGain = chg >= 0;
+      final pairLabel = base + '/' + quote;
+      final symbol = base + quote;
       return GestureDetector(
         onTap: () {
           setState(() {
-            _selectedSymbol = label.replaceAll('/USDT', 'USDT');
+            _selectedSymbol = symbol;
           });
           _loadChart();
         },
         child: CoinCard(
-          pair: label,
-          price: price > 0 ? '\$' + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
+          pair: pairLabel,
+          price: price > 0 ? prefix + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
           change: (isGain ? '+' : '') + chg.toStringAsFixed(2) + '%',
           isGain: isGain,
         ),
       );
     }
 
+    final q = quote.toUpperCase();
     return [
-      buildCard('BTC/USDT', _tickers['BTCUSDT']),
-      buildCard('ETH/USDT', _tickers['ETHUSDT']),
-      buildCard('BNB/USDT', _tickers['BNBUSDT']),
-      buildCard('SOL/USDT', _tickers['SOLUSDT']),
-      buildCard('WIF/USDT', _tickers['WIFUSDT']),
-      buildCard('TRUMP', _tickers['1000TRUMPUSDT'] ?? _tickers['TRUMPUSDT'] ?? _tickers['DJTUSDT']),
+      buildCard('BTC', _tickers['BTC$q']),
+      buildCard('ETH', _tickers['ETH$q']),
+      buildCard('BNB', _tickers['BNB$q']),
+      buildCard('SOL', _tickers['SOL$q']),
+      buildCard('WLFI', _tickers['WLFI$q']),
+      buildCard('TRUMP', _tickers['TRUMP$q']),
     ];
   }
 }

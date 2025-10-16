@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../ml/ml_service.dart';
 import '../services/binance_service.dart';
+import '../services/app_settings_service.dart';
 import '../widgets/premium_card.dart';
 
 class AiPredictionPage extends StatefulWidget {
@@ -21,15 +22,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
   String _interval = '1h'; // 15m, 1h, 4h
 
   final BinanceService _binanceService = BinanceService();
-  final List<String> _availableSymbols = [
-    // only our tracked bases & quotes
-    'BTCUSDT','BTCUSDC','BTCEUR',
-    'ETHUSDT','ETHUSDC','ETHEUR',
-    'BNBUSDT','BNBUSDC','BNBEUR',
-    'SOLUSDT','SOLUSDC','SOLEUR',
-    'WIFUSDT','WIFUSDC','WIFEUR',
-    '1000TRUMPUSDT','1000TRUMPUSDC','1000TRUMPEUR',
-  ];
+  final List<String> _bases = const ['BTC','ETH','BNB','SOL','WLFI','TRUMP'];
 
   @override
   void initState() {
@@ -132,6 +125,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final quote = AppSettingsService().quoteCurrency;
     return Scaffold(
       appBar: AppBar(title: const Text('Motor de Decizie AI')),
       body: _isLoading
@@ -184,7 +178,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
                                   underline: const SizedBox(),
                                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
                                   style: Theme.of(context).textTheme.titleMedium,
-                                  items: _availableSymbols.map((symbol) {
+                                  items: _buildPairOptions(quote).map((symbol) {
                                     return DropdownMenuItem(
                                       value: symbol,
                                       child: Row(
@@ -303,6 +297,11 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
                   ),
                 ),
     );
+  }
+
+  List<String> _buildPairOptions([String quote = 'USDT']) {
+    final q = quote.toUpperCase();
+    return _bases.map((b) => b + q).toList(growable: false);
   }
 }
 

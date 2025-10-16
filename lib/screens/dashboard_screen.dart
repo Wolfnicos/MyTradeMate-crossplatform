@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/binance_service.dart';
+import '../services/app_settings_service.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -68,7 +69,7 @@ class PortfolioOverviewCard extends StatelessWidget {
             Text('Portfolio Overview', style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey)),
             const SizedBox(height: 8),
             Text(
-              '\$122,000',
+              (AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)) + '122,000',
               style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: theme.colorScheme.onSurface,
@@ -78,7 +79,7 @@ class PortfolioOverviewCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  '+\$4,200 (2.0%)',
+                  '+' + AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency) + '4,200 (2.0%)',
                   style: theme.textTheme.titleMedium?.copyWith(color: gainColor, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 4),

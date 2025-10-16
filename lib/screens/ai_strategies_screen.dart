@@ -4,7 +4,9 @@ import '../ml/ml_service.dart';
 import '../services/hybrid_strategies_service.dart';
 import 'ai_prediction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math';
+// import 'dart:math';
+import 'dart:async';
+import '../services/app_settings_service.dart';
 import '../services/binance_service.dart';
 
 class AiStrategiesScreen extends StatefulWidget {
@@ -18,30 +20,27 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   double? _lastProb;
   TradingSignal? _lastSignal;
   List<StrategySignal>? _liveSignals;
-  String _orderType = 'market'; // 'hybrid' | 'ai_model' | 'market'
+  // String _orderType = 'market'; // removed unused
+  String _selectedSymbol = 'BTCUSDT';
+  String _interval = '1h';
+  Timer? _liveTimer;
 
   @override
   void initState() {
     super.initState();
-    _simulateLiveTrading();
-    _loadOrderTypePref();
-    _syncOrderTypePref();
+    final quote = AppSettingsService().quoteCurrency.toUpperCase();
+    _selectedSymbol = 'BTC' + quote;
+    _startLiveFeed();
+    // removed order type sync from here (managed in Orders)
   }
 
-  Future<void> _syncOrderTypePref() async {
-    final bool anyActive = hybridStrategiesService.strategies.any((s) => s.isActive);
-    final prefs = await SharedPreferences.getInstance();
-    if (anyActive) {
-      await prefs.setString('order_type', 'hybrid');
-      setState(() => _orderType = 'hybrid');
-    }
-  }
+  // removed unused _syncOrderTypePref
 
   Future<void> _runInference() async {
     if (!globalMlService.isInitialized) return;
     try {
-      const String symbol = 'BTCUSDT';
-      const String interval = '1h';
+      final String symbol = _selectedSymbol;
+      final String interval = _interval;
       debugPrint('▶️ AI Strategies: fetching features for ' + symbol + ' @' + interval);
       final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
       debugPrint('ℹ️ AI Strategies: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
@@ -57,110 +56,52 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     }
   }
 
-  void _simulateLiveTrading() async {
-    final random = Random();
-    double basePrice = 34500.0;
-    final priceHistory = List<double>.generate(100, (i) {
-      basePrice += (random.nextDouble() - 0.5) * 200;
-      return basePrice;
+  List<String> _buildPairs() {
+    final q = AppSettingsService().quoteCurrency.toUpperCase();
+    return <String>['BTC','ETH','BNB','SOL','WLFI','TRUMP'].map((b) => b + q).toList(growable: false);
+  }
+
+  void _startLiveFeed() {
+    _liveTimer?.cancel();
+    _liveTimer = Timer.periodic(const Duration(seconds: 20), (_) async {
+      try {
+        final klines = await BinanceService().fetchCustomKlines(_selectedSymbol, _interval, limit: 120);
+        if (klines.isEmpty) return;
+        final priceHistory = klines.map((c) => c.close).toList(growable: false);
+        final price = klines.last.close;
+        final volume = klines.last.volume;
+        final data = MarketData(price: price, volume: volume, priceHistory: priceHistory);
+        final signals = <StrategySignal>[];
+        for (final s in hybridStrategiesService.strategies.where((e) => e.isActive)) {
+          try {
+            final sig = await s.analyze(data);
+            signals.add(sig);
+          } catch (e) {
+            debugPrint('Hybrid analyze error (${s.name}): $e');
+          }
+        }
+        if (mounted) setState(() => _liveSignals = signals);
+      } catch (e) {
+        debugPrint('Live feed error: $e');
+      }
     });
-
-    // Initial snapshot
-    {
-      final marketData = MarketData(
-        price: basePrice,
-        volume: 1000 + random.nextDouble() * 500,
-        priceHistory: List<double>.from(priceHistory),
-      );
-      final signals = <StrategySignal>[];
-      for (final strategy in hybridStrategiesService.strategies.where((s) => s.isActive)) {
-        final signal = await strategy.analyze(marketData);
-        signals.add(signal);
-      }
-      if (mounted) {
-        setState(() {
-          _liveSignals = signals;
-        });
-      }
-    }
-
-    while (mounted) {
-      await Future.delayed(const Duration(seconds: 3));
-      basePrice += (random.nextDouble() - 0.5) * 200;
-      priceHistory.add(basePrice);
-      if (priceHistory.length > 100) priceHistory.removeAt(0);
-
-      final marketData = MarketData(
-        price: basePrice,
-        volume: 1000 + random.nextDouble() * 500,
-        priceHistory: List<double>.from(priceHistory),
-      );
-
-      final signals = <StrategySignal>[];
-      for (final strategy in hybridStrategiesService.strategies.where((s) => s.isActive)) {
-        final signal = await strategy.analyze(marketData);
-        signals.add(signal);
-      }
-
-      if (mounted) {
-        setState(() {
-          _liveSignals = signals;
-        });
-      }
-    }
   }
 
-  Future<void> _updateOrderTypePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool anyActive = hybridStrategiesService.strategies.any((s) => s.isActive);
-    if (anyActive) {
-      await prefs.setString('order_type', 'hybrid');
-      setState(() => _orderType = 'hybrid');
-    } else {
-      final String current = prefs.getString('order_type') ?? 'market';
-      if (current == 'hybrid') {
-        await prefs.setString('order_type', 'market');
-        setState(() => _orderType = 'market');
-      }
-    }
+  @override
+  void dispose() {
+    _liveTimer?.cancel();
+    super.dispose();
   }
 
-  Future<void> _loadOrderTypePref() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() => _orderType = prefs.getString('order_type') ?? 'market');
-  }
+  // removed old simulator (replaced with live feed based on selected symbol/interval)
 
-  Future<void> _saveOrderType(String value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('order_type', value);
-    setState(() => _orderType = value);
-  }
+  // removed unused _updateOrderTypePreference
 
-  void _showRiskAcknowledgmentDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Acknowledge Risk'),
-          content: const Text('Automated trading involves significant risk and is not guaranteed to be profitable. Do you wish to proceed?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: const Text('I Understand & Proceed'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // removed unused _loadOrderTypePref
+
+  // removed unused _saveOrderType
+
+  // removed unused _showRiskAcknowledgmentDialog
 
   Future<void> _openEditParameters(HybridStrategy strategy) async {
     await showModalBottomSheet<void>(
@@ -225,13 +166,13 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               ),
             ),
             const TabBar(
-              tabs: [
-                Tab(text: 'Active Strategies'),
-                Tab(text: 'Discover New'),
-              ],
-            ),
+            tabs: [
+              Tab(text: 'Active Strategies'),
+              Tab(text: 'Discover New'),
+            ],
+          ),
             Expanded(
-              child: TabBarView(
+          child: TabBarView(
           children: [
             ListView(
               padding: const EdgeInsets.all(16),
@@ -247,6 +188,44 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Strategies context (symbol + interval)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: DropdownButton<String>(
+                                value: _selectedSymbol,
+                                isExpanded: true,
+                                underline: const SizedBox(),
+                                items: _buildPairs().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                                onChanged: (v) {
+                                  if (v == null) return;
+                                  setState(() => _selectedSymbol = v);
+                                  _startLiveFeed();
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Wrap(
+                              spacing: 6,
+                              children: [
+                                {'label': '15m', 'value': '15m'},
+                                {'label': '1H', 'value': '1h'},
+                                {'label': '4H', 'value': '4h'},
+                              ].map((item) {
+                                final bool sel = _interval == item['value'];
+                                return ChoiceChip(
+                                  label: Text(item['label'] as String),
+                                  selected: sel,
+                                  onSelected: (_) {
+                                    setState(() => _interval = item['value'] as String);
+                                    _startLiveFeed();
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -307,7 +286,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                       setState(() {
                         hybridStrategiesService.toggleStrategy(strategy.name, !strategy.isActive);
                       });
-                      _updateOrderTypePreference();
                     },
                     onEdit: () => _openEditParameters(strategy),
                   );
@@ -316,7 +294,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Text('No active strategies. Activate some from Discover New.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
-                  ),
+                ),
               ],
             ),
             // Discover New
@@ -334,7 +312,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                       setState(() {
                         hybridStrategiesService.toggleStrategy(strategy.name, true);
                       });
-                      _updateOrderTypePreference();
                     },
                     onEdit: () => _openEditParameters(strategy),
                   );

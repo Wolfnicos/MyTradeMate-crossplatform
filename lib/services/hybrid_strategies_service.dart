@@ -30,11 +30,33 @@ abstract class HybridStrategy {
   bool isActive = false;
   double totalReturn = 0.0;
   int tradesCount = 0;
+  // Hysteresis/cooldown
+  SignalType _lastType = SignalType.HOLD;
+  DateTime _lastChange = DateTime.fromMillisecondsSinceEpoch(0);
+  Duration minHold = const Duration(seconds: 45);
 
   HybridStrategy({required this.name, required this.version});
 
   /// Analyze market data and return a signal
   Future<StrategySignal> analyze(MarketData data);
+
+  StrategySignal applyHysteresis(StrategySignal raw) {
+    final now = DateTime.now();
+    if (raw.type == _lastType) {
+      return raw;
+    }
+    if (now.difference(_lastChange) < minHold) {
+      return StrategySignal(
+        strategyName: name,
+        type: _lastType,
+        confidence: (raw.confidence + 0.5) / 2,
+        reason: 'Cooldown active; holding previous signal',
+      );
+    }
+    _lastType = raw.type;
+    _lastChange = now;
+    return raw;
+  }
 
   /// Get strategy performance metrics
   Map<String, dynamic> getPerformance() {
@@ -133,53 +155,54 @@ class RSIMLHybridStrategy extends HybridStrategy {
   Future<StrategySignal> analyze(MarketData data) async {
     final rsi = data.rsi;
     final priceAboveSMA = data.price > data.sma20;
+    debugPrint('[RSI/ML Hybrid] rsi=' + rsi.toStringAsFixed(2) + ', sma20=' + data.sma20.toStringAsFixed(2) + ', price=' + data.price.toStringAsFixed(2));
 
     // RSI oversold + price above SMA = strong buy
     if (rsi < oversold && priceAboveSMA) {
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.BUY,
         confidence: 0.85,
         reason: 'RSI oversold ($rsi < $oversold) + bullish trend',
-      );
+      ));
     }
 
     // RSI overbought + price below SMA = strong sell
     if (rsi > overbought && !priceAboveSMA) {
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.SELL,
         confidence: 0.82,
         reason: 'RSI overbought ($rsi > $overbought) + bearish trend',
-      );
+      ));
     }
 
     // Moderate buy signal
     if (rsi < buyRsi && priceAboveSMA) {
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.BUY,
         confidence: 0.65,
         reason: 'RSI low ($rsi < $buyRsi) + bullish momentum',
-      );
+      ));
     }
 
     // Moderate sell signal
     if (rsi > sellRsi && !priceAboveSMA) {
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.SELL,
         confidence: 0.62,
         reason: 'RSI high ($rsi > $sellRsi) + bearish momentum',
-      );
+      ));
     }
 
-    return StrategySignal(
+    return applyHysteresis(StrategySignal(
       strategyName: name,
       type: SignalType.HOLD,
       confidence: 0.50,
       reason: 'Neutral conditions (RSI: ${rsi.toStringAsFixed(1)})',
-    );
+    ));
   }
 }
 
@@ -194,34 +217,35 @@ class MomentumScalperStrategy extends HybridStrategy {
         ? ((data.price - data.priceHistory[data.priceHistory.length - 2]) /
            data.priceHistory[data.priceHistory.length - 2]) * 100
         : 0.0;
+    debugPrint('[Momentum Scalper] macd=' + macd.toStringAsFixed(4) + ', priceChange%=' + priceChange.toStringAsFixed(2));
 
     // Strong momentum buy
     if (macd > 0 && priceChange > 0.5) {
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.BUY,
         confidence: 0.88,
         reason: 'Strong upward momentum (+${priceChange.toStringAsFixed(2)}%)',
-      );
+      ));
     }
 
     // Strong momentum sell
     if (macd < 0 && priceChange < -0.5) {
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.SELL,
         confidence: 0.86,
         reason: 'Strong downward momentum (${priceChange.toStringAsFixed(2)}%)',
-      );
+      ));
     }
 
     // Weak momentum - hold
-    return StrategySignal(
+    return applyHysteresis(StrategySignal(
       strategyName: name,
       type: SignalType.HOLD,
       confidence: 0.55,
       reason: 'Weak momentum (${priceChange.toStringAsFixed(2)}%)',
-    );
+    ));
   }
 }
 
@@ -237,6 +261,7 @@ class DynamicGridBotStrategy extends HybridStrategy {
   Future<StrategySignal> analyze(MarketData data) async {
     final currentPrice = data.price;
     final volatility = _calculateVolatility(data.priceHistory);
+    debugPrint('[Dynamic Grid] price=' + currentPrice.toStringAsFixed(2) + ', vol=' + volatility.toStringAsFixed(4) + ', gridSize(before)=' + gridSize.toStringAsFixed(2));
 
     // Adjust grid size based on volatility
     gridSize = max(0.3, min(1.0, volatility * 10));
@@ -251,32 +276,32 @@ class DynamicGridBotStrategy extends HybridStrategy {
     final buyThreshold = lastBuyPrice * (1 - gridSize / 100);
     if (currentPrice <= buyThreshold) {
       lastBuyPrice = currentPrice;
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.BUY,
         confidence: 0.75,
         reason: 'Grid buy at \$${currentPrice.toStringAsFixed(2)} (${gridSize.toStringAsFixed(2)}% grid)',
-      );
+      ));
     }
 
     // Price rose enough for sell
     final sellThreshold = lastSellPrice * (1 + gridSize / 100);
     if (currentPrice >= sellThreshold) {
       lastSellPrice = currentPrice;
-      return StrategySignal(
+      return applyHysteresis(StrategySignal(
         strategyName: name,
         type: SignalType.SELL,
         confidence: 0.73,
         reason: 'Grid sell at \$${currentPrice.toStringAsFixed(2)} (${gridSize.toStringAsFixed(2)}% grid)',
-      );
+      ));
     }
 
-    return StrategySignal(
+    return applyHysteresis(StrategySignal(
       strategyName: name,
       type: SignalType.HOLD,
       confidence: 0.60,
       reason: 'Waiting for grid level (size: ${gridSize.toStringAsFixed(2)}%)',
-    );
+    ));
   }
 
   double _calculateVolatility(List<double> prices) {
@@ -308,13 +333,14 @@ class BreakoutStrategy extends HybridStrategy {
     final recent = data.priceHistory.sublist(data.priceHistory.length - lookback);
     final high = recent.reduce((a, b) => a > b ? a : b);
     final low = recent.reduce((a, b) => a < b ? a : b);
+    debugPrint('[Breakout] price=' + data.price.toStringAsFixed(2) + ', high(' + lookback.toString() + ')=' + high.toStringAsFixed(2) + ', low=' + low.toStringAsFixed(2));
     if (data.price > high) {
-      return StrategySignal(strategyName: name, type: SignalType.BUY, confidence: confidenceBase, reason: 'Breakout above ${high.toStringAsFixed(2)}');
+      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.BUY, confidence: confidenceBase, reason: 'Breakout above ${high.toStringAsFixed(2)}'));
     }
     if (data.price < low) {
-      return StrategySignal(strategyName: name, type: SignalType.SELL, confidence: confidenceBase, reason: 'Breakdown below ${low.toStringAsFixed(2)}');
+      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.SELL, confidence: confidenceBase, reason: 'Breakdown below ${low.toStringAsFixed(2)}'));
     }
-    return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Inside range');
+    return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Inside range'));
   }
 }
 
@@ -336,13 +362,14 @@ class MeanReversionStrategy extends HybridStrategy {
     final sd = sqrt(variance);
     final upper = mean + stdDev * sd;
     final lower = mean - stdDev * sd;
+    debugPrint('[Mean Reversion] price=' + data.price.toStringAsFixed(2) + ', mean=' + mean.toStringAsFixed(2) + ', sd=' + sd.toStringAsFixed(2) + ', upper=' + upper.toStringAsFixed(2) + ', lower=' + lower.toStringAsFixed(2));
     if (data.price < lower) {
-      return StrategySignal(strategyName: name, type: SignalType.BUY, confidence: 0.68, reason: 'Below lower band');
+      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.BUY, confidence: 0.68, reason: 'Below lower band'));
     }
     if (data.price > upper) {
-      return StrategySignal(strategyName: name, type: SignalType.SELL, confidence: 0.68, reason: 'Above upper band');
+      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.SELL, confidence: 0.68, reason: 'Above upper band'));
     }
-    return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Near mean');
+    return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Near mean'));
   }
 }
 

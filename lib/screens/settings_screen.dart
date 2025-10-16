@@ -172,21 +172,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Setări'),
+        title: const Text('Settings'),
         elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Security Section
-          _buildSectionHeader('Securitate'),
+          _buildSectionHeader('Security'),
           Card(
             child: Column(
               children: [
                 if (_canCheckBiometrics)
                   SwitchListTile(
-                    title: const Text('Blocare cu Face ID / Amprentă'),
-                    subtitle: const Text('Autentifică-te la fiecare deschidere'),
+                    title: const Text('Lock with Face ID / Fingerprint'),
+                    subtitle: const Text('Authenticate on each app open'),
                     value: _biometricEnabled,
                     onChanged: _toggleBiometric,
                     secondary: const Icon(Icons.fingerprint),
@@ -194,8 +194,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 else
                   const ListTile(
                     leading: Icon(Icons.warning_amber, color: Colors.orange),
-                    title: Text('Autentificare biometrică indisponibilă'),
-                    subtitle: Text('Dispozitivul nu suportă această funcție'),
+                    title: Text('Biometric authentication unavailable'),
+                    subtitle: Text('This device does not support biometrics'),
                   ),
               ],
             ),
@@ -204,14 +204,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Quote Currency (placed before Theme)
-          _buildSectionHeader('Monedă de referință'),
+          _buildSectionHeader('Quote currency'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Selectează moneda de referință pentru prețuri și totaluri'),
+                  const Text('Select the quote currency used for prices and totals'),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -224,7 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         final svc = AppSettingsService();
                         await svc.setQuoteCurrency(q);
                         setState(() => _quote = q);
-                        _showSnackBar('Monedă setată: ' + q, isError: false);
+                        _showSnackBar('Quote set to: ' + q, isError: false);
                       },
                     )).toList(),
                   ),
@@ -238,13 +238,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Card(
             child: SwitchListTile(
               title: const Text('Paper Trading'),
-              subtitle: const Text('Rulează ordinele în modul simulare'),
+              subtitle: const Text('Execute orders in simulation mode'),
               value: _paperTrading,
               onChanged: (bool v) async {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('paper_trading', v);
                 setState(() => _paperTrading = v);
-                _showSnackBar(v ? 'Paper Trading activat' : 'Paper Trading dezactivat', isError: false);
+                _showSnackBar(v ? 'Paper Trading enabled' : 'Paper Trading disabled', isError: false);
               },
               secondary: const Icon(Icons.description_outlined),
             ),
@@ -253,7 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // API Section
-          _buildSectionHeader('API Binance'),
+          _buildSectionHeader('Binance API'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -289,7 +289,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _saveApiCredentials,
                           icon: const Icon(Icons.save),
-                          label: const Text('Salvează'),
+                          label: const Text('Save'),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -303,7 +303,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.wifi),
-                          label: const Text('Testează'),
+                          label: const Text('Test connection'),
                         ),
                       ),
                     ],
@@ -312,7 +312,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextButton.icon(
                     onPressed: _clearCredentials,
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    label: const Text('Șterge Credențiale', style: TextStyle(color: Colors.red)),
+                    label: const Text('Delete credentials', style: TextStyle(color: Colors.red)),
                   ),
                 ],
               ),
@@ -322,13 +322,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Appearance Section
-          _buildSectionHeader('Aspect'),
+          _buildSectionHeader('Appearance'),
           Card(
             child: Column(
               children: [
                 ListTile(
                   leading: const Icon(Icons.brightness_6),
-                  title: const Text('Temă'),
+                  title: const Text('Theme'),
                   subtitle: Text(_getThemeLabel(themeProvider.themeMode)),
                 ),
                 Padding(
@@ -337,17 +337,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     segments: const [
                       ButtonSegment(
                         value: AppThemeMode.light,
-                        label: Text('Luminos'),
+                        label: Text('Light'),
                         icon: Icon(Icons.light_mode),
                       ),
                       ButtonSegment(
                         value: AppThemeMode.dark,
-                        label: Text('Întunecat'),
+                        label: Text('Dark'),
                         icon: Icon(Icons.dark_mode),
                       ),
                       ButtonSegment(
                         value: AppThemeMode.system,
-                        label: Text('Sistem'),
+                        label: Text('System'),
                         icon: Icon(Icons.settings_brightness),
                       ),
                     ],
@@ -364,30 +364,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // About Section
-          _buildSectionHeader('Despre'),
+          _buildSectionHeader('About'),
           Card(
             child: Column(
               children: [
                 const ListTile(
                   leading: Icon(Icons.info_outline),
                   title: Text('MyTradeMate'),
-                  subtitle: Text('Versiunea 1.0.0'),
+                  subtitle: Text('Version 1.0.0'),
                 ),
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.bug_report),
-                  title: const Text('Raportează o problemă'),
+                  title: const Text('Report a problem'),
                   trailing: const Icon(Icons.open_in_new),
                   onTap: () {
-                    _showSnackBar('Funcție în curs de implementare', isError: false);
+                    _showSnackBar('Coming soon', isError: false);
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.privacy_tip),
-                  title: const Text('Politica de confidențialitate'),
+                  title: const Text('Privacy Policy'),
                   trailing: const Icon(Icons.open_in_new),
                   onTap: () {
-                    _showSnackBar('Funcție în curs de implementare', isError: false);
+                    _showSnackBar('Coming soon', isError: false);
                   },
                 ),
               ],
@@ -418,11 +418,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _getThemeLabel(AppThemeMode mode) {
     switch (mode) {
       case AppThemeMode.light:
-        return 'Luminos';
+        return 'Light';
       case AppThemeMode.dark:
-        return 'Întunecat';
+        return 'Dark';
       case AppThemeMode.system:
-        return 'Sistem';
+        return 'System';
     }
   }
 }

@@ -35,6 +35,12 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
     if (!globalMlService.isInitialized) {
       await globalMlService.loadModel();
     }
+    // Load saved quote and base selection if any
+    final quote = AppSettingsService().quoteCurrency;
+    final opts = _buildPairOptions(quote);
+    if (!opts.contains(_selectedSymbol)) {
+      _selectedSymbol = opts.first;
+    }
     setState(() {
       _isLoading = false;
       _isModelReady = globalMlService.isInitialized;

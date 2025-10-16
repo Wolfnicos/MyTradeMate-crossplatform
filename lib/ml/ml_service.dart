@@ -5,6 +5,13 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 // Three-class trading signal emitted by the ML model
 enum TradingSignal { SELL, HOLD, BUY }
 
+class _Thresh {
+  final double buy;
+  final double sell;
+  final double confidence;
+  const _Thresh({required this.buy, required this.sell, required this.confidence});
+}
+
 class MLService {
   late Interpreter _interpreter;
   bool isInitialized = false;
@@ -20,11 +27,19 @@ class MLService {
   final Map<String, Map<String, double>> _symbolThresholds = <String, Map<String, double>>{
     'BTC': {'buy': 0.45, 'sell': 0.58, 'conf': 0.36},
     'SOL': {'buy': 0.43, 'sell': 0.58, 'conf': 0.36},
-    'WLFI': {'buy': 0.42, 'sell': 0.60, 'conf': 0.36},
+    'WLFI': {'buy': 0.40, 'sell': 0.60, 'conf': 0.36},
     'TRUMP': {'buy': 0.42, 'sell': 0.60, 'conf': 0.36},
     // Keep defaults for ETH/BNB unless specified
     'ETH': {'buy': 0.55, 'sell': 0.55, 'conf': 0.38},
     'BNB': {'buy': 0.55, 'sell': 0.55, 'conf': 0.38},
+  };
+
+  // Per-quote deltas to slightly relax/tighten thresholds depending on quote currency.
+  final Map<String, Map<String, double>> _quoteDeltas = const <String, Map<String, double>>{
+    'EUR': {'buy': -0.05, 'sell': 0.0, 'conf': -0.02},
+    'USD': {'buy': -0.02, 'sell': 0.0, 'conf': -0.01},
+    'USDC': {'buy': 0.0, 'sell': 0.0, 'conf': 0.0},
+    'USDT': {'buy': 0.0, 'sell': 0.0, 'conf': 0.0},
   };
 
   // StandardScaler mean/scale for 34 features
@@ -88,6 +103,10 @@ class MLService {
     final List<double> rawProbs = _getRawProbabilities(rawInput);
     final List<double> calibrated = _applyTemperature(rawProbs, optimalTemperature);
     final TradingSignal signal = _applyPolicy(calibrated, symbol: symbol);
+    if (symbol != null) {
+      final _Thresh tt = _getThresholds(symbol);
+      debugPrint('ℹ️ ML thresholds for ' + symbol + ' → buy=' + tt.buy.toStringAsFixed(3) + ', sell=' + tt.sell.toStringAsFixed(3) + ', conf=' + tt.confidence.toStringAsFixed(3));
+    }
 
     return {
       'signal': signal,
@@ -151,9 +170,10 @@ class MLService {
     final _Thresh t = _getThresholds(symbol);
     if (maxProb < t.confidence) return TradingSignal.HOLD;
 
-    // If BUY is strictly the highest, take BUY; if SELL strictly highest, take SELL
-    if (probBuy > probHold && probBuy >= t.buy) return TradingSignal.BUY;
-    if (probSell > probHold && probSell >= t.sell) return TradingSignal.SELL;
+    // If BUY is strictly the highest with small margin, accept it; same for SELL
+    const double margin = 0.02; // 2% margin over HOLD
+    if (probBuy > probHold && (probBuy >= t.buy || (probBuy - probHold) >= margin)) return TradingSignal.BUY;
+    if (probSell > probHold && (probSell >= t.sell || (probSell - probHold) >= margin)) return TradingSignal.SELL;
     return TradingSignal.HOLD;
   }
 
@@ -162,15 +182,17 @@ class MLService {
       return _Thresh(buy: thresholdBuy, sell: thresholdSell, confidence: thresholdConfidence);
     }
     final String base = _extractBase(symbol);
-    final Map<String, double>? m = _symbolThresholds[base];
-    if (m == null) {
-      return _Thresh(buy: thresholdBuy, sell: thresholdSell, confidence: thresholdConfidence);
-    }
-    return _Thresh(
-      buy: m['buy'] ?? thresholdBuy,
-      sell: m['sell'] ?? thresholdSell,
-      confidence: m['conf'] ?? thresholdConfidence,
-    );
+    final String quote = _extractQuote(symbol);
+    final Map<String, double>? sm = _symbolThresholds[base];
+    final Map<String, double>? qd = _quoteDeltas[quote];
+    double b = (sm?['buy'] ?? thresholdBuy) + (qd?['buy'] ?? 0.0);
+    double s = (sm?['sell'] ?? thresholdSell) + (qd?['sell'] ?? 0.0);
+    double c = (sm?['conf'] ?? thresholdConfidence) + (qd?['conf'] ?? 0.0);
+    // Keep thresholds in sane bounds
+    b = b.clamp(0.35, 0.80);
+    s = s.clamp(0.40, 0.85);
+    c = c.clamp(0.30, 0.60);
+    return _Thresh(buy: b, sell: s, confidence: c);
   }
 
   String _extractBase(String sym) {
@@ -181,6 +203,14 @@ class MLService {
       }
     }
     return up;
+  }
+
+  String _extractQuote(String sym) {
+    final up = sym.toUpperCase();
+    for (final q in const ['USDT', 'USDC', 'USD', 'EUR']) {
+      if (up.endsWith(q)) return q;
+    }
+    return 'USDT';
   }
 
   void dispose() {

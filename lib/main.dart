@@ -9,11 +9,13 @@ import 'screens/ai_strategies_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/portfolio_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/app_settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize services
+  await AppSettingsService().load();
   await globalPredictor.init();
   await globalMlService.loadModel();
 
@@ -22,8 +24,11 @@ Future<void> main() async {
   await themeProvider.init();
 
   runApp(
-    ChangeNotifierProvider.value(
-      value: themeProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: themeProvider),
+        ChangeNotifierProvider.value(value: AppSettingsService()),
+      ],
       child: const MyTradeMateApp(),
     ),
   );

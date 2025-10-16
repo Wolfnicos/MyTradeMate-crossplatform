@@ -261,10 +261,7 @@ extension on _MarketScreenState {
       final symbol = base + quote;
       return GestureDetector(
         onTap: () {
-          setState(() {
-            _selectedSymbol = symbol;
-          });
-          _loadChart();
+          _onSelectSymbol(symbol);
         },
         child: CoinCard(
           pair: pairLabel,
@@ -284,6 +281,13 @@ extension on _MarketScreenState {
       buildCard('WLFI', _tickers['WLFI$q']),
       buildCard('TRUMP', _tickers['TRUMP$q']),
     ];
+  }
+
+  void _onSelectSymbol(String symbol) {
+    setState(() {
+      _selectedSymbol = symbol;
+    });
+    _loadChart();
   }
 }
 

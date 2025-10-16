@@ -254,28 +254,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildTextField({required String label, required String hint, IconData? icon}) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
-        const SizedBox(height: 8),
-        TextField(
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: theme.cardColor,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            suffixIcon: icon != null ? Icon(icon) : null,
-          ),
-        ),
-      ],
-    );
-  }
+  // Removed unused _buildTextField
 
   Widget _buildAmountField() {
     final theme = Theme.of(context);
@@ -416,26 +395,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildAiIntervalChips() {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8,
-      children: [
-        {'label': '15m', 'value': '15m'},
-        {'label': '1H', 'value': '1h'},
-        {'label': '4H', 'value': '4h'},
-      ].map((item) {
-        final bool selected = _aiInterval == item['value'];
-        return ChoiceChip(
-          label: Text(item['label'] as String),
-          selected: selected,
-          onSelected: (_) {
-            setState(() => _aiInterval = item['value'] as String);
-          },
-        );
-      }).toList(),
-    );
-  }
+  // Removed unused _buildAiIntervalChips
 
   String _orderTypeLabel(OrderType t) {
     switch (t) {

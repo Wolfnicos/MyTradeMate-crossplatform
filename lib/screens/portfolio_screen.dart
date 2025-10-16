@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../design_system/screen_backgrounds.dart';
+import '../design_system/widgets/glass_card.dart';
 
 class PortfolioScreen extends StatelessWidget {
   const PortfolioScreen({super.key});
@@ -9,41 +11,44 @@ class PortfolioScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         body: SafeArea(
-          child: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text('Portfolio', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: PortfolioValueCard(),
-                ),
-              ),
-              SliverPersistentHeader(
-                delegate: _SliverAppBarDelegate(
-                  const TabBar(
-                    tabs: [
-                      Tab(text: 'Holdings'),
-                      Tab(text: 'History'),
-                    ],
+          child: Container(
+            decoration: ScreenBackgrounds.market(context),
+            child: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Text('Portfolio', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                ),
-                pinned: true,
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: const PortfolioValueCard(),
+                    ),
+                  ),
+                  SliverPersistentHeader(
+                    delegate: _SliverAppBarDelegate(
+                      const TabBar(
+                        tabs: [
+                          Tab(text: 'Holdings'),
+                          Tab(text: 'History'),
+                        ],
+                      ),
+                    ),
+                    pinned: true,
+                  ),
+                ];
+              },
+              body: const TabBarView(
+                children: [
+                  HoldingsList(),
+                  Center(child: Text('Transaction history will be displayed here.')),
+                ],
               ),
-            ];
-          },
-          body: const TabBarView(
-            children: [
-              HoldingsList(),
-              Center(child: Text('Transaction history will be displayed here.')),
-            ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -58,9 +63,8 @@ class PortfolioValueCard extends StatelessWidget {
     final theme = Theme.of(context);
     final gainColor = theme.colorScheme.secondary;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return GlassCard(
+      padding: const EdgeInsets.all(20.0),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -92,9 +96,11 @@ class HoldingsList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildHoldingRow(context, 'Bitcoin', '1.5 BTC', r'$51,750', '+4.5%', true),
-        _buildHoldingRow(context, 'Ethereum', '10 ETH', r'$21,000', '-8.2%', false),
-        _buildHoldingRow(context, 'BNB', '20 BNB', r'$6,000', '-15.3%', false),
+        GlassCard(padding: const EdgeInsets.all(16), child: _buildHoldingRow(context, 'Bitcoin', '1.5 BTC', r'$51,750', '+4.5%', true)),
+        const SizedBox(height: 12),
+        GlassCard(padding: const EdgeInsets.all(16), child: _buildHoldingRow(context, 'Ethereum', '10 ETH', r'$21,000', '-8.2%', false)),
+        const SizedBox(height: 12),
+        GlassCard(padding: const EdgeInsets.all(16), child: _buildHoldingRow(context, 'BNB', '20 BNB', r'$6,000', '-15.3%', false)),
       ],
     );
   }
@@ -132,7 +138,6 @@ class HoldingsList extends StatelessWidget {
     );
   }
 }
-
 
 // Helper class pentru TabBar fix
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {

@@ -4,6 +4,8 @@ import '../models/candle.dart';
 
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
+import '../design_system/screen_backgrounds.dart';
+import '../design_system/widgets/glass_card.dart';
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -102,7 +104,9 @@ class _MarketScreenState extends State<MarketScreen> {
       length: 4,
       child: Scaffold(
         body: SafeArea(
-          child: Column(
+          child: Container(
+            decoration: ScreenBackgrounds.market(context),
+            child: Column(
           children: [
             // Header with title and search
             Padding(
@@ -133,12 +137,9 @@ class _MarketScreenState extends State<MarketScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.2))
-                  ),
+                child: GlassCard(
+                  padding: const EdgeInsets.all(0),
+                  showGlow: true,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -208,7 +209,46 @@ class _MarketScreenState extends State<MarketScreen> {
         ),
         ),
       ),
+      ),
     );
+  }
+
+  List<Widget> _buildTickerCards(String quote, String prefix) {
+    Widget buildCard(String base, Map<String, double>? t) {
+      final double price = t?['lastPrice'] ?? 0.0;
+      final double chg = t?['priceChangePercent'] ?? 0.0;
+      final bool isGain = chg >= 0;
+      final pairLabel = base + '/' + quote;
+      final symbol = base + quote;
+      return GestureDetector(
+        onTap: () {
+          _onSelectSymbol(symbol);
+        },
+        child: CoinCard(
+          pair: pairLabel,
+          price: price > 0 ? prefix + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
+          change: (isGain ? '+' : '') + chg.toStringAsFixed(2) + '%',
+          isGain: isGain,
+        ),
+      );
+    }
+
+    final q = quote.toUpperCase();
+    return [
+      buildCard('BTC', _tickers['BTC$q']),
+      buildCard('ETH', _tickers['ETH$q']),
+      buildCard('BNB', _tickers['BNB$q']),
+      buildCard('SOL', _tickers['SOL$q']),
+      buildCard('WLFI', _tickers['WLFI$q']),
+      buildCard('TRUMP', _tickers['TRUMP$q']),
+    ];
+  }
+
+  void _onSelectSymbol(String symbol) {
+    setState(() {
+      _selectedSymbol = symbol;
+    });
+    _loadChart();
   }
 }
 
@@ -251,45 +291,7 @@ class CoinCard extends StatelessWidget {
   }
 }
 
-extension on _MarketScreenState {
-  List<Widget> _buildTickerCards(String quote, String prefix) {
-    Widget buildCard(String base, Map<String, double>? t) {
-      final double price = t?['lastPrice'] ?? 0.0;
-      final double chg = t?['priceChangePercent'] ?? 0.0;
-      final bool isGain = chg >= 0;
-      final pairLabel = base + '/' + quote;
-      final symbol = base + quote;
-      return GestureDetector(
-        onTap: () {
-          _onSelectSymbol(symbol);
-        },
-        child: CoinCard(
-          pair: pairLabel,
-          price: price > 0 ? prefix + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
-          change: (isGain ? '+' : '') + chg.toStringAsFixed(2) + '%',
-          isGain: isGain,
-        ),
-      );
-    }
-
-    final q = quote.toUpperCase();
-    return [
-      buildCard('BTC', _tickers['BTC$q']),
-      buildCard('ETH', _tickers['ETH$q']),
-      buildCard('BNB', _tickers['BNB$q']),
-      buildCard('SOL', _tickers['SOL$q']),
-      buildCard('WLFI', _tickers['WLFI$q']),
-      buildCard('TRUMP', _tickers['TRUMP$q']),
-    ];
-  }
-
-  void _onSelectSymbol(String symbol) {
-    setState(() {
-      _selectedSymbol = symbol;
-    });
-    _loadChart();
-  }
-}
+// helper methods moved into _MarketScreenState
 
 class _ChartPlaceholder extends StatefulWidget {
   const _ChartPlaceholder();
@@ -404,29 +406,32 @@ class CandlestickChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return BarChart(
       BarChartData(
-        alignment: BarChartAlignment.spaceAround,
-        maxY: data.map((e) => e.high).reduce((a, b) => a > b ? a : b) * 1.02,
-        minY: data.map((e) => e.low).reduce((a, b) => a < b ? a : b) * 0.98,
-        groupsSpace: 8,
+        alignment: BarChartAlignment.spaceBetween,
+        maxY: data.map((e) => e.high).reduce((a, b) => a > b ? a : b) * 1.03,
+        minY: data.map((e) => e.low).reduce((a, b) => a < b ? a : b) * 0.97,
+        groupsSpace: 6,
         barTouchData: BarTouchData(
           enabled: true,
+          handleBuiltInTouches: true,
           touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => isDark ? Colors.grey[800]! : Colors.grey[200]!,
+            getTooltipColor: (group) => isDark ? Colors.grey[900]! : Colors.white,
+            tooltipPadding: const EdgeInsets.all(8),
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final candle = data[group.x.toInt()];
               return BarTooltipItem(
-                'O: ${candle.open.toStringAsFixed(0)}\n'
-                'H: ${candle.high.toStringAsFixed(0)}\n'
-                'L: ${candle.low.toStringAsFixed(0)}\n'
-                'C: ${candle.close.toStringAsFixed(0)}',
+                'O: ${candle.open.toStringAsFixed(4)}\n'
+                'H: ${candle.high.toStringAsFixed(4)}\n'
+                'L: ${candle.low.toStringAsFixed(4)}\n'
+                'C: ${candle.close.toStringAsFixed(4)}',
                 TextStyle(
                   color: isDark ? Colors.white : Colors.black,
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               );
             },
           ),
+          touchCallback: (event, response) {},
         ),
         titlesData: FlTitlesData(
           show: true,
@@ -437,8 +442,14 @@ class CandlestickChart extends StatelessWidget {
               showTitles: true,
               reservedSize: 60,
               getTitlesWidget: (value, meta) {
+                final double absValue = value.abs();
+                final int decimals = absValue >= 100
+                    ? 0
+                    : absValue >= 1
+                        ? 2
+                        : 4;
                 return Text(
-                  '\$${(value ~/ 100 * 100).toString()}',
+                  '\$' + value.toStringAsFixed(decimals),
                   style: TextStyle(
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                     fontSize: 10,
@@ -488,13 +499,13 @@ class CandlestickChart extends StatelessWidget {
               BarChartRodData(
                 fromY: candle.low,
                 toY: candle.high,
-                width: 1,
+                width: 2.2,
                 color: color,
                 rodStackItems: [
                   BarChartRodStackItem(
                     candle.low,
                     candle.open < candle.close ? candle.open : candle.close,
-                    color.withOpacity(0.3),
+                    color.withOpacity(0.35),
                   ),
                   BarChartRodStackItem(
                     candle.open < candle.close ? candle.open : candle.close,
@@ -504,7 +515,7 @@ class CandlestickChart extends StatelessWidget {
                   BarChartRodStackItem(
                     candle.open > candle.close ? candle.open : candle.close,
                     candle.high,
-                    color.withOpacity(0.3),
+                    color.withOpacity(0.35),
                   ),
                 ],
               ),

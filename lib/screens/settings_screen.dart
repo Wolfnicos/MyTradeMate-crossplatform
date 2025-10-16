@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/theme_provider.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
+import '../design_system/screen_backgrounds.dart';
+import '../design_system/widgets/glass_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -70,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Try to authenticate before enabling
       try {
         final authenticated = await _localAuth.authenticate(
-          localizedReason: 'Activează autentificarea biometrică',
+          localizedReason: 'Enable biometric authentication',
           options: const AuthenticationOptions(
             biometricOnly: true,
             stickyAuth: true,
@@ -81,16 +83,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('biometric_enabled', true);
           setState(() => _biometricEnabled = true);
-          _showSnackBar('Autentificare biometrică activată', isError: false);
+          _showSnackBar('Biometric authentication enabled', isError: false);
         }
       } catch (e) {
-        _showSnackBar('Eroare la activarea autentificării: $e', isError: true);
+        _showSnackBar('Error enabling authentication: $e', isError: true);
       }
     } else {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('biometric_enabled', false);
       setState(() => _biometricEnabled = false);
-      _showSnackBar('Autentificare biometrică dezactivată', isError: false);
+      _showSnackBar('Biometric authentication disabled', isError: false);
     }
   }
 
@@ -105,11 +107,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       await _binanceService.saveCredentials(apiKey, apiSecret);
-      _showSnackBar('Credențiale salvate cu succes', isError: false);
+      _showSnackBar('Credentials saved', isError: false);
       _apiKeyController.clear();
       _apiSecretController.clear();
     } catch (e) {
-      _showSnackBar('Eroare la salvarea credențialelor: $e', isError: true);
+      _showSnackBar('Error saving credentials: $e', isError: true);
     }
   }
 
@@ -119,12 +121,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final success = await _binanceService.testConnection();
       if (success) {
-        _showSnackBar('Conexiune reușită! Chei valide.', isError: false);
+        _showSnackBar('Connection successful! Keys valid.', isError: false);
       } else {
-        _showSnackBar('Conexiune eșuată. Verifică cheile API.', isError: true);
+        _showSnackBar('Connection failed. Check API keys.', isError: true);
       }
     } catch (e) {
-      _showSnackBar('Eroare: $e', isError: true);
+      _showSnackBar('Error: $e', isError: true);
     } finally {
       setState(() => _isTestingConnection = false);
     }
@@ -134,17 +136,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmare'),
-        content: const Text('Sigur vrei să ștergi credențialele API?'),
+        title: const Text('Confirmation'),
+        content: const Text('Are you sure you want to delete API credentials?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Anulează'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Șterge'),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -152,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (confirm == true) {
       await _binanceService.clearCredentials();
-      _showSnackBar('Credențiale șterse', isError: false);
+      _showSnackBar('Credentials deleted', isError: false);
     }
   }
 
@@ -175,12 +177,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: const Text('Settings'),
         elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      body: Container(
+        decoration: ScreenBackgrounds.settings(context),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
           // Security Section
           _buildSectionHeader('Security'),
-          Card(
+          GlassCard(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 if (_canCheckBiometrics)
@@ -205,9 +210,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Quote Currency (placed before Theme)
           _buildSectionHeader('Quote currency'),
-          Card(
+          GlassCard(
+            padding: const EdgeInsets.all(16),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -235,7 +241,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Trading Mode Section (moved below Security)
           _buildSectionHeader('Trading'),
-          Card(
+          GlassCard(
+            padding: const EdgeInsets.all(16),
             child: SwitchListTile(
               title: const Text('Paper Trading'),
               subtitle: const Text('Execute orders in simulation mode'),
@@ -254,9 +261,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // API Section
           _buildSectionHeader('Binance API'),
-          Card(
+          GlassCard(
+            padding: const EdgeInsets.all(16),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -323,7 +331,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Appearance Section
           _buildSectionHeader('Appearance'),
-          Card(
+          GlassCard(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 ListTile(
@@ -365,7 +374,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // About Section
           _buildSectionHeader('About'),
-          Card(
+          GlassCard(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 const ListTile(
@@ -394,8 +404,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
+          const SizedBox(height: 24),
+          _buildSectionHeader('Strategies Guide'),
+          GlassCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'What each strategy does and when to use it:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 12),
+                Text('• Hybrid (Strategies): Combines rule-based logic (e.g., RSI, trend filters) with the AI model signal. Use when you want stricter risk filters and fewer false positives.'),
+                SizedBox(height: 8),
+                Text('• AI Model: Pure model-driven signals from the on-device TFLite model. Use when you want more frequent, model-led entries; pair with tighter position sizing.'),
+                SizedBox(height: 8),
+                Text('• Market: Immediate execution at the current market price. Use for manual quick entries and testing.'),
+                SizedBox(height: 12),
+                Text('Tip: Set your preferred mode in Orders. Hybrid suits swing trading; AI Model suits short-term momentum; Market is manual.'),
+              ],
+            ),
+          ),
           const SizedBox(height: 40),
         ],
+        ),
       ),
     );
   }

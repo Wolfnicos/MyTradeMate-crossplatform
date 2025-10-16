@@ -4,6 +4,10 @@ import '../ml/ml_service.dart';
 import '../services/hybrid_strategies_service.dart';
 import 'ai_prediction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../design_system/screen_backgrounds.dart';
+import '../design_system/widgets/glass_card.dart';
+import 'package:provider/provider.dart';
+import '../providers/navigation_provider.dart';
 // import 'dart:math';
 import 'dart:async';
 import '../services/app_settings_service.dart';
@@ -156,172 +160,187 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       length: 2,
       child: Scaffold(
         body: SafeArea(
-          child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('AI Strategies', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const TabBar(
-            tabs: [
-              Tab(text: 'Active Strategies'),
-              Tab(text: 'Discover New'),
-            ],
-          ),
-            Expanded(
-          child: TabBarView(
-          children: [
-            ListView(
-              padding: const EdgeInsets.all(16),
+          child: Container(
+            decoration: ScreenBackgrounds.market(context),
+            child: Column(
               children: [
-                // Order Type selector moved to Orders screen per spec
-                const RiskDisclaimer(),
-                const SizedBox(height: 12),
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Strategies context (symbol + interval)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButton<String>(
-                                value: _selectedSymbol,
-                                isExpanded: true,
-                                underline: const SizedBox(),
-                                items: _buildPairs().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                                onChanged: (v) {
-                                  if (v == null) return;
-                                  setState(() => _selectedSymbol = v);
-                                  _startLiveFeed();
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Wrap(
-                              spacing: 6,
-                              children: [
-                                {'label': '15m', 'value': '15m'},
-                                {'label': '1H', 'value': '1h'},
-                                {'label': '4H', 'value': '4h'},
-                              ].map((item) {
-                                final bool sel = _interval == item['value'];
-                                return ChoiceChip(
-                                  label: Text(item['label'] as String),
-                                  selected: sel,
-                                  onSelected: (_) {
-                                    setState(() => _interval = item['value'] as String);
-                                    _startLiveFeed();
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('AI Model', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                            Icon(globalMlService.isInitialized ? Icons.check_circle : Icons.error_outline, color: globalMlService.isInitialized ? Colors.green : Colors.red),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(globalMlService.isInitialized ? 'Model loaded' : 'Model not loaded'),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          alignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 12,
-                          runSpacing: 8,
-                          children: [
-                            ElevatedButton(
-                              onPressed: globalMlService.isInitialized ? _runInference : null,
-                              child: const Text('Run inference'),
-                            ),
-                            OutlinedButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const AiPredictionPage()),
-                                );
-                              },
-                              child: const Text('Open Prediction Page'),
-                            ),
-                            if (_lastSignal != null && _lastProb != null)
-                              Text(
-                                'Signal: ' + _lastSignal!.name + '  |  P(BUY) = ' + _lastProb!.toStringAsFixed(3),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('AI Strategies', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
                   ),
                 ),
-                ...hybridStrategiesService.strategies.where((s) => s.isActive).map((strategy) {
-                  final signal = _liveSignals?.firstWhere(
-                    (s) => s.strategyName == strategy.name,
-                    orElse: () => StrategySignal(
-                      strategyName: strategy.name,
-                      type: SignalType.HOLD,
-                      confidence: 0.0,
-                      reason: 'Waiting for data...',
-                    ),
-                  );
+                const TabBar(
+                  tabs: [
+                    Tab(text: 'Active Strategies'),
+                    Tab(text: 'Discover New'),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          const RiskDisclaimer(),
+                          const SizedBox(height: 12),
+                          GlassCard(
+                            padding: const EdgeInsets.all(16.0),
+                            showGlow: true,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: DropdownButton<String>(
+                                          value: _selectedSymbol,
+                                          isExpanded: true,
+                                          underline: const SizedBox(),
+                                          items: _buildPairs().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                                          onChanged: (v) {
+                                            if (v == null) return;
+                                            setState(() => _selectedSymbol = v);
+                                            _startLiveFeed();
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Wrap(
+                                        spacing: 6,
+                                        children: [
+                                          {'label': '15m', 'value': '15m'},
+                                          {'label': '1H', 'value': '1h'},
+                                          {'label': '4H', 'value': '4h'},
+                                        ].map((item) {
+                                          final bool sel = _interval == item['value'];
+                                          return ChoiceChip(
+                                            label: Text(item['label'] as String),
+                                            selected: sel,
+                                            onSelected: (_) {
+                                              setState(() => _interval = item['value'] as String);
+                                              _startLiveFeed();
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('AI Model', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                      Icon(globalMlService.isInitialized ? Icons.check_circle : Icons.error_outline, color: globalMlService.isInitialized ? Colors.green : Colors.red),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(globalMlService.isInitialized ? 'Model loaded' : 'Model not loaded'),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    alignment: WrapAlignment.start,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 12,
+                                    runSpacing: 8,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: globalMlService.isInitialized ? _runInference : null,
+                                        child: const Text('Run inference'),
+                                      ),
+                                      OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(builder: (_) => const AiPredictionPage()),
+                                          );
+                                        },
+                                        child: const Text('Open Prediction Page'),
+                                      ),
+                            if (hybridStrategiesService.strategies.any((s) => s.isActive))
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  final prefs = await SharedPreferences.getInstance();
+                                  await prefs.setString('order_type', 'hybrid');
+                                if (context.mounted) {
+                                  Provider.of<NavigationProvider>(context, listen: false).setIndex(3);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Hybrid live execution: configure amount in Orders and arm.')),
+                                  );
+                                }
+                                },
+                                icon: const Icon(Icons.flash_on_rounded),
+                                label: const Text('Execute Live (Hybrid)'),
+                              ),
+                                      if (_lastSignal != null && _lastProb != null)
+                                        Text(
+                                          'Signal: ' + _lastSignal!.name + '  |  P(BUY) = ' + _lastProb!.toStringAsFixed(3),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          ...hybridStrategiesService.strategies.where((s) => s.isActive).map((strategy) {
+                            final signal = _liveSignals?.firstWhere(
+                              (s) => s.strategyName == strategy.name,
+                              orElse: () => StrategySignal(
+                                strategyName: strategy.name,
+                                type: SignalType.HOLD,
+                                confidence: 0.0,
+                                reason: 'Waiting for data...',
+                              ),
+                            );
 
-                  return StrategyCard(
-                    name: '${strategy.name} ${strategy.version}',
-                    status: strategy.isActive ? 'Active' : 'Inactive',
-                    performance: '${strategy.totalReturn >= 0 ? "+" : ""}${strategy.totalReturn.toStringAsFixed(1)}% (7D)',
-                    isGain: strategy.totalReturn >= 0,
-                    liveSignal: strategy.isActive ? signal : null,
-                    onActivate: () {
-                      setState(() {
-                        hybridStrategiesService.toggleStrategy(strategy.name, !strategy.isActive);
-                      });
-                    },
-                    onEdit: () => _openEditParameters(strategy),
-                  );
-                }),
-                if (hybridStrategiesService.strategies.where((s) => s.isActive).isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text('No active strategies. Activate some from Discover New.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                            return StrategyCard(
+                              name: '${strategy.name} ${strategy.version}',
+                              status: strategy.isActive ? 'Active' : 'Inactive',
+                              performance: '${strategy.totalReturn >= 0 ? "+" : ""}${strategy.totalReturn.toStringAsFixed(1)}% (7D)',
+                              isGain: strategy.totalReturn >= 0,
+                              liveSignal: strategy.isActive ? signal : null,
+                              onActivate: () {
+                                setState(() {
+                                  hybridStrategiesService.toggleStrategy(strategy.name, !strategy.isActive);
+                                });
+                              },
+                              onEdit: () => _openEditParameters(strategy),
+                            );
+                          }),
+                          if (hybridStrategiesService.strategies.where((s) => s.isActive).isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text('No active strategies. Activate some from Discover New.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                            ),
+                        ],
+                      ),
+                      ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          ...hybridStrategiesService.strategies.where((s) => !s.isActive).map((strategy) {
+                            return StrategyCard(
+                              name: '${strategy.name} ${strategy.version}',
+                              status: 'Inactive',
+                              performance: '${strategy.totalReturn >= 0 ? "+" : ""}${strategy.totalReturn.toStringAsFixed(1)}% (7D)',
+                              isGain: strategy.totalReturn >= 0,
+                              liveSignal: null,
+                              onActivate: () {
+                                setState(() {
+                                  hybridStrategiesService.toggleStrategy(strategy.name, true);
+                                });
+                              },
+                              onEdit: () => _openEditParameters(strategy),
+                            );
+                          }),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            // Discover New
-            ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                ...hybridStrategiesService.strategies.where((s) => !s.isActive).map((strategy) {
-                  return StrategyCard(
-                    name: '${strategy.name} ${strategy.version}',
-                    status: 'Inactive',
-                    performance: '${strategy.totalReturn >= 0 ? "+" : ""}${strategy.totalReturn.toStringAsFixed(1)}% (7D)',
-                    isGain: strategy.totalReturn >= 0,
-                    liveSignal: null,
-                    onActivate: () {
-                      setState(() {
-                        hybridStrategiesService.toggleStrategy(strategy.name, true);
-                      });
-                    },
-                    onEdit: () => _openEditParameters(strategy),
-                  );
-                }),
-              ],
-            ),
-          ],
-              ),
-            ),
-          ],
           ),
         ),
       ),

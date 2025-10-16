@@ -6,6 +6,8 @@ import '../services/binance_service.dart';
 import '../services/hybrid_strategies_service.dart';
 import '../ml/ml_service.dart';
 import 'dart:async';
+import '../design_system/screen_backgrounds.dart';
+import '../design_system/widgets/glass_card.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -62,7 +64,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       final binance = BinanceService();
       final all = await binance.fetchTradingPairs();
       // Keep only user's bases + quotes: USDT/USDC/EUR
-      final Set<String> allowedBases = <String>{'BTC','ETH','BNB','SOL','WIF','1000TRUMP'};
+      final Set<String> allowedBases = <String>{'BTC','ETH','BNB','SOL','WIF','TRUMP'};
       final List<Map<String, String>> filtered = <Map<String, String>>[];
       final Set<String> seen = <String>{};
       for (final m in all) {
@@ -104,151 +106,147 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-        children: [
-          // Header with title
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Orders', style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-            ),
-          ),
-          // Removed tabs (Trade/Paper)
-          // Content
-          Expanded(
-            child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Container(
+            decoration: ScreenBackgrounds.market(context),
             child: Column(
               children: [
-            // Buy/Sell toggle
-            Container(
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => isBuy = true),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isBuy ? activeColor : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(child: Text('Buy', style: TextStyle(color: isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
-                      ),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Orders', style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => isBuy = false),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: !isBuy ? activeColor : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(child: Text('Sell', style: TextStyle(color: !isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildPairSelector(context),
-            const SizedBox(height: 16),
-            _buildOrderTypeBanner(context),
-            const SizedBox(height: 16),
-            _buildAmountField(),
-            const SizedBox(height: 16),
-            _buildLimitPriceField(),
-            const SizedBox(height: 16),
-            _buildTotalFiatField(),
-            _buildAmountSummary(),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  final bool paper = prefs.getBool('paper_trading') ?? false;
-                  if (_orderType == OrderType.market) {
-                    // Market instant
-                    if (paper) {
-                      final price = double.tryParse(_priceCtrl.text) ?? 0.0;
-                      final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
-                      PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order (Paper) executed')));
-                      }
-                    } else {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order to Binance (stub)')));
-                      }
-                    }
-                  } else if (_orderType == OrderType.hybrid) {
-                    // Arm hybrid listener
-                    _hybridSub?.cancel();
-                    _hybridSub = hybridStrategiesService.signalsStream.listen((signals) {
-                      final StrategySignal? m = signals.firstWhere(
-                        (s) => (isBuy && s.type == SignalType.BUY) || (!isBuy && s.type == SignalType.SELL),
-                        orElse: () => StrategySignal(strategyName: 'none', type: SignalType.HOLD, confidence: 0.0, reason: 'no match'),
-                      );
-                      if (m != null && ((isBuy && m.type == SignalType.BUY) || (!isBuy && m.type == SignalType.SELL))) {
-                        final price = double.tryParse(_priceCtrl.text) ?? 0.0;
-                        final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
-                        PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
-                        _hybridSub?.cancel();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hybrid signal executed (${m.type.name})')));
-                        }
-                      }
-                    });
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: waiting for Hybrid strategy signal...')));
-                    }
-                  } else {
-                    // AI model polling
-                    _aiTimer?.cancel();
-                    _aiTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
-                      try {
-                        final feats = await BinanceService().getFeaturesForModel(_selectedPair, interval: _aiInterval);
-                        final res = globalMlService.getSignal(feats, symbol: _selectedPair);
-                        final TradingSignal sig = res['signal'] as TradingSignal;
-                        if ((isBuy && sig == TradingSignal.BUY) || (!isBuy && sig == TradingSignal.SELL)) {
-                          final price = double.tryParse(_priceCtrl.text) ?? 0.0;
-                          final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
-                          PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
-                          _aiTimer?.cancel();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('AI Model signal executed (${sig.name})')));
-                          }
-                        }
-                      } catch (_) {}
-                    });
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: AI Model monitoring...')));
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: activeColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  foregroundColor: Colors.white,
                 ),
-                child: Text((isBuy ? 'Buy ' : 'Sell ') + _formatPairLabel(_selectedPair).split('/').first, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-            )
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        GlassCard(
+                          padding: const EdgeInsets.all(8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => isBuy = true),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: isBuy ? activeColor : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(child: Text('Buy', style: TextStyle(color: isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => isBuy = false),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: !isBuy ? activeColor : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(child: Text('Sell', style: TextStyle(color: !isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        GlassCard(padding: const EdgeInsets.all(12), child: _buildPairSelector(context)),
+                        const SizedBox(height: 16),
+                        GlassCard(padding: const EdgeInsets.all(12), child: _buildOrderTypeBanner(context)),
+                        const SizedBox(height: 16),
+                        GlassCard(padding: const EdgeInsets.all(12), child: _buildAmountField()),
+                        const SizedBox(height: 16),
+                        GlassCard(padding: const EdgeInsets.all(12), child: _buildLimitPriceField()),
+                        const SizedBox(height: 16),
+                        GlassCard(padding: const EdgeInsets.all(12), child: _buildTotalFiatField()),
+                        _buildAmountSummary(),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              final bool paper = prefs.getBool('paper_trading') ?? false;
+                              if (_orderType == OrderType.market) {
+                                if (paper) {
+                                  final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                                  final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+                                  PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order (Paper) executed')));
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order to Binance (stub)')));
+                                  }
+                                }
+                              } else if (_orderType == OrderType.hybrid) {
+                                _hybridSub?.cancel();
+                                _hybridSub = hybridStrategiesService.signalsStream.listen((signals) {
+                                  final StrategySignal? m = signals.firstWhere(
+                                    (s) => (isBuy && s.type == SignalType.BUY) || (!isBuy && s.type == SignalType.SELL),
+                                    orElse: () => StrategySignal(strategyName: 'none', type: SignalType.HOLD, confidence: 0.0, reason: 'no match'),
+                                  );
+                                  if (m != null && ((isBuy && m.type == SignalType.BUY) || (!isBuy && m.type == SignalType.SELL))) {
+                                    final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                                    final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+                                    PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                                    _hybridSub?.cancel();
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hybrid signal executed (${m.type.name})')));
+                                    }
+                                  }
+                                });
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: waiting for Hybrid strategy signal...')));
+                                }
+                              } else {
+                                _aiTimer?.cancel();
+                                _aiTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
+                                  try {
+                                    final feats = await BinanceService().getFeaturesForModel(_selectedPair, interval: _aiInterval);
+                                    final res = globalMlService.getSignal(feats, symbol: _selectedPair);
+                                    final TradingSignal sig = res['signal'] as TradingSignal;
+                                    if ((isBuy && sig == TradingSignal.BUY) || (!isBuy && sig == TradingSignal.SELL)) {
+                                      final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                                      final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+                                      PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                                      _aiTimer?.cancel();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('AI Model signal executed (${sig.name})')));
+                                      }
+                                    }
+                                  } catch (_) {}
+                                });
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: AI Model monitoring...')));
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: activeColor,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text((isBuy ? 'Buy ' : 'Sell ') + _formatPairLabel(_selectedPair).split('/').first, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-            ),
           ),
-        ],
         ),
       ),
     );
@@ -277,6 +275,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             ),
             suffixText: base,
           ),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
           onChanged: (_) {
             if (_updatingFields) return;
             _updatingFields = true;
@@ -318,6 +318,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? '\$ ' : '',
             suffixText: quote,
           ),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
           onChanged: (_) {
             if (_updatingFields) return;
             _updatingFields = true;
@@ -378,6 +380,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? '\$ ' : '',
             suffixText: quote,
           ),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
           onChanged: (_) {
             if (_updatingFields) return;
             _updatingFields = true;
@@ -400,11 +404,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   String _orderTypeLabel(OrderType t) {
     switch (t) {
       case OrderType.hybrid:
-        return 'Hybrid (Strategii)';
+        return 'Hybrid (Strategies)';
       case OrderType.aiModel:
         return 'AI Model';
       case OrderType.market:
-        return 'Piață (Market)';
+        return 'Market';
     }
   }
 
@@ -440,9 +444,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              tile(OrderType.hybrid, 'Hybrid (Strategii)', 'Combină reguli + semnal ML'),
+              tile(OrderType.hybrid, 'Hybrid (Strategies)', 'Combines rule-based logic with ML signal'),
               tile(OrderType.aiModel, 'AI Model', 'Folosește doar modelul TFLite'),
-              tile(OrderType.market, 'Piață (Market)', 'Execută imediat la prețul pieței'),
+              tile(OrderType.market, 'Market', 'Immediate execution at market price'),
               const SizedBox(height: 8),
             ],
           ),
@@ -504,7 +508,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text('Alege perechea', style: Theme.of(context).textTheme.titleLarge),
+                    child: Text('Select Pair', style: Theme.of(context).textTheme.titleLarge),
                   ),
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.6,

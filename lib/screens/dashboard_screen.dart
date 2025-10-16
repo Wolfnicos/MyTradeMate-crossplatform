@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
+import '../design_system/screen_backgrounds.dart';
+import '../design_system/widgets/glass_card.dart';
+import '../widgets/dashboard/dashboard_grid.dart';
+import '../widgets/dashboard/collapsible_news_banner.dart';
+ 
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -9,41 +14,19 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth > 600) {
-              return const Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: PortfolioOverviewCard(),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: PnLTodaySection(),
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              return ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  Text('Dashboard', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 24),
-                  const PortfolioOverviewCard(),
-                  const SizedBox(height: 24),
-                  const PnLTodaySection(),
-                ],
-              );
-            }
-          },
+        child: Container(
+          decoration: ScreenBackgrounds.market(context),
+          child: ListView(
+            padding: const EdgeInsets.all(16.0),
+            children: [
+              Text('Dashboard', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              const CollapsibleNewsBanner(),
+              const SizedBox(height: 16),
+              const DashboardGrid(),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -58,11 +41,11 @@ class PortfolioOverviewCard extends StatelessWidget {
     final theme = Theme.of(context);
     final gainColor = theme.colorScheme.secondary;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return GlassCard(
+      padding: const EdgeInsets.all(20.0),
+      showGlow: true,
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -122,18 +105,17 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
       _bnb = await _binance.fetchTicker24h('BNBUSDT');
       _sol = await _binance.fetchTicker24h('SOLUSDT');
       _wif = await _binance.fetchTicker24hWithFallback(['WIFUSDT', 'WIFUSDC', 'WIFBUSD']);
-      _trump = await _binance.fetchTicker24hWithFallback(['1000TRUMPUSDT', 'TRUMPUSDT', 'DJTUSDT']);
+      _trump = await _binance.fetchTicker24hWithFallback(['TRUMPUSDT', 'DJTUSDT']);
     } catch (_) {}
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return GlassCard(
+      padding: const EdgeInsets.all(20.0),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

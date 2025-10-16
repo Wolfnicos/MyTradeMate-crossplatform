@@ -33,16 +33,19 @@ dependencies:
 
   # UI & Icons
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
 
   # Charts & Visualization
   syncfusion_flutter_charts: ^28.1.33
   fl_chart: ^0.69.0
+  reorderables: ^0.6.0
 
   # AI & Machine Learning
   tflite_flutter: ^0.11.0  # Note: Model needs TF 2.10 or older for compatibility
 
   # Networking
   http: ^1.2.2
+  xml: ^6.5.0
 
   # State Management
   provider: ^6.1.2
@@ -59,6 +62,7 @@ dependencies:
 
   # Utilities
   intl: ^0.19.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

@@ -98,7 +98,7 @@ class _TopMoversTileState extends State<TopMoversTile> {
           children: [
             CircleAvatar(radius: 14, backgroundColor: Colors.grey.shade300, child: Text(s.substring(0, 1))),
             const SizedBox(width: 12),
-            Expanded(child: Text(_formatPair(s))),
+            Expanded(child: Text(_formatPair(s), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
             Text((isGain ? '+' : '') + chg.toStringAsFixed(2) + '%', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           ],
         ),

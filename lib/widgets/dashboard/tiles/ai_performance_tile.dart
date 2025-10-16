@@ -133,7 +133,7 @@ class _AiPerformanceTileState extends State<AiPerformanceTile> {
         children: [
           CircleAvatar(radius: 14, backgroundColor: color.withOpacity(0.15), child: Icon(Icons.smart_toy, color: color, size: 18)),
           const SizedBox(width: 12),
-          Expanded(child: Text(symbol.replaceAll('USDT', '/USDT'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600))),
+          Expanded(child: Text(_formatPair(symbol), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.5))),
@@ -149,6 +149,14 @@ class _AiPerformanceTileState extends State<AiPerformanceTile> {
         ],
       ),
     );
+  }
+
+  String _formatPair(String sym) {
+    if (sym.endsWith('USDT')) return sym.replaceAll('USDT', '/USDT');
+    if (sym.endsWith('USDC')) return sym.replaceAll('USDC', '/USDC');
+    if (sym.endsWith('EUR')) return sym.replaceAll('EUR', '/EUR');
+    if (sym.endsWith('USD')) return sym.replaceAll('USD', '/USD');
+    return sym;
   }
 }
 

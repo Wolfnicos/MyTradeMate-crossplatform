@@ -217,7 +217,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                     _aiTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
                       try {
                         final feats = await BinanceService().getFeaturesForModel(_selectedPair, interval: _aiInterval);
-                        final res = globalMlService.getSignal(feats);
+                        final res = globalMlService.getSignal(feats, symbol: _selectedPair);
                         final TradingSignal sig = res['signal'] as TradingSignal;
                         if ((isBuy && sig == TradingSignal.BUY) || (!isBuy && sig == TradingSignal.SELL)) {
                           final price = double.tryParse(_priceCtrl.text) ?? 0.0;

@@ -60,7 +60,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
       debugPrint('ℹ️ AIPage: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
 
       // Run prediction with real data
-      final Map<String, dynamic> result = globalMlService.getSignal(features);
+      final Map<String, dynamic> result = globalMlService.getSignal(features, symbol: _selectedSymbol);
       debugPrint('ℹ️ AIPage: result=' + result.toString());
 
       setState(() {
@@ -126,6 +126,12 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
   @override
   Widget build(BuildContext context) {
     final quote = AppSettingsService().quoteCurrency;
+    final options = _buildPairOptions(quote);
+    final selected = options.contains(_selectedSymbol) ? _selectedSymbol : options.first;
+    if (_selectedSymbol != selected) {
+      // keep state coherent with available items
+      _selectedSymbol = selected;
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Motor de Decizie AI')),
       body: _isLoading
@@ -173,12 +179,12 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: DropdownButton<String>(
-                                  value: _selectedSymbol,
+                                  value: selected,
                                   isExpanded: true,
                                   underline: const SizedBox(),
                                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
                                   style: Theme.of(context).textTheme.titleMedium,
-                                  items: _buildPairOptions(quote).map((symbol) {
+                                  items: options.map((symbol) {
                                     return DropdownMenuItem(
                                       value: symbol,
                                       child: Row(
@@ -222,10 +228,10 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
                             {'label': '1H', 'value': '1h'},
                             {'label': '4H', 'value': '4h'},
                           ].map((item) {
-                            final bool selected = _interval == item['value'];
+                            final bool isSel = _interval == item['value'];
                             return ChoiceChip(
                               label: Text(item['label'] as String),
-                              selected: selected,
+                              selected: isSel,
                               onSelected: (_) {
                                 setState(() => _interval = item['value'] as String);
                               },

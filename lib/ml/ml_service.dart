@@ -11,9 +11,21 @@ class MLService {
 
   // Exact values provided from Python training/export
   final double optimalTemperature = 2.0;
-  final double thresholdBuy = 0.65;
-  final double thresholdSell = 0.65;
-  final double thresholdConfidence = 0.45;
+  final double thresholdBuy = 0.55;
+  final double thresholdSell = 0.55;
+  final double thresholdConfidence = 0.38;
+
+  // Per-coin overrides (by base), to tune behavior symbol-wise
+  // These can be further adjusted based on observed behavior
+  final Map<String, Map<String, double>> _symbolThresholds = <String, Map<String, double>>{
+    'BTC': {'buy': 0.45, 'sell': 0.58, 'conf': 0.36},
+    'SOL': {'buy': 0.43, 'sell': 0.58, 'conf': 0.36},
+    'WLFI': {'buy': 0.42, 'sell': 0.60, 'conf': 0.36},
+    'TRUMP': {'buy': 0.42, 'sell': 0.60, 'conf': 0.36},
+    // Keep defaults for ETH/BNB unless specified
+    'ETH': {'buy': 0.55, 'sell': 0.55, 'conf': 0.38},
+    'BNB': {'buy': 0.55, 'sell': 0.55, 'conf': 0.38},
+  };
 
   // StandardScaler mean/scale for 34 features
   final List<double> scalerMean = const [
@@ -65,7 +77,7 @@ class MLService {
     }
   }
 
-  Map<String, dynamic> getSignal(List<List<double>> rawInput) {
+  Map<String, dynamic> getSignal(List<List<double>> rawInput, {String? symbol}) {
     if (!isInitialized) {
       throw Exception('MLService not initialized. Call loadModel() first.');
     }
@@ -75,7 +87,7 @@ class MLService {
 
     final List<double> rawProbs = _getRawProbabilities(rawInput);
     final List<double> calibrated = _applyTemperature(rawProbs, optimalTemperature);
-    final TradingSignal signal = _applyPolicy(calibrated);
+    final TradingSignal signal = _applyPolicy(calibrated, symbol: symbol);
 
     return {
       'signal': signal,
@@ -130,17 +142,45 @@ class MLService {
     return out;
   }
 
-  TradingSignal _applyPolicy(List<double> calibrated) {
+  TradingSignal _applyPolicy(List<double> calibrated, {String? symbol}) {
     final double probSell = calibrated[0];
     final double probHold = calibrated[1];
     final double probBuy = calibrated[2];
 
     final double maxProb = [probSell, probHold, probBuy].reduce(max);
-    if (maxProb < thresholdConfidence) return TradingSignal.HOLD;
+    final _Thresh t = _getThresholds(symbol);
+    if (maxProb < t.confidence) return TradingSignal.HOLD;
 
-    if (probBuy >= thresholdBuy) return TradingSignal.BUY;
-    if (probSell >= thresholdSell) return TradingSignal.SELL;
+    // If BUY is strictly the highest, take BUY; if SELL strictly highest, take SELL
+    if (probBuy > probHold && probBuy >= t.buy) return TradingSignal.BUY;
+    if (probSell > probHold && probSell >= t.sell) return TradingSignal.SELL;
     return TradingSignal.HOLD;
+  }
+
+  _Thresh _getThresholds(String? symbol) {
+    if (symbol == null || symbol.isEmpty) {
+      return _Thresh(buy: thresholdBuy, sell: thresholdSell, confidence: thresholdConfidence);
+    }
+    final String base = _extractBase(symbol);
+    final Map<String, double>? m = _symbolThresholds[base];
+    if (m == null) {
+      return _Thresh(buy: thresholdBuy, sell: thresholdSell, confidence: thresholdConfidence);
+    }
+    return _Thresh(
+      buy: m['buy'] ?? thresholdBuy,
+      sell: m['sell'] ?? thresholdSell,
+      confidence: m['conf'] ?? thresholdConfidence,
+    );
+  }
+
+  String _extractBase(String sym) {
+    final up = sym.toUpperCase();
+    for (final q in const ['USDT', 'USDC', 'USD', 'EUR']) {
+      if (up.endsWith(q)) {
+        return up.substring(0, up.length - q.length);
+      }
+    }
+    return up;
   }
 
   void dispose() {

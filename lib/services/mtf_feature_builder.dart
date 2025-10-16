@@ -86,12 +86,19 @@ class MtfFeatureBuilder {
   }
 
   List<double> _oneHotSymbol(String s) {
-    // Python training used: ['BTC/USDT','ETH/USDT','BNB/USDT','SOL/USDT']
-    // Here symbols are 'BTCUSDT', ...
-    final bool btc = s.toUpperCase() == 'BTCUSDT';
-    final bool eth = s.toUpperCase() == 'ETHUSDT';
-    final bool bnb = s.toUpperCase() == 'BNBUSDT';
-    final bool sol = s.toUpperCase() == 'SOLUSDT';
+    // Python training used 4 bases: BTC, ETH, BNB, SOL (on USDT), but we ignore quote here
+    final up = s.toUpperCase();
+    String base = up;
+    for (final q in const ['USDT','USDC','USD','EUR']) {
+      if (up.endsWith(q)) {
+        base = up.substring(0, up.length - q.length);
+        break;
+      }
+    }
+    final bool btc = base == 'BTC';
+    final bool eth = base == 'ETH';
+    final bool bnb = base == 'BNB';
+    final bool sol = base == 'SOL';
     return <double>[btc ? 1.0 : 0.0, eth ? 1.0 : 0.0, bnb ? 1.0 : 0.0, sol ? 1.0 : 0.0];
   }
 

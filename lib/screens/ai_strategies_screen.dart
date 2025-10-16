@@ -45,7 +45,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       debugPrint('▶️ AI Strategies: fetching features for ' + symbol + ' @' + interval);
       final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
       debugPrint('ℹ️ AI Strategies: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
-      final Map<String, dynamic> result = globalMlService.getSignal(features);
+      final Map<String, dynamic> result = globalMlService.getSignal(features, symbol: symbol);
       final List<double> probs = (result['probabilities'] as List<dynamic>).cast<double>();
       setState(() {
         _lastProb = probs.length > 2 ? probs[2] : null; // BUY probability

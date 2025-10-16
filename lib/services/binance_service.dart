@@ -86,6 +86,57 @@ class BinanceService {
     return digest.toString();
   }
 
+  /// Place a MARKET order (BUY/SELL) on spot. Uses testnet when selected in settings.
+  /// Either [quantity] (base units) or [quoteOrderQty] (quote currency) must be provided.
+  Future<Map<String, dynamic>> placeMarketOrder({
+    required String symbol,
+    required String side, // 'BUY' | 'SELL'
+    double? quantity,
+    double? quoteOrderQty,
+    int recvWindowMs = 5000,
+  }) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    if ((quantity == null || quantity <= 0) && (quoteOrderQty == null || quoteOrderQty <= 0)) {
+      throw Exception('Provide quantity (base) or quoteOrderQty (>0)');
+    }
+
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'symbol': symbol,
+      'side': side.toUpperCase(),
+      'type': 'MARKET',
+      'newOrderRespType': 'RESULT',
+      'recvWindow': recvWindowMs.toString(),
+      'timestamp': timestamp.toString(),
+    };
+    if (quantity != null && quantity > 0) {
+      params['quantity'] = quantity.toString();
+    } else if (quoteOrderQty != null && quoteOrderQty > 0) {
+      params['quoteOrderQty'] = quoteOrderQty.toString();
+    }
+
+    // Build query string for signature
+    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/order');
+    final String body = queryString + '&signature=' + signature;
+    final res = await http.post(
+      uri,
+      headers: <String, String>{
+        'X-MBX-APIKEY': _apiKey!,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Binance order error ${res.statusCode}: ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
   /// Fetches klines (OHLCV) for a spot symbol with configurable interval
   /// Returns up to [limit] candles between [start] and [end].
   Future<List<Candle>> fetchKlines(

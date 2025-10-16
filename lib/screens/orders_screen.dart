@@ -212,8 +212,26 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order (Paper) executed')));
                                   }
                                 } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order to Binance (stub)')));
+                                  try {
+                                    final double? qty = double.tryParse(_amountCtrl.text);
+                                    final double? total = double.tryParse(_totalCtrl.text);
+                                    final res = await BinanceService().placeMarketOrder(
+                                      symbol: _selectedPair,
+                                      side: isBuy ? 'BUY' : 'SELL',
+                                      quantity: (qty != null && qty > 0) ? qty : null,
+                                      quoteOrderQty: (total != null && total > 0) ? total : null,
+                                    );
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Order sent: ' + (res['status']?.toString() ?? 'OK'))),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Order error: ' + e.toString())),
+                                      );
+                                    }
                                   }
                                 }
                               } else if (_orderType == OrderType.hybrid) {

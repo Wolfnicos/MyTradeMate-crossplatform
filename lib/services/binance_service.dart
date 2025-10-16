@@ -137,6 +137,34 @@ class BinanceService {
     return json.decode(res.body) as Map<String, dynamic>;
   }
 
+  /// Fetch open spot orders (signed). If [symbol] provided, filters by symbol.
+  Future<List<Map<String, dynamic>>> fetchOpenOrders({String? symbol, int recvWindowMs = 5000}) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'timestamp': timestamp.toString(),
+      'recvWindow': recvWindowMs.toString(),
+    };
+    if (symbol != null && symbol.isNotEmpty) params['symbol'] = symbol;
+
+    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/openOrders', {
+      ...params,
+      'signature': signature,
+    });
+
+    final res = await http.get(uri, headers: {'X-MBX-APIKEY': _apiKey!});
+    if (res.statusCode != 200) {
+      throw Exception('Binance openOrders error ${res.statusCode}: ${res.body}');
+    }
+    final List<dynamic> data = json.decode(res.body) as List<dynamic>;
+    return data.cast<Map<String, dynamic>>();
+  }
+
   /// Fetches klines (OHLCV) for a spot symbol with configurable interval
   /// Returns up to [limit] candles between [start] and [end].
   Future<List<Candle>> fetchKlines(

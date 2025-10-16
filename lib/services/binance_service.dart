@@ -204,12 +204,12 @@ class BinanceService {
     return fetchDailyKlines(symbol, start: start, end: end, limit: 1000);
   }
 
-  /// Fetches the last 60 hourly candles and calculates the 34 technical indicators
+  /// Fetches the last 60 candles for the given interval and calculates the 34 technical indicators
   /// Returns a List<List<double>> ready for ML model input
-  Future<List<List<double>>> getFeaturesForModel(String symbol) async {
+  Future<List<List<double>>> getFeaturesForModel(String symbol, {String interval = '1h'}) async {
     try {
-      // Fetch last 60 1h candles
-      final candles = await fetchHourlyKlines(symbol, limit: 60);
+      // Fetch last 60 candles at the requested interval
+      final candles = await fetchCustomKlines(symbol, interval, limit: 60);
 
       if (candles.length < 60) {
         throw Exception('Insufficient data: got ${candles.length} candles, need 60');

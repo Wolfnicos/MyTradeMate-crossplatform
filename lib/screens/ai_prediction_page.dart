@@ -18,6 +18,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
   bool _isFetchingData = false;
   String _errorMessage = '';
   String _selectedSymbol = 'BTCUSDT';
+  String _interval = '1h'; // 15m, 1h, 4h
 
   final BinanceService _binanceService = BinanceService();
   final List<String> _availableSymbols = [
@@ -64,7 +65,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
 
     try {
       // Fetch real data from Binance
-      final features = await _binanceService.getFeaturesForModel(_selectedSymbol);
+      final features = await _binanceService.getFeaturesForModel(_selectedSymbol, interval: _interval);
 
       // Run prediction with real data
       final Map<String, dynamic> result = globalMlService.getSignal(features);
@@ -217,6 +218,27 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
                         // Signal Display - Premium with Animation
                         Center(child: _buildSignalWidget()),
                         const SizedBox(height: 24),
+
+                        // Interval selector
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          children: [
+                            {'label': '15m', 'value': '15m'},
+                            {'label': '1H', 'value': '1h'},
+                            {'label': '4H', 'value': '4h'},
+                          ].map((item) {
+                            final bool selected = _interval == item['value'];
+                            return ChoiceChip(
+                              label: Text(item['label'] as String),
+                              selected: selected,
+                              onSelected: (_) {
+                                setState(() => _interval = item['value'] as String);
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 16),
 
                         // Probabilities - Modern Cards
                         PremiumCard(

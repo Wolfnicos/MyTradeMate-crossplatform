@@ -28,11 +28,11 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   }
 
   Future<void> _syncOrderTypePref() async {
-    // If any strategy is active, prefer 'hybrid' for Orders; else keep as-is.
     final bool anyActive = hybridStrategiesService.strategies.any((s) => s.isActive);
     final prefs = await SharedPreferences.getInstance();
     if (anyActive) {
       await prefs.setString('order_type', 'hybrid');
+      setState(() => _orderType = 'hybrid');
     }
   }
 
@@ -40,7 +40,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     if (!globalMlService.isInitialized) return;
     final int w = globalMlService.windowSize;
     final int f = globalMlService.numFeatures;
-    // Example placeholder raw input; replace with real features window
     final List<List<double>> rawInput = List<List<double>>.generate(
       w,
       (_) => List<double>.filled(f, 0.0),
@@ -53,7 +52,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     });
   }
 
-  /// Simulate live trading by generating market data
   void _simulateLiveTrading() async {
     final random = Random();
     double basePrice = 34500.0;
@@ -62,7 +60,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       return basePrice;
     });
 
-    // Produce an initial set of signals immediately (avoid 0% placeholders)
+    // Initial snapshot
     {
       final marketData = MarketData(
         price: basePrice,
@@ -83,20 +81,16 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
     while (mounted) {
       await Future.delayed(const Duration(seconds: 3));
-
-      // Generate new price
       basePrice += (random.nextDouble() - 0.5) * 200;
       priceHistory.add(basePrice);
       if (priceHistory.length > 100) priceHistory.removeAt(0);
 
-      // Create market data
       final marketData = MarketData(
         price: basePrice,
         volume: 1000 + random.nextDouble() * 500,
         priceHistory: List<double>.from(priceHistory),
       );
 
-      // Analyze with all active strategies
       final signals = <StrategySignal>[];
       for (final strategy in hybridStrategiesService.strategies.where((s) => s.isActive)) {
         final signal = await strategy.analyze(marketData);
@@ -118,7 +112,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       await prefs.setString('order_type', 'hybrid');
       setState(() => _orderType = 'hybrid');
     } else {
-      // If no strategies are active anymore, revert to user's last non-hybrid choice if exists, else market
       final String current = prefs.getString('order_type') ?? 'market';
       if (current == 'hybrid') {
         await prefs.setString('order_type', 'market');
@@ -137,6 +130,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     await prefs.setString('order_type', value);
     setState(() => _orderType = value);
   }
+
   void _showRiskAcknowledgmentDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -154,7 +148,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             ElevatedButton(
               child: const Text('I Understand & Proceed'),
               onPressed: () {
-                // TODO: activate the AI strategy here
                 Navigator.of(context).pop();
               },
             ),
@@ -162,6 +155,53 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
         );
       },
     );
+  }
+
+  Future<void> _openEditParameters(HybridStrategy strategy) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: _StrategyParamsSheet(strategy: strategy),
+        );
+      },
+    );
+    // Persist params after editing
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'strategy_params_' + strategy.name.replaceAll(RegExp(r'\s+'), '_').toLowerCase();
+    Map<String, dynamic> m = {};
+    if (strategy is RSIMLHybridStrategy) {
+      m = {
+        'oversold': strategy.oversold,
+        'overbought': strategy.overbought,
+        'buyRsi': strategy.buyRsi,
+        'sellRsi': strategy.sellRsi,
+      };
+    } else if (strategy is DynamicGridBotStrategy) {
+      m = {
+        'gridSize': strategy.gridSize,
+      };
+    } else if (strategy is BreakoutStrategy) {
+      m = {
+        'lookback': strategy.lookback,
+        'confidenceBase': strategy.confidenceBase,
+      };
+    } else if (strategy is MeanReversionStrategy) {
+      m = {
+        'period': strategy.period,
+        'stdDev': strategy.stdDev,
+      };
+    }
+    await prefs.setString(key, m.toString());
+    setState(() {});
   }
 
   @override
@@ -172,7 +212,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
         body: SafeArea(
           child: Column(
           children: [
-            // Header with title
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Align(
@@ -180,22 +219,18 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                 child: Text('AI Strategies', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
               ),
             ),
-            // TabBar
             const TabBar(
               tabs: [
                 Tab(text: 'Active Strategies'),
                 Tab(text: 'Discover New'),
               ],
             ),
-            // TabBarView
             Expanded(
               child: TabBarView(
           children: [
-            // Tab-ul "Active Strategies"
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Quick selector to reflect in Orders screen
                 Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -302,12 +337,33 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                       });
                       _updateOrderTypePreference();
                     },
+                    onEdit: () => _openEditParameters(strategy),
                   );
                 }),
               ],
             ),
-            // Tab-ul "Discover New" - placeholder
-            const Center(child: Text('Discover new AI strategies here.')),
+            // Discover New
+            ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                ...hybridStrategiesService.strategies.where((s) => !s.isActive).map((strategy) {
+                  return StrategyCard(
+                    name: '${strategy.name} ${strategy.version}',
+                    status: 'Inactive',
+                    performance: '${strategy.totalReturn >= 0 ? "+" : ""}${strategy.totalReturn.toStringAsFixed(1)}% (7D)',
+                    isGain: strategy.totalReturn >= 0,
+                    liveSignal: null,
+                    onActivate: () {
+                      setState(() {
+                        hybridStrategiesService.toggleStrategy(strategy.name, true);
+                      });
+                      _updateOrderTypePreference();
+                    },
+                    onEdit: () => _openEditParameters(strategy),
+                  );
+                }),
+              ],
+            ),
           ],
               ),
             ),
@@ -326,6 +382,7 @@ class StrategyCard extends StatelessWidget {
   final bool isGain;
   final StrategySignal? liveSignal;
   final VoidCallback onActivate;
+  final VoidCallback? onEdit;
 
   const StrategyCard({
     super.key,
@@ -335,6 +392,7 @@ class StrategyCard extends StatelessWidget {
     required this.isGain,
     this.liveSignal,
     required this.onActivate,
+    this.onEdit,
   });
 
   @override
@@ -441,7 +499,7 @@ class StrategyCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                TextButton(onPressed: () {}, child: const Text('Edit Parameters')),
+                TextButton(onPressed: onEdit, child: const Text('Edit Parameters')),
                 ElevatedButton(
                   onPressed: onActivate,
                   style: ElevatedButton.styleFrom(
@@ -478,6 +536,76 @@ class StrategyCard extends StatelessWidget {
       case SignalType.HOLD:
         return Icons.pause;
     }
+  }
+}
+
+class _StrategyParamsSheet extends StatefulWidget {
+  final HybridStrategy strategy;
+  const _StrategyParamsSheet({required this.strategy});
+
+  @override
+  State<_StrategyParamsSheet> createState() => _StrategyParamsSheetState();
+}
+
+class _StrategyParamsSheetState extends State<_StrategyParamsSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Edit Parameters - ' + widget.strategy.name, style: theme.textTheme.titleLarge),
+        const SizedBox(height: 16),
+        if (widget.strategy is RSIMLHybridStrategy) ..._buildRsiMl(),
+        if (widget.strategy is DynamicGridBotStrategy) ..._buildGrid(),
+        if (widget.strategy is BreakoutStrategy) ..._buildBreakout(),
+        if (widget.strategy is MeanReversionStrategy) ..._buildMeanRev(),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Done')),
+        )
+      ],
+    );
+  }
+
+  List<Widget> _buildRsiMl() {
+    final s = widget.strategy as RSIMLHybridStrategy;
+    return [
+      Row(children: [Expanded(child: const Text('RSI oversold')), SizedBox(width: 120, child: TextFormField(initialValue: s.oversold.toString(), keyboardType: const TextInputType.numberWithOptions(decimal: false), onChanged: (v) => s.oversold = int.tryParse(v) ?? s.oversold))]),
+      const SizedBox(height: 8),
+      Row(children: [Expanded(child: const Text('RSI overbought')), SizedBox(width: 120, child: TextFormField(initialValue: s.overbought.toString(), keyboardType: const TextInputType.numberWithOptions(decimal: false), onChanged: (v) => s.overbought = int.tryParse(v) ?? s.overbought))]),
+      const SizedBox(height: 8),
+      Row(children: [Expanded(child: const Text('Buy RSI')), SizedBox(width: 120, child: TextFormField(initialValue: s.buyRsi.toString(), keyboardType: const TextInputType.numberWithOptions(decimal: false), onChanged: (v) => s.buyRsi = int.tryParse(v) ?? s.buyRsi))]),
+      const SizedBox(height: 8),
+      Row(children: [Expanded(child: const Text('Sell RSI')), SizedBox(width: 120, child: TextFormField(initialValue: s.sellRsi.toString(), keyboardType: const TextInputType.numberWithOptions(decimal: false), onChanged: (v) => s.sellRsi = int.tryParse(v) ?? s.sellRsi))]),
+    ];
+  }
+
+  List<Widget> _buildGrid() {
+    final s = widget.strategy as DynamicGridBotStrategy;
+    return [
+      Row(children: [Expanded(child: const Text('Grid Size (%)')), SizedBox(width: 120, child: TextFormField(initialValue: s.gridSize.toStringAsFixed(2), keyboardType: const TextInputType.numberWithOptions(decimal: true), onChanged: (v) => s.gridSize = double.tryParse(v) ?? s.gridSize))]),
+    ];
+  }
+
+  List<Widget> _buildBreakout() {
+    final s = widget.strategy as BreakoutStrategy;
+    return [
+      Row(children: [Expanded(child: const Text('Lookback')), SizedBox(width: 120, child: TextFormField(initialValue: s.lookback.toString(), keyboardType: const TextInputType.numberWithOptions(decimal: false), onChanged: (v) => s.lookback = int.tryParse(v) ?? s.lookback))]),
+      const SizedBox(height: 8),
+      Row(children: [Expanded(child: const Text('Confidence Base')), SizedBox(width: 120, child: TextFormField(initialValue: s.confidenceBase.toStringAsFixed(2), keyboardType: const TextInputType.numberWithOptions(decimal: true), onChanged: (v) => s.confidenceBase = double.tryParse(v) ?? s.confidenceBase))]),
+    ];
+  }
+
+  List<Widget> _buildMeanRev() {
+    final s = widget.strategy as MeanReversionStrategy;
+    return [
+      Row(children: [Expanded(child: const Text('Period')), SizedBox(width: 120, child: TextFormField(initialValue: s.period.toString(), keyboardType: const TextInputType.numberWithOptions(decimal: false), onChanged: (v) => s.period = int.tryParse(v) ?? s.period))]),
+      const SizedBox(height: 8),
+      Row(children: [Expanded(child: const Text('Std Dev')), SizedBox(width: 120, child: TextFormField(initialValue: s.stdDev.toStringAsFixed(2), keyboardType: const TextInputType.numberWithOptions(decimal: true), onChanged: (v) => s.stdDev = double.tryParse(v) ?? s.stdDev))]),
+    ];
   }
 }
 

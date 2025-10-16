@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 /// Represents a trading signal with confidence
 class StrategySignal {
@@ -120,6 +122,11 @@ class MarketData {
 
 /// RSI/ML Hybrid Strategy v1.0
 class RSIMLHybridStrategy extends HybridStrategy {
+  int oversold = 30;
+  int overbought = 70;
+  int buyRsi = 40; // moderate buy threshold
+  int sellRsi = 60; // moderate sell threshold
+
   RSIMLHybridStrategy() : super(name: 'RSI/ML Hybrid', version: 'v1.0');
 
   @override
@@ -128,42 +135,42 @@ class RSIMLHybridStrategy extends HybridStrategy {
     final priceAboveSMA = data.price > data.sma20;
 
     // RSI oversold + price above SMA = strong buy
-    if (rsi < 30 && priceAboveSMA) {
+    if (rsi < oversold && priceAboveSMA) {
       return StrategySignal(
         strategyName: name,
         type: SignalType.BUY,
         confidence: 0.85,
-        reason: 'RSI oversold ($rsi) + bullish trend',
+        reason: 'RSI oversold ($rsi < $oversold) + bullish trend',
       );
     }
 
     // RSI overbought + price below SMA = strong sell
-    if (rsi > 70 && !priceAboveSMA) {
+    if (rsi > overbought && !priceAboveSMA) {
       return StrategySignal(
         strategyName: name,
         type: SignalType.SELL,
         confidence: 0.82,
-        reason: 'RSI overbought ($rsi) + bearish trend',
+        reason: 'RSI overbought ($rsi > $overbought) + bearish trend',
       );
     }
 
     // Moderate buy signal
-    if (rsi < 40 && priceAboveSMA) {
+    if (rsi < buyRsi && priceAboveSMA) {
       return StrategySignal(
         strategyName: name,
         type: SignalType.BUY,
         confidence: 0.65,
-        reason: 'RSI low ($rsi) + bullish momentum',
+        reason: 'RSI low ($rsi < $buyRsi) + bullish momentum',
       );
     }
 
     // Moderate sell signal
-    if (rsi > 60 && !priceAboveSMA) {
+    if (rsi > sellRsi && !priceAboveSMA) {
       return StrategySignal(
         strategyName: name,
         type: SignalType.SELL,
         confidence: 0.62,
-        reason: 'RSI high ($rsi) + bearish momentum',
+        reason: 'RSI high ($rsi > $sellRsi) + bearish momentum',
       );
     }
 
@@ -286,6 +293,59 @@ class DynamicGridBotStrategy extends HybridStrategy {
   }
 }
 
+/// Breakout strategy: buy when price crosses above recent high, sell when crosses below recent low
+class BreakoutStrategy extends HybridStrategy {
+  int lookback = 20;
+  double confidenceBase = 0.7;
+
+  BreakoutStrategy() : super(name: 'Breakout', version: 'v1.0');
+
+  @override
+  Future<StrategySignal> analyze(MarketData data) async {
+    if (data.priceHistory.length < lookback) {
+      return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Insufficient data');
+    }
+    final recent = data.priceHistory.sublist(data.priceHistory.length - lookback);
+    final high = recent.reduce((a, b) => a > b ? a : b);
+    final low = recent.reduce((a, b) => a < b ? a : b);
+    if (data.price > high) {
+      return StrategySignal(strategyName: name, type: SignalType.BUY, confidence: confidenceBase, reason: 'Breakout above ${high.toStringAsFixed(2)}');
+    }
+    if (data.price < low) {
+      return StrategySignal(strategyName: name, type: SignalType.SELL, confidence: confidenceBase, reason: 'Breakdown below ${low.toStringAsFixed(2)}');
+    }
+    return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Inside range');
+  }
+}
+
+/// Mean reversion strategy: fade moves outside Bollinger-like bands
+class MeanReversionStrategy extends HybridStrategy {
+  int period = 20;
+  double stdDev = 2.0;
+
+  MeanReversionStrategy() : super(name: 'Mean Reversion', version: 'v1.0');
+
+  @override
+  Future<StrategySignal> analyze(MarketData data) async {
+    if (data.priceHistory.length < period) {
+      return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Insufficient data');
+    }
+    final recent = data.priceHistory.sublist(data.priceHistory.length - period);
+    final mean = recent.reduce((a, b) => a + b) / period;
+    final variance = recent.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) / period;
+    final sd = sqrt(variance);
+    final upper = mean + stdDev * sd;
+    final lower = mean - stdDev * sd;
+    if (data.price < lower) {
+      return StrategySignal(strategyName: name, type: SignalType.BUY, confidence: 0.68, reason: 'Below lower band');
+    }
+    if (data.price > upper) {
+      return StrategySignal(strategyName: name, type: SignalType.SELL, confidence: 0.68, reason: 'Above upper band');
+    }
+    return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Near mean');
+  }
+}
+
 /// Service to manage all hybrid strategies
 class HybridStrategiesService {
   final List<HybridStrategy> _strategies = [];
@@ -296,6 +356,7 @@ class HybridStrategiesService {
 
   HybridStrategiesService() {
     _initializeStrategies();
+    _loadSavedParameters();
   }
 
   void _initializeStrategies() {
@@ -303,10 +364,39 @@ class HybridStrategiesService {
       RSIMLHybridStrategy()..isActive = true..totalReturn = 18.2,
       MomentumScalperStrategy()..totalReturn = -5.1,
       DynamicGridBotStrategy()..totalReturn = 0.7,
+      BreakoutStrategy()..totalReturn = 3.4,
+      MeanReversionStrategy()..totalReturn = 1.2,
     ]);
   }
 
   List<HybridStrategy> get strategies => _strategies;
+
+  String _keyFor(HybridStrategy s) => 'strategy_params_' + s.name.replaceAll(RegExp(r'\s+'), '_').toLowerCase();
+
+  Future<void> _loadSavedParameters() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final s in _strategies) {
+      final String? raw = prefs.getString(_keyFor(s));
+      if (raw == null) continue;
+      try {
+        final Map<String, dynamic> m = json.decode(raw) as Map<String, dynamic>;
+        if (s is RSIMLHybridStrategy) {
+          s.oversold = (m['oversold'] as num?)?.toInt() ?? s.oversold;
+          s.overbought = (m['overbought'] as num?)?.toInt() ?? s.overbought;
+          s.buyRsi = (m['buyRsi'] as num?)?.toInt() ?? s.buyRsi;
+          s.sellRsi = (m['sellRsi'] as num?)?.toInt() ?? s.sellRsi;
+        } else if (s is DynamicGridBotStrategy) {
+          s.gridSize = (m['gridSize'] as num?)?.toDouble() ?? s.gridSize;
+        } else if (s is BreakoutStrategy) {
+          s.lookback = (m['lookback'] as num?)?.toInt() ?? s.lookback;
+          s.confidenceBase = (m['confidenceBase'] as num?)?.toDouble() ?? s.confidenceBase;
+        } else if (s is MeanReversionStrategy) {
+          s.period = (m['period'] as num?)?.toInt() ?? s.period;
+          s.stdDev = (m['stdDev'] as num?)?.toDouble() ?? s.stdDev;
+        }
+      } catch (_) {}
+    }
+  }
 
   HybridStrategy? getStrategy(String name) {
     try {

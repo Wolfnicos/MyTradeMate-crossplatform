@@ -5,6 +5,7 @@ import '../services/hybrid_strategies_service.dart';
 import 'ai_prediction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+import '../services/binance_service.dart';
 
 class AiStrategiesScreen extends StatefulWidget {
   const AiStrategiesScreen({super.key});
@@ -38,18 +39,22 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
   Future<void> _runInference() async {
     if (!globalMlService.isInitialized) return;
-    final int w = globalMlService.windowSize;
-    final int f = globalMlService.numFeatures;
-    final List<List<double>> rawInput = List<List<double>>.generate(
-      w,
-      (_) => List<double>.filled(f, 0.0),
-    );
-    final Map<String, dynamic> result = globalMlService.getSignal(rawInput);
-    final List<double> probs = (result['probabilities'] as List<dynamic>).cast<double>();
-    setState(() {
-      _lastProb = probs.length > 2 ? probs[2] : null; // BUY probability
-      _lastSignal = result['signal'] as TradingSignal?;
-    });
+    try {
+      const String symbol = 'BTCUSDT';
+      const String interval = '1h';
+      debugPrint('▶️ AI Strategies: fetching features for ' + symbol + ' @' + interval);
+      final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
+      debugPrint('ℹ️ AI Strategies: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
+      final Map<String, dynamic> result = globalMlService.getSignal(features);
+      final List<double> probs = (result['probabilities'] as List<dynamic>).cast<double>();
+      setState(() {
+        _lastProb = probs.length > 2 ? probs[2] : null; // BUY probability
+        _lastSignal = result['signal'] as TradingSignal?;
+      });
+      debugPrint('ℹ️ AI Strategies: result=' + result.toString());
+    } catch (e) {
+      debugPrint('❌ AI Strategies: inference error → ' + e.toString());
+    }
   }
 
   void _simulateLiveTrading() async {

@@ -104,7 +104,7 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
       _eth = await _binance.fetchTicker24h('ETHUSDT');
       _bnb = await _binance.fetchTicker24h('BNBUSDT');
       _sol = await _binance.fetchTicker24h('SOLUSDT');
-      _wif = await _binance.fetchTicker24hWithFallback(['WIFUSDT', 'WIFUSDC', 'WIFBUSD']);
+      _wif = await _binance.fetchTicker24hWithFallback(['WLFIEUR','WLFIUSDT', 'WLFIUSDC', 'WLFIBUSD']);
       _trump = await _binance.fetchTicker24hWithFallback(['TRUMPUSDT', 'DJTUSDT']);
     } catch (_) {}
     if (mounted) setState(() {});

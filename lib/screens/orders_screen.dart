@@ -9,6 +9,7 @@ import 'dart:async';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
 import '../design_system/app_colors.dart';
+import '../services/app_settings_service.dart';
 import '../widgets/orders/tradingview_card.dart';
 import '../widgets/orders/ai_strategy_carousel.dart';
 import '../widgets/orders/risk_sliders_card.dart';
@@ -67,14 +68,15 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     try {
       final binance = BinanceService();
       final all = await binance.fetchTradingPairs();
-      // Keep only user's bases + quotes: USDT/USDC/EUR
-      final Set<String> allowedBases = <String>{'BTC','ETH','BNB','SOL','WIF','TRUMP'};
+      // Keep only user's bases + selected quote
+      final String selectedQuote = AppSettingsService().quoteCurrency.toUpperCase();
+      final Set<String> allowedBases = <String>{'BTC','ETH','BNB','SOL','WLFI','TRUMP'};
       final List<Map<String, String>> filtered = <Map<String, String>>[];
       final Set<String> seen = <String>{};
       for (final m in all) {
         final base = (m['base'] ?? '').toUpperCase();
         final quote = (m['quote'] ?? '').toUpperCase();
-        if ((quote == 'USDT' || quote == 'USDC' || quote == 'EUR') && allowedBases.contains(base)) {
+        if (quote == selectedQuote && allowedBases.contains(base)) {
           final sym = (m['symbol'] ?? '').toUpperCase();
           if (!seen.contains(sym)) {
             seen.add(sym);

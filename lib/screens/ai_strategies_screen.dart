@@ -13,6 +13,7 @@ import '../providers/navigation_provider.dart';
 import 'dart:async';
 import '../services/app_settings_service.dart';
 import '../services/binance_service.dart';
+import '../widgets/ai/discovery_card.dart';
 
 class AiStrategiesScreen extends StatefulWidget {
   const AiStrategiesScreen({super.key});
@@ -321,18 +322,17 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                         padding: const EdgeInsets.all(16),
                         children: [
                           ...hybridStrategiesService.strategies.where((s) => !s.isActive).map((strategy) {
-                            return StrategyCard(
-                              name: '${strategy.name} ${strategy.version}',
-                              status: 'Inactive',
-                              performance: '${strategy.totalReturn >= 0 ? "+" : ""}${strategy.totalReturn.toStringAsFixed(1)}% (7D)',
-                              isGain: strategy.totalReturn >= 0,
-                              liveSignal: null,
-                              onActivate: () {
-                                setState(() {
-                                  hybridStrategiesService.toggleStrategy(strategy.name, true);
-                                });
-                              },
-                              onEdit: () => _openEditParameters(strategy),
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: DiscoveryCard(
+                                strategy: strategy,
+                                markets: const <String>['BTC','WLFI','TRUMP'],
+                                onActivate: () {
+                                  setState(() {
+                                    hybridStrategiesService.toggleStrategy(strategy.name, true);
+                                  });
+                                },
+                              ),
                             );
                           }),
                         ],

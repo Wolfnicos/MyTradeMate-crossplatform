@@ -7,6 +7,7 @@ import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
+import '../design_system/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -178,10 +179,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
       ),
       body: Container(
-        decoration: ScreenBackgrounds.settings(context),
+        decoration: ScreenBackgrounds.market(context),
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Text('Settings', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
+          ),
           // Security Section
           _buildSectionHeader('Security'),
           GlassCard(
@@ -191,16 +196,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (_canCheckBiometrics)
                   SwitchListTile(
                     title: const Text('Lock with Face ID / Fingerprint'),
-                    subtitle: const Text('Authenticate on each app open'),
+                    subtitle: Text('Authenticate on each app open', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                     value: _biometricEnabled,
                     onChanged: _toggleBiometric,
                     secondary: const Icon(Icons.fingerprint),
                   )
                 else
-                  const ListTile(
-                    leading: Icon(Icons.warning_amber, color: Colors.orange),
-                    title: Text('Biometric authentication unavailable'),
-                    subtitle: Text('This device does not support biometrics'),
+                  ListTile(
+                    leading: const Icon(Icons.warning_amber, color: Colors.orange),
+                    title: const Text('Biometric authentication unavailable'),
+                    subtitle: Text('This device does not support biometrics', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                   ),
               ],
             ),
@@ -217,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Select the quote currency used for prices and totals'),
+                  Text('Select the quote currency used for prices and totals', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -245,7 +250,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16),
             child: SwitchListTile(
               title: const Text('Paper Trading'),
-              subtitle: const Text('Execute orders in simulation mode'),
+              subtitle: Text('Execute orders in simulation mode', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
               value: _paperTrading,
               onChanged: (bool v) async {
                 final prefs = await SharedPreferences.getInstance();
@@ -338,7 +343,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   leading: const Icon(Icons.brightness_6),
                   title: const Text('Theme'),
-                  subtitle: Text(_getThemeLabel(themeProvider.themeMode)),
+                  subtitle: Text(_getThemeLabel(themeProvider.themeMode), style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -378,10 +383,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                const ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('MyTradeMate'),
-                  subtitle: Text('Version 1.0.0'),
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('MyTradeMate'),
+                  subtitle: Text('Version 1.0.0', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                 ),
                 const Divider(),
                 ListTile(
@@ -410,19 +415,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   'What each strategy does and when to use it:',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 12),
-                Text('• Hybrid (Strategies): Combines rule-based logic (e.g., RSI, trend filters) with the AI model signal. Use when you want stricter risk filters and fewer false positives.'),
-                SizedBox(height: 8),
-                Text('• AI Model: Pure model-driven signals from the on-device TFLite model. Use when you want more frequent, model-led entries; pair with tighter position sizing.'),
-                SizedBox(height: 8),
-                Text('• Market: Immediate execution at the current market price. Use for manual quick entries and testing.'),
-                SizedBox(height: 12),
-                Text('Tip: Set your preferred mode in Orders. Hybrid suits swing trading; AI Model suits short-term momentum; Market is manual.'),
+                const SizedBox(height: 12),
+                Text('• Hybrid (Strategies): Combines rule-based logic (e.g., RSI, trend filters) with the AI model signal. Use when you want stricter risk filters and fewer false positives.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
+                const SizedBox(height: 8),
+                Text('• AI Model: Pure model-driven signals from the on-device TFLite model. Use when you want more frequent, model-led entries; pair with tighter position sizing.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
+                const SizedBox(height: 8),
+                Text('• Market: Immediate execution at the current market price. Use for manual quick entries and testing.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
+                const SizedBox(height: 12),
+                Text('Tip: Set your preferred mode in Orders. Hybrid suits swing trading; AI Model suits short-term momentum; Market is manual.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
               ],
             ),
           ),
@@ -437,13 +446,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 8),
       child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
-          letterSpacing: 1.2,
-        ),
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted),
       ),
     );
   }

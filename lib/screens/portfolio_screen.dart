@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
+import '../design_system/app_colors.dart';
 
 class PortfolioScreen extends StatelessWidget {
   const PortfolioScreen({super.key});
@@ -70,7 +71,7 @@ class PortfolioValueCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total Portfolio Value', style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey)),
+            Text('Total Portfolio Value', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
             const SizedBox(height: 8),
             Text(r'$122,000', style: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
             const SizedBox(height: 8),
@@ -122,7 +123,7 @@ class HoldingsList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(name, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-              Text(amount, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+              Text(amount, style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
             ],
           ),
           const Spacer(),

@@ -8,6 +8,7 @@ import '../ml/ml_service.dart';
 import 'dart:async';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
+import '../design_system/app_colors.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -260,7 +261,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Amount', style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
+        Text('Amount', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
         const SizedBox(height: 8),
         TextField(
           controller: _amountCtrl,
@@ -302,7 +303,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Limit Price', style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
+        Text('Limit Price', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
         const SizedBox(height: 8),
         TextField(
           controller: _priceCtrl,
@@ -364,7 +365,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Total (' + quote + ")", style: theme.textTheme.labelLarge?.copyWith(color: Colors.grey)),
+        Text('Total (' + quote + ")", style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
         const SizedBox(height: 8),
         TextField(
           controller: _totalCtrl,
@@ -470,7 +471,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         decoration: BoxDecoration(
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          border: Border.all(
+            color: (theme.brightness == Brightness.dark ? AppColors.outline : AppColors.lightOutline).withOpacity(0.20),
+          ),
         ),
         child: Row(
           children: [
@@ -480,7 +483,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Type', style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+                  Text('Order Type', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 2),
                   Text(_orderTypeLabel(_orderType), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                 ],
@@ -543,7 +546,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         decoration: BoxDecoration(
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          border: Border.all(
+            color: (theme.brightness == Brightness.dark ? AppColors.outline : AppColors.lightOutline).withOpacity(0.20),
+          ),
         ),
         child: Row(
           children: [
@@ -553,7 +558,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Coin/Pair', style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+                  Text('Coin/Pair', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 2),
                   Text(_formatPairLabel(_selectedPair), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                 ],

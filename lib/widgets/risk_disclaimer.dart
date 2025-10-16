@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../design_system/app_colors.dart';
 
 /// A simple, reusable widget for risk disclaimers.
 class RiskDisclaimer extends StatelessWidget {
@@ -16,7 +17,7 @@ class RiskDisclaimer extends StatelessWidget {
       child: const Text(
         'Past performance is not indicative of future results. All trading involves risk.',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: Colors.grey),
+        style: TextStyle(fontSize: 12, color: AppColors.muted),
       ),
     );
   }

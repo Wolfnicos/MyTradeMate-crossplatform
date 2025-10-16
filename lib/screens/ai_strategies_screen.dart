@@ -6,6 +6,7 @@ import 'ai_prediction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
+import '../design_system/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/navigation_provider.dart';
 // import 'dart:math';
@@ -312,7 +313,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                           if (hybridStrategiesService.strategies.where((s) => s.isActive).isEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
-                              child: Text('No active strategies. Activate some from Discover New.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                          child: Text('No active strategies. Activate some from Discover New.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
                             ),
                         ],
                       ),
@@ -387,7 +388,7 @@ class StrategyCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Status:', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                Text('Status:', style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
                 Text(
                   status,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -401,7 +402,7 @@ class StrategyCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Performance:', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                Text('Performance:', style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
                 Text(performance, style: theme.textTheme.bodyMedium?.copyWith(color: perfColor, fontWeight: FontWeight.bold)),
               ],
             ),

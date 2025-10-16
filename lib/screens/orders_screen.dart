@@ -13,6 +13,7 @@ import '../services/app_settings_service.dart';
 import '../widgets/orders/tradingview_card.dart';
 import '../widgets/orders/ai_strategy_carousel.dart';
 import '../widgets/orders/risk_sliders_card.dart';
+import '../widgets/wizard/api_connection_wizard.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -173,6 +174,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         ),
                         const SizedBox(height: 24),
                         TradingViewCard(symbol: _selectedPair),
+                        const SizedBox(height: 16),
+                        const ApiConnectionWizard(),
                         const SizedBox(height: 16),
                         SizedBox(
                           height: 110,

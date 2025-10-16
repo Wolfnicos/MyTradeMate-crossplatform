@@ -3,7 +3,6 @@ import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
-import '../design_system/app_colors.dart';
 import '../widgets/dashboard/dashboard_grid.dart';
 import '../widgets/dashboard/collapsible_news_banner.dart';
  
@@ -50,7 +49,7 @@ class PortfolioOverviewCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Portfolio Overview', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+            Text('Portfolio Overview', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
               (AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)) + '122,000',

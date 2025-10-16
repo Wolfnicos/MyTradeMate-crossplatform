@@ -261,7 +261,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Amount', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+        Text('Amount', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextField(
           controller: _amountCtrl,
@@ -303,7 +303,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Limit Price', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+        Text('Limit Price', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextField(
           controller: _priceCtrl,
@@ -365,7 +365,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Total (' + quote + ")", style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+        Text('Total (' + quote + ")", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextField(
           controller: _totalCtrl,

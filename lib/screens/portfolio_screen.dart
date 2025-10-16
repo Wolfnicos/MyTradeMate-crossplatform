@@ -71,7 +71,7 @@ class PortfolioValueCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total Portfolio Value', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+            Text('Total Portfolio Value', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(r'$122,000', style: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
             const SizedBox(height: 8),

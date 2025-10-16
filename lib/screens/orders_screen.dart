@@ -9,6 +9,9 @@ import 'dart:async';
 import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
 import '../design_system/app_colors.dart';
+import '../widgets/orders/tradingview_card.dart';
+import '../widgets/orders/ai_strategy_carousel.dart';
+import '../widgets/orders/risk_sliders_card.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -125,40 +128,57 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
-                        GlassCard(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setState(() => isBuy = true),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: isBuy ? activeColor : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(12),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          child: GlassCard(
+                            key: ValueKey(isBuy),
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => isBuy = true),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: isBuy ? activeColor : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Center(child: Text('Buy', style: TextStyle(color: isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
                                     ),
-                                    child: Center(child: Text('Buy', style: TextStyle(color: isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
                                   ),
                                 ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setState(() => isBuy = false),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: !isBuy ? activeColor : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(12),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => isBuy = false),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: !isBuy ? activeColor : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Center(child: Text('Sell', style: TextStyle(color: !isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
                                     ),
-                                    child: Center(child: Text('Sell', style: TextStyle(color: !isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24),
+                        TradingViewCard(symbol: _selectedPair),
+                        const SizedBox(height: 16),
+                        AiStrategyCarousel(
+                          strategies: hybridStrategiesService.strategies,
+                          onSelect: (_) {},
+                        ),
+                        const SizedBox(height: 16),
+                        RiskSlidersCard(onChanged: (_, __) {}),
+                        const SizedBox(height: 16),
                         GlassCard(padding: const EdgeInsets.all(16), child: _buildPairSelector(context)),
                         const SizedBox(height: 16),
                         GlassCard(padding: const EdgeInsets.all(16), child: _buildOrderTypeBanner(context)),

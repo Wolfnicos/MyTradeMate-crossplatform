@@ -110,7 +110,9 @@ class MLService {
     final List<List<double>> outputTensor = <List<double>>[List<double>.filled(3, 0.0)];
 
     try {
+      debugPrint('▶️ MLService.run: first row(3)=' + (scaledInput.isNotEmpty ? scaledInput.first.take(3).toList().toString() : '[]'));
       _interpreter.run(inputTensor, outputTensor);
+      debugPrint('◀️ MLService.run: raw out=' + outputTensor[0].toString());
       return outputTensor[0];
     } catch (e) {
       debugPrint('❌ MLService: Inference error → $e');
@@ -119,10 +121,13 @@ class MLService {
   }
 
   List<double> _applyTemperature(List<double> probs, double temp) {
+    debugPrint('ℹ️ Temperature in=' + probs.toString() + ', T=' + temp.toString());
     final List<double> scaled = probs.map((double p) => pow(p, 1.0 / temp).toDouble()).toList(growable: false);
     final double sum = scaled.fold(0.0, (double a, double b) => a + b);
     if (sum < 1e-9) return const [0.333, 0.333, 0.333];
-    return scaled.map((double p) => p / sum).toList(growable: false);
+    final out = scaled.map((double p) => p / sum).toList(growable: false);
+    debugPrint('ℹ️ Temperature out=' + out.toString());
+    return out;
   }
 
   TradingSignal _applyPolicy(List<double> calibrated) {

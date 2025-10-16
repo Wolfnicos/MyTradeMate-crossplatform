@@ -22,16 +22,13 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
 
   final BinanceService _binanceService = BinanceService();
   final List<String> _availableSymbols = [
-    'BTCUSDT',
-    'ETHUSDT',
-    'BNBUSDT',
-    'ADAUSDT',
-    'SOLUSDT',
-    'XRPUSDT',
-    'DOGEUSDT',
-    'DOTUSDT',
-    'MATICUSDT',
-    'AVAXUSDT',
+    // only our tracked bases & quotes
+    'BTCUSDT','BTCUSDC','BTCEUR',
+    'ETHUSDT','ETHUSDC','ETHEUR',
+    'BNBUSDT','BNBUSDC','BNBEUR',
+    'SOLUSDT','SOLUSDC','SOLEUR',
+    'WIFUSDT','WIFUSDC','WIFEUR',
+    '1000TRUMPUSDT','1000TRUMPUSDC','1000TRUMPEUR',
   ];
 
   @override
@@ -65,10 +62,13 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
 
     try {
       // Fetch real data from Binance
+      debugPrint('▶️ AIPage: fetching features for ' + _selectedSymbol + ' @' + _interval);
       final features = await _binanceService.getFeaturesForModel(_selectedSymbol, interval: _interval);
+      debugPrint('ℹ️ AIPage: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
 
       // Run prediction with real data
       final Map<String, dynamic> result = globalMlService.getSignal(features);
+      debugPrint('ℹ️ AIPage: result=' + result.toString());
 
       setState(() {
         _signal = result['signal'] as TradingSignal;

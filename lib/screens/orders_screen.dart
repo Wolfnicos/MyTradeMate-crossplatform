@@ -3,6 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../backtest/backtester.dart';
 import '../services/paper_broker.dart';
 import '../services/binance_service.dart';
+import '../services/hybrid_strategies_service.dart';
+import '../ml/ml_service.dart';
+import 'dart:async';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -23,6 +26,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   final TextEditingController _priceCtrl = TextEditingController();
   final TextEditingController _totalCtrl = TextEditingController();
   bool _updatingFields = false;
+  String _aiInterval = '1h';
+  StreamSubscription<List<StrategySignal>>? _hybridSub;
+  Timer? _aiTimer;
 
   @override
   void initState() {
@@ -86,7 +92,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   @override
   void dispose() {
-    // no controllers to dispose
+    _hybridSub?.cancel();
+    _aiTimer?.cancel();
     super.dispose();
   }
 
@@ -169,28 +176,62 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
                   final bool paper = prefs.getBool('paper_trading') ?? false;
-                  final String orderTypePayload = _orderType == OrderType.hybrid
-                      ? 'hybrid'
-                      : _orderType == OrderType.aiModel
-                          ? 'ai_model'
-                          : 'market';
-
-                  if (paper) {
-                    // Execute with PaperBroker
-                    final priceText = _priceCtrl.text;
-                    final qtyText = _amountCtrl.text;
-                    final double price = double.tryParse(priceText) ?? 0.0;
-                    final double qty = double.tryParse(qtyText) ?? 0.0;
-                    final trade = Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty);
-                    final broker = PaperBroker();
-                    broker.execute(trade);
+                  if (_orderType == OrderType.market) {
+                    // Market instant
+                    if (paper) {
+                      final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                      final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+                      PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order (Paper) executed')));
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Market order to Binance (stub)')));
+                      }
+                    }
+                  } else if (_orderType == OrderType.hybrid) {
+                    // Arm hybrid listener
+                    _hybridSub?.cancel();
+                    _hybridSub = hybridStrategiesService.signalsStream.listen((signals) {
+                      final StrategySignal? m = signals.firstWhere(
+                        (s) => (isBuy && s.type == SignalType.BUY) || (!isBuy && s.type == SignalType.SELL),
+                        orElse: () => StrategySignal(strategyName: 'none', type: SignalType.HOLD, confidence: 0.0, reason: 'no match'),
+                      );
+                      if (m != null && ((isBuy && m.type == SignalType.BUY) || (!isBuy && m.type == SignalType.SELL))) {
+                        final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                        final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+                        PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                        _hybridSub?.cancel();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hybrid signal executed (${m.type.name})')));
+                        }
+                      }
+                    });
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order (Paper) executed, type: ' + orderTypePayload)));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: waiting for Hybrid strategy signal...')));
                     }
                   } else {
-                    // TODO: Implement real Binance order (signed POST /api/v3/order)
+                    // AI model polling
+                    _aiTimer?.cancel();
+                    _aiTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
+                      try {
+                        final feats = await BinanceService().getFeaturesForModel(_selectedPair, interval: _aiInterval);
+                        final res = globalMlService.getSignal(feats);
+                        final TradingSignal sig = res['signal'] as TradingSignal;
+                        if ((isBuy && sig == TradingSignal.BUY) || (!isBuy && sig == TradingSignal.SELL)) {
+                          final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                          final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
+                          PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
+                          _aiTimer?.cancel();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('AI Model signal executed (${sig.name})')));
+                          }
+                        }
+                      } catch (_) {}
+                    });
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order submitted to Binance (stub), type: ' + orderTypePayload)));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: AI Model monitoring...')));
                     }
                   }
                 },
@@ -372,6 +413,27 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildAiIntervalChips() {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      children: [
+        {'label': '15m', 'value': '15m'},
+        {'label': '1H', 'value': '1h'},
+        {'label': '4H', 'value': '4h'},
+      ].map((item) {
+        final bool selected = _aiInterval == item['value'];
+        return ChoiceChip(
+          label: Text(item['label'] as String),
+          selected: selected,
+          onSelected: (_) {
+            setState(() => _aiInterval = item['value'] as String);
+          },
+        );
+      }).toList(),
     );
   }
 

@@ -231,40 +231,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Order Type', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            ChoiceChip(
-                              label: const Text('Hybrid (Strategii)'),
-                              selected: _orderType == 'hybrid',
-                              onSelected: (_) => _saveOrderType('hybrid'),
-                            ),
-                            ChoiceChip(
-                              label: const Text('AI Model'),
-                              selected: _orderType == 'ai_model',
-                              onSelected: (_) => _saveOrderType('ai_model'),
-                            ),
-                            ChoiceChip(
-                              label: const Text('Piață (Market)'),
-                              selected: _orderType == 'market',
-                              onSelected: (_) => _saveOrderType('market'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // Order Type selector moved to Orders screen per spec
                 const RiskDisclaimer(),
                 const SizedBox(height: 12),
                 Card(
@@ -314,7 +281,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                     ),
                   ),
                 ),
-                ...hybridStrategiesService.strategies.map((strategy) {
+                ...hybridStrategiesService.strategies.where((s) => s.isActive).map((strategy) {
                   final signal = _liveSignals?.firstWhere(
                     (s) => s.strategyName == strategy.name,
                     orElse: () => StrategySignal(
@@ -340,6 +307,11 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                     onEdit: () => _openEditParameters(strategy),
                   );
                 }),
+                if (hybridStrategiesService.strategies.where((s) => s.isActive).isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text('No active strategies. Activate some from Discover New.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                  ),
               ],
             ),
             // Discover New

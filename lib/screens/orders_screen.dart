@@ -10,7 +10,6 @@ import '../design_system/screen_backgrounds.dart';
 import '../design_system/widgets/glass_card.dart';
 import '../design_system/app_colors.dart';
 import '../services/app_settings_service.dart';
-import '../widgets/orders/tradingview_card.dart';
 import '../widgets/orders/ai_strategy_carousel.dart';
 import '../widgets/orders/risk_sliders_card.dart';
 import '../widgets/orders/achievement_toast.dart';
@@ -174,7 +173,13 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(height: 24),
-                        TradingViewCard(symbol: _selectedPair),
+                        FutureBuilder<SharedPreferences>(
+                          future: SharedPreferences.getInstance(),
+                          builder: (context, snap) {
+                            final paper = (snap.data?.getBool('paper_trading') ?? false);
+                            return OpenOrdersCard(symbol: _selectedPair, paperMode: paper);
+                          },
+                        ),
                         const SizedBox(height: 16),
                         SizedBox(
                           height: 110,
@@ -196,14 +201,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         const SizedBox(height: 16),
                         GlassCard(padding: const EdgeInsets.all(16), child: _buildTotalFiatField()),
                         _buildAmountSummary(),
-                        const SizedBox(height: 24),
-                        FutureBuilder<SharedPreferences>(
-                          future: SharedPreferences.getInstance(),
-                          builder: (context, snap) {
-                            final paper = (snap.data?.getBool('paper_trading') ?? false);
-                            return OpenOrdersCard(symbol: _selectedPair, paperMode: paper);
-                          },
-                        ),
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,

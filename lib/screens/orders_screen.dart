@@ -113,7 +113,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text('Orders', style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -125,7 +125,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                     child: Column(
                       children: [
                         GlassCard(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(16),
                           child: Row(
                             children: [
                               Expanded(
@@ -158,15 +158,15 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(height: 24),
-                        GlassCard(padding: const EdgeInsets.all(12), child: _buildPairSelector(context)),
+                        GlassCard(padding: const EdgeInsets.all(16), child: _buildPairSelector(context)),
                         const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(12), child: _buildOrderTypeBanner(context)),
+                        GlassCard(padding: const EdgeInsets.all(16), child: _buildOrderTypeBanner(context)),
                         const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(12), child: _buildAmountField()),
+                        GlassCard(padding: const EdgeInsets.all(16), child: _buildAmountField()),
                         const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(12), child: _buildLimitPriceField()),
+                        GlassCard(padding: const EdgeInsets.all(16), child: _buildLimitPriceField()),
                         const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(12), child: _buildTotalFiatField()),
+                        GlassCard(padding: const EdgeInsets.all(16), child: _buildTotalFiatField()),
                         _buildAmountSummary(),
                         const SizedBox(height: 24),
                         SizedBox(

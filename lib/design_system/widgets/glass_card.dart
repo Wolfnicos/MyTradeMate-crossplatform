@@ -14,7 +14,7 @@ class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(20),
+    this.padding = const EdgeInsets.all(16),
     this.borderRadius = 20,
     this.showNeobrutalShadow = true,
     this.showGlow = false,

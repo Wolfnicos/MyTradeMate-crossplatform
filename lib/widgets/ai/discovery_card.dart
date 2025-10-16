@@ -37,7 +37,15 @@ class DiscoveryCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _MarketChips(markets: markets),
+              Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: _MarketChips(markets: markets),
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -55,15 +63,22 @@ class DiscoveryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               _MetricTile(label: 'Return (7D est.)', value: (totalReturn >= 0 ? '+' : '') + totalReturn.toStringAsFixed(1) + '%', isGain: totalReturn >= 0),
-              const SizedBox(width: 16),
               _MetricTile(label: 'Win rate', value: (winRate * 100).toStringAsFixed(0) + '%', isGain: true),
-              const Spacer(),
-              TextButton(onPressed: () => _openDetails(context, perf, risk), child: const Text('Details')),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(onPressed: onActivate, icon: const Icon(Icons.flash_on), label: const Text('Activate')),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(onPressed: () => _openDetails(context, perf, risk), child: const Text('Details')),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(onPressed: onActivate, icon: const Icon(Icons.flash_on), label: const Text('Activate')),
+                ],
+              ),
             ],
           )
         ],

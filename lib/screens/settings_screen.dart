@@ -248,17 +248,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Trading'),
           GlassCard(
             padding: const EdgeInsets.all(16),
-            child: SwitchListTile(
-              title: const Text('Paper Trading'),
-              subtitle: Text('Execute orders in simulation mode', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
-              value: _paperTrading,
-              onChanged: (bool v) async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('paper_trading', v);
-                setState(() => _paperTrading = v);
-                _showSnackBar(v ? 'Paper Trading enabled' : 'Paper Trading disabled', isError: false);
-              },
-              secondary: const Icon(Icons.description_outlined),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SwitchListTile(
+                  title: const Text('Paper Trading'),
+                  subtitle: Text('Execute orders in simulation mode', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                  value: _paperTrading,
+                  onChanged: (bool v) async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('paper_trading', v);
+                    setState(() => _paperTrading = v);
+                    _showSnackBar(v ? 'Paper Trading enabled' : 'Paper Trading disabled', isError: false);
+                  },
+                  secondary: const Icon(Icons.description_outlined),
+                ),
+                const SizedBox(height: 8),
+                Text('Environment', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    {'label': 'Live', 'value': 'live'},
+                    {'label': 'Testnet', 'value': 'testnet'},
+                  ].map((m) {
+                    return ChoiceChip(
+                      label: Text(m['label'] as String),
+                      selected: AppSettingsService().tradingEnvironment == m['value'],
+                      onSelected: (_) async {
+                        await AppSettingsService().setTradingEnvironment(m['value'] as String);
+                        setState(() {});
+                        _showSnackBar('Environment: ' + (m['label'] as String), isError: false);
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
           ),
 

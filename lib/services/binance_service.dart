@@ -6,11 +6,14 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert' show utf8;
 
 import '../models/candle.dart';
+import '../services/app_settings_service.dart';
 // import '../services/technical_indicator_calculator.dart';
 import '../services/mtf_feature_builder.dart';
 
 class BinanceService {
-  static const String _baseHost = 'api.binance.com';
+  static const String _baseHostLive = 'api.binance.com';
+  static const String _baseHostTestnet = 'testnet.binance.vision';
+  String get _baseHost => AppSettingsService().isTestnet ? _baseHostTestnet : _baseHostLive;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   // Singleton pattern

@@ -8,16 +8,21 @@ class AppSettingsService extends ChangeNotifier {
   AppSettingsService._internal();
 
   static const String _kQuoteKey = 'quote_currency';
+  static const String _kEnvKey = 'trading_env';
 
   String _quote = 'USDT';
+  String _env = 'live'; // 'live' | 'testnet'
   bool _loaded = false;
 
   String get quoteCurrency => _quote;
+  String get tradingEnvironment => _env;
+  bool get isTestnet => _env.toLowerCase() == 'testnet';
 
   Future<void> load() async {
     if (_loaded) return;
     final prefs = await SharedPreferences.getInstance();
     _quote = prefs.getString(_kQuoteKey) ?? 'USDT';
+    _env = prefs.getString(_kEnvKey) ?? 'live';
     _loaded = true;
     notifyListeners();
   }
@@ -26,6 +31,14 @@ class AppSettingsService extends ChangeNotifier {
     _quote = quote.toUpperCase();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kQuoteKey, _quote);
+    notifyListeners();
+  }
+
+  Future<void> setTradingEnvironment(String env) async {
+    final normalized = (env.toLowerCase() == 'testnet') ? 'testnet' : 'live';
+    _env = normalized;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kEnvKey, _env);
     notifyListeners();
   }
 

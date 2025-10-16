@@ -76,8 +76,26 @@ class _OpenOrdersCardState extends State<OpenOrdersCard> {
                     child: Text(o['side'] ?? '', style: TextStyle(color: o['side'] == 'BUY' ? theme.colorScheme.secondary : theme.colorScheme.error, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(child: Text((o['symbol'] ?? '') + '  @ ' + (o['price'] ?? '').toString())),
-                  Text((o['origQty'] ?? '').toString()),
+                  Expanded(child: Text((o['symbol'] ?? '') + '  @ ' + (o['price'] ?? '').toString() + '  x ' + (o['origQty'] ?? '').toString() )),
+                  TextButton(
+                    onPressed: () async {
+                      try {
+                        await BinanceService().cancelOrder(
+                          symbol: (o['symbol'] ?? ''),
+                          orderId: (o['orderId'] is int) ? o['orderId'] as int : int.tryParse((o['orderId'] ?? '').toString()),
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order cancelled')));
+                        }
+                        _refresh();
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cancel error: ' + e.toString())));
+                        }
+                      }
+                    },
+                    child: const Text('Cancel'),
+                  ),
                 ],
               ),
             )),

@@ -11,9 +11,9 @@ import '../design_system/widgets/glass_card.dart';
 import '../design_system/app_colors.dart';
 import '../services/app_settings_service.dart';
 import '../widgets/orders/ai_strategy_carousel.dart';
-import '../widgets/orders/risk_sliders_card.dart';
 import '../widgets/orders/achievement_toast.dart';
 import '../widgets/orders/open_orders_card.dart';
+import '../widgets/orders/collapsible_protection_banner.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -35,6 +35,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   final TextEditingController _totalCtrl = TextEditingController();
   bool _updatingFields = false;
   String _aiInterval = '1h';
+  bool _ocoEnabled = false;
+  double _stopLossPct = 3.0;
+  double _takeProfitPct = 6.0;
   StreamSubscription<List<StrategySignal>>? _hybridSub;
   Timer? _aiTimer;
 
@@ -189,7 +192,14 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(height: 16),
-                        RiskSlidersCard(onChanged: (_, __) {}),
+                        CollapsibleProtectionBanner(
+                          enabled: _ocoEnabled,
+                          stopLossPct: _stopLossPct,
+                          takeProfitPct: _takeProfitPct,
+                          onEnabledChanged: (v) => setState(() => _ocoEnabled = v),
+                          onStopLossChanged: (v) => setState(() => _stopLossPct = v),
+                          onTakeProfitChanged: (v) => setState(() => _takeProfitPct = v),
+                        ),
                         const SizedBox(height: 16),
                         GlassCard(padding: const EdgeInsets.all(16), child: _buildPairSelector(context)),
                         const SizedBox(height: 16),
@@ -227,6 +237,32 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                       quantity: (qty != null && qty > 0) ? qty : null,
                                       quoteOrderQty: (total != null && total > 0) ? total : null,
                                     );
+                                    // If protection enabled and BUY, place OCO (SELL) with TP/SL based on last price
+                                    if (_ocoEnabled && isBuy) {
+                                      final lastPrice = double.tryParse(_priceCtrl.text);
+                                      final usePrice = lastPrice ?? (res['fills'] != null && (res['fills'] as List).isNotEmpty ? double.tryParse(((res['fills'] as List).first as Map)['price']?.toString() ?? '') : null);
+                                      final double? filledQty = double.tryParse(res['executedQty']?.toString() ?? '') ?? qty;
+                                      if (usePrice != null && filledQty != null && filledQty > 0) {
+                                        final tp = usePrice * (1 + _takeProfitPct / 100.0);
+                                        final sl = usePrice * (1 - _stopLossPct / 100.0);
+                                        try {
+                                          await BinanceService().placeOcoOrder(
+                                            symbol: _selectedPair,
+                                            side: 'SELL',
+                                            quantity: filledQty,
+                                            price: tp,
+                                            stopPrice: sl,
+                                          );
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Protection OCO placed')));
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('OCO error: ' + e.toString())));
+                                          }
+                                        }
+                                      }
+                                    }
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(content: Text('Order sent: ' + (res['status']?.toString() ?? 'OK'))),

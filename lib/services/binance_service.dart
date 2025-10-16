@@ -165,6 +165,91 @@ class BinanceService {
     return data.cast<Map<String, dynamic>>();
   }
 
+  /// Cancel an open order by orderId or origClientOrderId
+  Future<Map<String, dynamic>> cancelOrder({
+    required String symbol,
+    int? orderId,
+    String? origClientOrderId,
+    int recvWindowMs = 5000,
+  }) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    if (orderId == null && (origClientOrderId == null || origClientOrderId.isEmpty)) {
+      throw Exception('Provide orderId or origClientOrderId');
+    }
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'symbol': symbol,
+      'recvWindow': recvWindowMs.toString(),
+      'timestamp': timestamp.toString(),
+    };
+    if (orderId != null) params['orderId'] = orderId.toString();
+    if (origClientOrderId != null && origClientOrderId.isNotEmpty) params['origClientOrderId'] = origClientOrderId;
+
+    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/order', {
+      ...params,
+      'signature': signature,
+    });
+    final res = await http.delete(uri, headers: {'X-MBX-APIKEY': _apiKey!});
+    if (res.statusCode != 200) {
+      throw Exception('Binance cancel error ${res.statusCode}: ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
+  /// Place an OCO order (One-Cancels-the-Other) for spot.
+  /// Typical use: side=SELL for take-profit + stop-loss after a BUY.
+  Future<Map<String, dynamic>> placeOcoOrder({
+    required String symbol,
+    required String side, // 'BUY' | 'SELL'
+    required double quantity,
+    required double price, // take-profit price
+    required double stopPrice,
+    double? stopLimitPrice,
+    String stopLimitTimeInForce = 'GTC',
+    int recvWindowMs = 5000,
+  }) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'symbol': symbol,
+      'side': side.toUpperCase(),
+      'quantity': quantity.toString(),
+      'price': price.toString(),
+      'stopPrice': stopPrice.toString(),
+      'recvWindow': recvWindowMs.toString(),
+      'timestamp': timestamp.toString(),
+    };
+    if (stopLimitPrice != null) {
+      params['stopLimitPrice'] = stopLimitPrice.toString();
+      params['stopLimitTimeInForce'] = stopLimitTimeInForce;
+    }
+
+    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/order/oco');
+    final String body = queryString + '&signature=' + signature;
+    final res = await http.post(
+      uri,
+      headers: <String, String>{
+        'X-MBX-APIKEY': _apiKey!,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Binance OCO error ${res.statusCode}: ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
   /// Fetches klines (OHLCV) for a spot symbol with configurable interval
   /// Returns up to [limit] candles between [start] and [end].
   Future<List<Candle>> fetchKlines(

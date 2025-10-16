@@ -174,9 +174,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         const SizedBox(height: 24),
                         TradingViewCard(symbol: _selectedPair),
                         const SizedBox(height: 16),
-                        AiStrategyCarousel(
-                          strategies: hybridStrategiesService.strategies,
-                          onSelect: (_) {},
+                        SizedBox(
+                          height: 110,
+                          child: AiStrategyCarousel(
+                            strategies: hybridStrategiesService.strategies,
+                            onSelect: (_) {},
+                          ),
                         ),
                         const SizedBox(height: 16),
                         RiskSlidersCard(onChanged: (_, __) {}),

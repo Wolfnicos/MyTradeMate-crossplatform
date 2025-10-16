@@ -11,7 +11,7 @@ class AiStrategyCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 120,
+      height: 100,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -20,23 +20,23 @@ class AiStrategyCarousel extends StatelessWidget {
         itemBuilder: (context, i) {
           final s = strategies[i];
           return SizedBox(
-            width: 220,
+            width: 180,
             child: InkWell(
               onTap: () => onSelect(s),
               child: GlassCard(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(s.version, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                    const SizedBox(height: 2),
+                    Text(s.version, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.muted)),
                     const Spacer(),
                     Row(
                       children: [
                         Icon(s.totalReturn >= 0 ? Icons.arrow_upward : Icons.arrow_downward, size: 16, color: s.totalReturn >= 0 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.error),
                         const SizedBox(width: 6),
-                        Text((s.totalReturn >= 0 ? '+' : '') + s.totalReturn.toStringAsFixed(1) + '%', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Expanded(child: Text((s.totalReturn >= 0 ? '+' : '') + s.totalReturn.toStringAsFixed(1) + '%', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
                         const Spacer(),
                         Icon(Icons.chevron_right, size: 18, color: AppColors.muted),
                       ],

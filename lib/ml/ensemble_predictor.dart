@@ -286,31 +286,40 @@ class EnsemblePredictor {
   }
 
   /// Predict using Random Forest (fallback rule-based)
+  ///
+  /// NOTE: Features are normalized to 0-1 range, NOT original ranges!
+  /// RSI: normalized as (rsi-30)/40, so 30->0, 70->1
+  /// MACD: normalized, positive values > baseline
   Future<List<double>> _predictRandomForest(List<List<double>> features) async {
     // Fallback: Simple rule-based prediction
-    // Uses last timestep features (most recent)
-    final lastTimestep = features.last;
+    // NOTE: After convert 60x34->120x42, features have PADDING ZEROS at indices 34-41!
+    // Original 34 features are at indices 0-33
 
-    // Extract key indicators (assuming standard MTF feature order)
-    // Index mapping: 0-9 (1h base), 10-19 (15m aligned), 20-29 (4h upsampled)
-    final rsi1h = lastTimestep[0];
-    final macd1h = lastTimestep[1];
-    final adx1h = lastTimestep[7];
+    // Get features from MIDDLE of sequence (not last - might be padding)
+    final midIdx = features.length ~/ 2;
+    final midTimestep = features[midIdx];
+
+    // Extract key indicators from BASE 1h timeframe (indices 0-9)
+    // Index mapping based on MTFBuilder:
+    // 0: ret1, 1: rv_24, 2: rsi, 3: macd, 4: ich_a, 5: ich_b, 6: atr, 7: trend_up, 8: close, 9: volume
+    final rsiNorm = midTimestep[2];  // RSI (normalized)
+    final macdNorm = midTimestep[3]; // MACD (normalized)
+    final trendUp = midTimestep[7];  // Trend direction (0 or 1)
 
     // 🔍 DEBUG: Print RF inputs
-    debugPrint('🔍 RF INPUTS: RSI=$rsi1h, MACD=$macd1h, ADX=$adx1h');
+    debugPrint('🔍 RF INPUTS (NORMALIZED): RSI=$rsiNorm, MACD=$macdNorm, Trend=$trendUp');
 
-    // Simple rules (this is a placeholder - ideally load actual RF model)
+    // Simple rules using NORMALIZED values (0-1 range)
     double strongSellProb = 0.0;
     double sellProb = 0.0;
     double buyProb = 0.0;
     double strongBuyProb = 0.0;
 
-    // RSI logic
-    if (rsi1h < 30) {
+    // RSI logic (normalized: <0.3 is oversold, >0.7 is overbought in 0-1 range)
+    if (rsiNorm < 0.3) {
       strongBuyProb += 0.4; // Oversold
       buyProb += 0.2;
-    } else if (rsi1h > 70) {
+    } else if (rsiNorm > 0.7) {
       strongSellProb += 0.4; // Overbought
       sellProb += 0.2;
     } else {
@@ -318,8 +327,8 @@ class EnsemblePredictor {
       sellProb += 0.2;
     }
 
-    // MACD logic
-    if (macd1h > 0) {
+    // MACD logic (normalized: >0.5 is bullish, <0.5 is bearish)
+    if (macdNorm > 0.5) {
       buyProb += 0.3;
       strongBuyProb += 0.2;
     } else {
@@ -327,14 +336,15 @@ class EnsemblePredictor {
       strongSellProb += 0.2;
     }
 
-    // ADX logic (trend strength)
-    if (adx1h > 25) {
-      // Strong trend - amplify signals
-      if (macd1h > 0) {
-        strongBuyProb += 0.2;
-      } else {
-        strongSellProb += 0.2;
-      }
+    // Trend logic (binary: 1 = uptrend, 0 = downtrend)
+    if (trendUp > 0.5) {
+      // Uptrend - favor buys
+      buyProb += 0.2;
+      strongBuyProb += 0.1;
+    } else {
+      // Downtrend - favor sells
+      sellProb += 0.2;
+      strongSellProb += 0.1;
     }
 
     // Normalize

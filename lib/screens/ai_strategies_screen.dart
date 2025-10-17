@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/risk_disclaimer.dart';
 import '../ml/ml_service.dart';
+import '../ml/ensemble_predictor.dart' hide SignalType;
 import '../services/hybrid_strategies_service.dart';
 import 'ai_prediction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,6 +37,8 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     super.initState();
     final quote = AppSettingsService().quoteCurrency.toUpperCase();
     _selectedSymbol = 'BTC' + quote;
+    // Initialize hybrid strategies with default symbol
+    hybridStrategiesService.updateTradingPair(_selectedSymbol, interval: _interval);
     _startLiveFeed();
     // removed order type sync from here (managed in Orders)
   }
@@ -43,20 +46,36 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   // removed unused _syncOrderTypePref
 
   Future<void> _runInference() async {
-    if (!globalMlService.isInitialized) return;
+    if (!globalEnsemblePredictor.isLoaded) return;
     try {
       final String symbol = _selectedSymbol;
       final String interval = _interval;
-      debugPrint('▶️ AI Strategies: fetching features for ' + symbol + ' @' + interval);
+      debugPrint('▶️ AI Strategies [NEW ENSEMBLE]: fetching features for ' + symbol + ' @' + interval);
       final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
       debugPrint('ℹ️ AI Strategies: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
-      final Map<String, dynamic> result = globalMlService.getSignal(features, symbol: symbol);
-      final List<double> probs = (result['probabilities'] as List<dynamic>).cast<double>();
+
+      // Use NEW Ensemble Predictor (Transformer + LSTM + RF)
+      final prediction = await globalEnsemblePredictor.predict(features);
+      debugPrint('🚀 NEW ENSEMBLE: ${prediction.label} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
+      debugPrint('   Transformer: ${(prediction.modelContributions['transformer']![2] * 100).toStringAsFixed(1)}%');
+      debugPrint('   LSTM: ${(prediction.modelContributions['lstm']![2] * 100).toStringAsFixed(1)}%');
+      debugPrint('   RF: ${(prediction.modelContributions['randomForest']![2] * 100).toStringAsFixed(1)}%');
+
+      // Map to legacy TradingSignal format (SELL, HOLD, BUY)
+      TradingSignal signal;
+      if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
+        signal = TradingSignal.BUY;
+      } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
+        signal = TradingSignal.SELL;
+      } else {
+        signal = TradingSignal.HOLD;
+      }
+
       setState(() {
-        _lastProb = probs.length > 2 ? probs[2] : null; // BUY probability
-        _lastSignal = result['signal'] as TradingSignal?;
+        _lastProb = prediction.probabilities[2]; // BUY probability
+        _lastSignal = signal;
       });
-      debugPrint('ℹ️ AI Strategies: result=' + result.toString());
+      debugPrint('ℹ️ AI Strategies: result=' + prediction.label);
     } catch (e) {
       debugPrint('❌ AI Strategies: inference error → ' + e.toString());
     }
@@ -206,6 +225,8 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                                           onChanged: (v) {
                                             if (v == null) return;
                                             setState(() => _selectedSymbol = v);
+                                            // Update hybrid strategies with new symbol
+                                            hybridStrategiesService.updateTradingPair(v, interval: _interval);
                                             _startLiveFeed();
                                           },
                                         ),
@@ -235,12 +256,12 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text('AI Model', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                                      Icon(globalMlService.isInitialized ? Icons.check_circle : Icons.error_outline, color: globalMlService.isInitialized ? Colors.green : Colors.red),
+                                      Text('AI Model (NEW)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                      Icon(globalEnsemblePredictor.isLoaded ? Icons.check_circle : Icons.error_outline, color: globalEnsemblePredictor.isLoaded ? Colors.green : Colors.red),
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(globalMlService.isInitialized ? 'Model loaded' : 'Model not loaded'),
+                                  Text(globalEnsemblePredictor.isLoaded ? 'Ensemble loaded (Transformer+LSTM+RF)' : 'Model not loaded'),
                                   const SizedBox(height: 12),
                                   Wrap(
                                     alignment: WrapAlignment.start,
@@ -249,7 +270,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                                     runSpacing: 8,
                                     children: [
                                       ElevatedButton(
-                                        onPressed: globalMlService.isInitialized ? _runInference : null,
+                                        onPressed: globalEnsemblePredictor.isLoaded ? _runInference : null,
                                         child: const Text('Run inference'),
                                       ),
                                       OutlinedButton(

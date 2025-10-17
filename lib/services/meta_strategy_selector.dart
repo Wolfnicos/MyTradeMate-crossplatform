@@ -39,31 +39,31 @@ class MetaStrategySelector {
   /// Maps regime type → list of strategy names that should be active
   static final Map<RegimeType, List<String>> _strategyMap = {
     RegimeType.STRONG_UPTREND: [
-      'Momentum Scalper v2.1',
-      'Breakout Strategy v1.0',
-      'RSI/ML Hybrid v1.0',
+      'Momentum Scalper v3.0',
+      'Breakout v2.0',
+      'RSI/ML Hybrid v2.0',
     ],
     RegimeType.WEAK_UPTREND: [
-      'RSI/ML Hybrid v1.0',
-      'Momentum Scalper v2.1', // Cautious
+      'RSI/ML Hybrid v2.0',
+      'Momentum Scalper v3.0', // Cautious
     ],
     RegimeType.SIDEWAYS_CHOPPY: [
       'Dynamic Grid Bot v1.0',
-      'Mean Reversion Strategy v1.0',
+      'Mean Reversion v2.0',
     ],
     RegimeType.WEAK_DOWNTREND: [
-      'Mean Reversion Strategy v1.0',
-      'RSI/ML Hybrid v1.0',
+      'Mean Reversion v2.0',
+      'RSI/ML Hybrid v2.0',
     ],
     RegimeType.STRONG_DOWNTREND: [
-      'RSI/ML Hybrid v1.0', // Only most reliable strategy
+      'RSI/ML Hybrid v2.0', // Only most reliable strategy with Ensemble Transformer
     ],
     RegimeType.HIGH_VOLATILITY: [
-      'RSI/ML Hybrid v1.0', // Only AI model, disable all TA-only strategies
+      'RSI/ML Hybrid v2.0', // Only AI model, disable all TA-only strategies
     ],
     RegimeType.LOW_VOLATILITY: [
       'Dynamic Grid Bot v1.0',
-      'Mean Reversion Strategy v1.0',
+      'Mean Reversion v2.0',
     ],
   };
 

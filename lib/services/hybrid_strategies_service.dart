@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../ml/ensemble_predictor.dart' hide SignalType;
+import 'binance_service.dart';
 
 /// Represents a trading signal with confidence
 class StrategySignal {
@@ -142,14 +144,16 @@ class MarketData {
   double get macd => ema12 - ema26;
 }
 
-/// RSI/ML Hybrid Strategy v1.0
+/// RSI/ML Hybrid Strategy v2.0 (with Ensemble Transformer)
 class RSIMLHybridStrategy extends HybridStrategy {
   int oversold = 30;
   int overbought = 70;
   int buyRsi = 40; // moderate buy threshold
   int sellRsi = 60; // moderate sell threshold
+  String symbol = 'BTCEUR';
+  String interval = '1h';
 
-  RSIMLHybridStrategy() : super(name: 'RSI/ML Hybrid', version: 'v1.0');
+  RSIMLHybridStrategy() : super(name: 'RSI/ML Hybrid', version: 'v2.0');
 
   @override
   Future<StrategySignal> analyze(MarketData data) async {
@@ -157,58 +161,116 @@ class RSIMLHybridStrategy extends HybridStrategy {
     final priceAboveSMA = data.price > data.sma20;
     debugPrint('[RSI/ML Hybrid] rsi=' + rsi.toStringAsFixed(2) + ', sma20=' + data.sma20.toStringAsFixed(2) + ', price=' + data.price.toStringAsFixed(2));
 
-    // RSI oversold + price above SMA = strong buy
+    // Get AI prediction from Ensemble Transformer
+    SignalType? aiSignal;
+    double aiConfidence = 0.0;
+    String aiLabel = '';
+
+    if (globalEnsemblePredictor.isLoaded) {
+      try {
+        debugPrint('[RSI/ML Hybrid] Fetching Transformer prediction for ' + symbol + ' @' + interval);
+        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
+        final prediction = await globalEnsemblePredictor.predict(features);
+
+        // Map 4-class prediction to 3-class SignalType
+        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
+          aiSignal = SignalType.BUY;
+        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
+          aiSignal = SignalType.SELL;
+        } else {
+          aiSignal = SignalType.HOLD;
+        }
+
+        aiConfidence = prediction.confidence;
+        aiLabel = prediction.label;
+        debugPrint('[RSI/ML Hybrid] AI: ${prediction.label} (${(prediction.confidence * 100).toStringAsFixed(1)}%), Transformer: ${(prediction.modelContributions['transformer']![2] * 100).toStringAsFixed(1)}%');
+      } catch (e) {
+        debugPrint('[RSI/ML Hybrid] AI prediction failed: $e');
+      }
+    }
+
+    // Get technical indicator signals
+    SignalType techSignal = SignalType.HOLD;
+    double techConfidence = 0.50;
+    String techReason = 'Neutral conditions';
+
+    // Strong technical signals
     if (rsi < oversold && priceAboveSMA) {
-      return applyHysteresis(StrategySignal(
-        strategyName: name,
-        type: SignalType.BUY,
-        confidence: 0.85,
-        reason: 'RSI oversold ($rsi < $oversold) + bullish trend',
-      ));
+      techSignal = SignalType.BUY;
+      techConfidence = 0.85;
+      techReason = 'RSI oversold ($rsi < $oversold) + bullish trend';
+    } else if (rsi > overbought && !priceAboveSMA) {
+      techSignal = SignalType.SELL;
+      techConfidence = 0.82;
+      techReason = 'RSI overbought ($rsi > $overbought) + bearish trend';
+    } else if (rsi < buyRsi && priceAboveSMA) {
+      techSignal = SignalType.BUY;
+      techConfidence = 0.65;
+      techReason = 'RSI low ($rsi < $buyRsi) + bullish momentum';
+    } else if (rsi > sellRsi && !priceAboveSMA) {
+      techSignal = SignalType.SELL;
+      techConfidence = 0.62;
+      techReason = 'RSI high ($rsi > $sellRsi) + bearish momentum';
     }
 
-    // RSI overbought + price below SMA = strong sell
-    if (rsi > overbought && !priceAboveSMA) {
-      return applyHysteresis(StrategySignal(
-        strategyName: name,
-        type: SignalType.SELL,
-        confidence: 0.82,
-        reason: 'RSI overbought ($rsi > $overbought) + bearish trend',
-      ));
+    // Combine technical and AI signals with weighted logic
+    if (aiSignal != null) {
+      // Weight: 60% AI, 40% Technical (AI is better trained)
+      final double aiWeight = 0.60;
+      final double techWeight = 0.40;
+
+      // Both agree - strong signal
+      if (aiSignal == techSignal && techSignal != SignalType.HOLD) {
+        final combinedConfidence = (aiConfidence * aiWeight) + (techConfidence * techWeight);
+        debugPrint('[RSI/ML Hybrid] ✅ AI+Tech AGREE → ${techSignal.toString().split('.').last}');
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: techSignal,
+          confidence: min(0.95, combinedConfidence),
+          reason: 'AI ($aiLabel) + Tech agree: $techReason',
+        ));
+      }
+
+      // AI and Tech disagree - use AI (stronger model)
+      if (aiSignal != techSignal && aiSignal != SignalType.HOLD) {
+        debugPrint('[RSI/ML Hybrid] ⚠️ AI+Tech DISAGREE → Following AI: ${aiSignal.toString().split('.').last}');
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: aiSignal,
+          confidence: aiConfidence * 0.75, // Reduce confidence on disagreement
+          reason: 'AI ($aiLabel) vs Tech ($techReason) - Following AI',
+        ));
+      }
+
+      // AI says HOLD, use technical
+      if (aiSignal == SignalType.HOLD) {
+        debugPrint('[RSI/ML Hybrid] ℹ️ AI HOLD → Following Tech: ${techSignal.toString().split('.').last}');
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: techSignal,
+          confidence: techConfidence * 0.70,
+          reason: 'Tech only: $techReason (AI neutral)',
+        ));
+      }
     }
 
-    // Moderate buy signal
-    if (rsi < buyRsi && priceAboveSMA) {
-      return applyHysteresis(StrategySignal(
-        strategyName: name,
-        type: SignalType.BUY,
-        confidence: 0.65,
-        reason: 'RSI low ($rsi < $buyRsi) + bullish momentum',
-      ));
-    }
-
-    // Moderate sell signal
-    if (rsi > sellRsi && !priceAboveSMA) {
-      return applyHysteresis(StrategySignal(
-        strategyName: name,
-        type: SignalType.SELL,
-        confidence: 0.62,
-        reason: 'RSI high ($rsi > $sellRsi) + bearish momentum',
-      ));
-    }
-
+    // Fallback: technical only
+    debugPrint('[RSI/ML Hybrid] ℹ️ Tech only: ${techSignal.toString().split('.').last}');
     return applyHysteresis(StrategySignal(
       strategyName: name,
-      type: SignalType.HOLD,
-      confidence: 0.50,
-      reason: 'Neutral conditions (RSI: ${rsi.toStringAsFixed(1)})',
+      type: techSignal,
+      confidence: techConfidence,
+      reason: techReason,
     ));
   }
 }
 
-/// Momentum Scalper v2.1
+/// Momentum Scalper v3.0 (with Ensemble Transformer)
 class MomentumScalperStrategy extends HybridStrategy {
-  MomentumScalperStrategy() : super(name: 'Momentum Scalper', version: 'v2.1');
+  String symbol = 'BTCEUR';
+  String interval = '15m'; // Scalpers use shorter timeframes
+
+  MomentumScalperStrategy() : super(name: 'Momentum Scalper', version: 'v3.0');
 
   @override
   Future<StrategySignal> analyze(MarketData data) async {
@@ -219,32 +281,75 @@ class MomentumScalperStrategy extends HybridStrategy {
         : 0.0;
     debugPrint('[Momentum Scalper] macd=' + macd.toStringAsFixed(4) + ', priceChange%=' + priceChange.toStringAsFixed(2));
 
-    // Strong momentum buy
+    // Get AI prediction
+    SignalType? aiSignal;
+    double aiConfidence = 0.0;
+    String aiLabel = '';
+
+    if (globalEnsemblePredictor.isLoaded) {
+      try {
+        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
+        final prediction = await globalEnsemblePredictor.predict(features);
+
+        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
+          aiSignal = SignalType.BUY;
+        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
+          aiSignal = SignalType.SELL;
+        } else {
+          aiSignal = SignalType.HOLD;
+        }
+
+        aiConfidence = prediction.confidence;
+        aiLabel = prediction.label;
+      } catch (e) {
+        debugPrint('[Momentum Scalper] AI error: $e');
+      }
+    }
+
+    // Technical signals
+    SignalType techSignal = SignalType.HOLD;
+    double techConfidence = 0.55;
+    String techReason = 'Weak momentum';
+
     if (macd > 0 && priceChange > 0.5) {
-      return applyHysteresis(StrategySignal(
-        strategyName: name,
-        type: SignalType.BUY,
-        confidence: 0.88,
-        reason: 'Strong upward momentum (+${priceChange.toStringAsFixed(2)}%)',
-      ));
+      techSignal = SignalType.BUY;
+      techConfidence = 0.88;
+      techReason = 'Strong upward momentum (+${priceChange.toStringAsFixed(2)}%)';
+    } else if (macd < 0 && priceChange < -0.5) {
+      techSignal = SignalType.SELL;
+      techConfidence = 0.86;
+      techReason = 'Strong downward momentum (${priceChange.toStringAsFixed(2)}%)';
     }
 
-    // Strong momentum sell
-    if (macd < 0 && priceChange < -0.5) {
-      return applyHysteresis(StrategySignal(
-        strategyName: name,
-        type: SignalType.SELL,
-        confidence: 0.86,
-        reason: 'Strong downward momentum (${priceChange.toStringAsFixed(2)}%)',
-      ));
+    // Combine AI + Tech (70% AI, 30% Tech for momentum)
+    if (aiSignal != null) {
+      final double aiWeight = 0.70;
+      final double techWeight = 0.30;
+
+      if (aiSignal == techSignal && techSignal != SignalType.HOLD) {
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: techSignal,
+          confidence: min(0.95, (aiConfidence * aiWeight) + (techConfidence * techWeight)),
+          reason: 'AI ($aiLabel) + MACD agree: $techReason',
+        ));
+      }
+
+      if (aiSignal != techSignal && aiSignal != SignalType.HOLD) {
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: aiSignal,
+          confidence: aiConfidence * 0.70,
+          reason: 'AI ($aiLabel) vs MACD ($techReason) - Following AI',
+        ));
+      }
     }
 
-    // Weak momentum - hold
     return applyHysteresis(StrategySignal(
       strategyName: name,
-      type: SignalType.HOLD,
-      confidence: 0.55,
-      reason: 'Weak momentum (${priceChange.toStringAsFixed(2)}%)',
+      type: techSignal,
+      confidence: techConfidence,
+      reason: techReason,
     ));
   }
 }
@@ -318,44 +423,115 @@ class DynamicGridBotStrategy extends HybridStrategy {
   }
 }
 
-/// Breakout strategy: buy when price crosses above recent high, sell when crosses below recent low
+/// Breakout strategy v2.0 (with Ensemble Transformer)
 class BreakoutStrategy extends HybridStrategy {
   int lookback = 20;
   double confidenceBase = 0.7;
+  String symbol = 'BTCEUR';
+  String interval = '1h';
 
-  BreakoutStrategy() : super(name: 'Breakout', version: 'v1.0');
+  BreakoutStrategy() : super(name: 'Breakout', version: 'v2.0');
 
   @override
   Future<StrategySignal> analyze(MarketData data) async {
     if (data.priceHistory.length < lookback) {
       return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Insufficient data');
     }
+
     final recent = data.priceHistory.sublist(data.priceHistory.length - lookback);
     final high = recent.reduce((a, b) => a > b ? a : b);
     final low = recent.reduce((a, b) => a < b ? a : b);
     debugPrint('[Breakout] price=' + data.price.toStringAsFixed(2) + ', high(' + lookback.toString() + ')=' + high.toStringAsFixed(2) + ', low=' + low.toStringAsFixed(2));
+
+    // Get AI prediction
+    SignalType? aiSignal;
+    double aiConfidence = 0.0;
+    String aiLabel = '';
+
+    if (globalEnsemblePredictor.isLoaded) {
+      try {
+        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
+        final prediction = await globalEnsemblePredictor.predict(features);
+
+        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
+          aiSignal = SignalType.BUY;
+        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
+          aiSignal = SignalType.SELL;
+        } else {
+          aiSignal = SignalType.HOLD;
+        }
+
+        aiConfidence = prediction.confidence;
+        aiLabel = prediction.label;
+      } catch (e) {
+        debugPrint('[Breakout] AI error: $e');
+      }
+    }
+
+    // Technical signals
+    SignalType techSignal = SignalType.HOLD;
+    double techConfidence = 0.5;
+    String techReason = 'Inside range';
+
     if (data.price > high) {
-      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.BUY, confidence: confidenceBase, reason: 'Breakout above ${high.toStringAsFixed(2)}'));
+      techSignal = SignalType.BUY;
+      techConfidence = confidenceBase;
+      techReason = 'Breakout above ${high.toStringAsFixed(2)}';
+    } else if (data.price < low) {
+      techSignal = SignalType.SELL;
+      techConfidence = confidenceBase;
+      techReason = 'Breakdown below ${low.toStringAsFixed(2)}';
     }
-    if (data.price < low) {
-      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.SELL, confidence: confidenceBase, reason: 'Breakdown below ${low.toStringAsFixed(2)}'));
+
+    // Combine AI + Tech (50/50 for breakouts)
+    if (aiSignal != null) {
+      final double aiWeight = 0.50;
+      final double techWeight = 0.50;
+
+      if (aiSignal == techSignal && techSignal != SignalType.HOLD) {
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: techSignal,
+          confidence: min(0.95, (aiConfidence * aiWeight) + (techConfidence * techWeight)),
+          reason: 'AI ($aiLabel) confirms: $techReason',
+        ));
+      }
+
+      if (aiSignal != techSignal && techSignal != SignalType.HOLD) {
+        // Breakout detected but AI disagrees - cautious approach
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: SignalType.HOLD,
+          confidence: 0.60,
+          reason: 'Breakout detected but AI says $aiLabel - waiting',
+        ));
+      }
     }
-    return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Inside range'));
+
+    return applyHysteresis(StrategySignal(
+      strategyName: name,
+      type: techSignal,
+      confidence: techConfidence,
+      reason: techReason,
+    ));
   }
 }
 
-/// Mean reversion strategy: fade moves outside Bollinger-like bands
+/// Mean reversion strategy v2.0 (with Ensemble Transformer)
 class MeanReversionStrategy extends HybridStrategy {
   int period = 20;
   double stdDev = 2.0;
+  String symbol = 'BTCEUR';
+  String interval = '4h'; // Mean reversion works better on longer timeframes
 
-  MeanReversionStrategy() : super(name: 'Mean Reversion', version: 'v1.0');
+  MeanReversionStrategy() : super(name: 'Mean Reversion', version: 'v2.0');
 
   @override
   Future<StrategySignal> analyze(MarketData data) async {
     if (data.priceHistory.length < period) {
       return StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Insufficient data');
     }
+
     final recent = data.priceHistory.sublist(data.priceHistory.length - period);
     final mean = recent.reduce((a, b) => a + b) / period;
     final variance = recent.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) / period;
@@ -363,13 +539,78 @@ class MeanReversionStrategy extends HybridStrategy {
     final upper = mean + stdDev * sd;
     final lower = mean - stdDev * sd;
     debugPrint('[Mean Reversion] price=' + data.price.toStringAsFixed(2) + ', mean=' + mean.toStringAsFixed(2) + ', sd=' + sd.toStringAsFixed(2) + ', upper=' + upper.toStringAsFixed(2) + ', lower=' + lower.toStringAsFixed(2));
+
+    // Get AI prediction
+    SignalType? aiSignal;
+    double aiConfidence = 0.0;
+    String aiLabel = '';
+
+    if (globalEnsemblePredictor.isLoaded) {
+      try {
+        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
+        final prediction = await globalEnsemblePredictor.predict(features);
+
+        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
+          aiSignal = SignalType.BUY;
+        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
+          aiSignal = SignalType.SELL;
+        } else {
+          aiSignal = SignalType.HOLD;
+        }
+
+        aiConfidence = prediction.confidence;
+        aiLabel = prediction.label;
+      } catch (e) {
+        debugPrint('[Mean Reversion] AI error: $e');
+      }
+    }
+
+    // Technical signals
+    SignalType techSignal = SignalType.HOLD;
+    double techConfidence = 0.5;
+    String techReason = 'Near mean';
+
     if (data.price < lower) {
-      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.BUY, confidence: 0.68, reason: 'Below lower band'));
+      techSignal = SignalType.BUY;
+      techConfidence = 0.68;
+      techReason = 'Below lower band';
+    } else if (data.price > upper) {
+      techSignal = SignalType.SELL;
+      techConfidence = 0.68;
+      techReason = 'Above upper band';
     }
-    if (data.price > upper) {
-      return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.SELL, confidence: 0.68, reason: 'Above upper band'));
+
+    // Combine AI + Tech (60% Tech, 40% AI for mean reversion)
+    if (aiSignal != null) {
+      final double techWeight = 0.60; // Mean reversion is primarily technical
+      final double aiWeight = 0.40;
+
+      if (aiSignal == techSignal && techSignal != SignalType.HOLD) {
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: techSignal,
+          confidence: min(0.90, (techConfidence * techWeight) + (aiConfidence * aiWeight)),
+          reason: 'AI ($aiLabel) confirms: $techReason',
+        ));
+      }
+
+      if (aiSignal != techSignal && techSignal != SignalType.HOLD) {
+        // Mean reversion signal but AI disagrees - reduce confidence
+        return applyHysteresis(StrategySignal(
+          strategyName: name,
+          type: techSignal,
+          confidence: techConfidence * 0.65,
+          reason: '$techReason (AI says $aiLabel)',
+        ));
+      }
     }
-    return applyHysteresis(StrategySignal(strategyName: name, type: SignalType.HOLD, confidence: 0.5, reason: 'Near mean'));
+
+    return applyHysteresis(StrategySignal(
+      strategyName: name,
+      type: techSignal,
+      confidence: techConfidence,
+      reason: techReason,
+    ));
   }
 }
 
@@ -438,6 +679,29 @@ class HybridStrategiesService {
     if (strategy != null) {
       strategy.isActive = active;
       debugPrint('Strategy ${strategy.name} ${active ? "activated" : "deactivated"}');
+    }
+  }
+
+  /// Update symbol and interval for ALL AI-powered strategies
+  void updateTradingPair(String symbol, {String interval = '1h'}) {
+    for (final strategy in _strategies) {
+      if (strategy is RSIMLHybridStrategy) {
+        strategy.symbol = symbol;
+        strategy.interval = interval;
+        debugPrint('✅ Updated ${strategy.name} → symbol=$symbol, interval=$interval');
+      } else if (strategy is MomentumScalperStrategy) {
+        strategy.symbol = symbol;
+        strategy.interval = '15m'; // Scalpers always use 15m
+        debugPrint('✅ Updated ${strategy.name} → symbol=$symbol, interval=15m');
+      } else if (strategy is BreakoutStrategy) {
+        strategy.symbol = symbol;
+        strategy.interval = interval;
+        debugPrint('✅ Updated ${strategy.name} → symbol=$symbol, interval=$interval');
+      } else if (strategy is MeanReversionStrategy) {
+        strategy.symbol = symbol;
+        strategy.interval = '4h'; // Mean reversion uses 4h
+        debugPrint('✅ Updated ${strategy.name} → symbol=$symbol, interval=4h');
+      }
     }
   }
 

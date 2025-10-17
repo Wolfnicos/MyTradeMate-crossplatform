@@ -16,7 +16,13 @@
       "Bash(export JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home)",
       "Bash(/Users/lupudragos/Library/Android/sdk/emulator/emulator:*)",
       "Bash(pip3 install:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Read(//tmp/**)",
+      "Bash(find assets/models -maxdepth 1 -type f ( -name \"*.tflite\" -o -name \"*.pkl\" ) -exec mv {} assets/models/legacy/ ;)",
+      "Bash(tee:*)",
+      "Bash(pkill:*)",
+      "Bash(xcrun devicectl device info apps:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'ml/tflite_predictor.dart';
 import 'ml/ml_service.dart';
+import 'ml/ensemble_predictor.dart';
 import 'providers/theme_provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/market_screen.dart';
@@ -21,6 +22,16 @@ Future<void> main() async {
   await AppSettingsService().load();
   await globalPredictor.init();
   await globalMlService.loadModel();
+
+  // Initialize NEW Ensemble Predictor (Transformer + LSTM + RF)
+  try {
+    await globalEnsemblePredictor.loadModels();
+    debugPrint('🚀 NEW AI models activated!');
+  } catch (e) {
+    debugPrint('⚠️ Ensemble predictor failed to load: $e');
+    debugPrint('   Falling back to legacy TCN model');
+  }
+
   await AchievementService().load();
 
   // Initialize theme provider

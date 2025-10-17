@@ -1,8 +1,5 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-import '../models/candle.dart';
 
 /// Ensemble Predictor for MyTradeMate
 ///
@@ -32,6 +29,9 @@ class EnsemblePredictor {
   Interpreter? _lstmModel;
   Interpreter? _randomForestModel; // Note: RF will use fallback if not TFLite
 
+  // Legacy fallback models
+  Interpreter? _legacyTcnModel;
+
   // Model weights (sum to 1.0)
   static const double _transformerWeight = 0.50;
   static const double _lstmWeight = 0.30;
@@ -44,6 +44,11 @@ class EnsemblePredictor {
     'lstm': false,
     'randomForest': false,
   };
+
+  // Performance metrics
+  final Map<String, double> _modelLatency = {};
+  final Map<String, int> _modelErrors = {};
+  bool _useLegacyFallback = false;
 
   // Class labels
   static const List<String> _classLabels = [
@@ -87,24 +92,57 @@ class EnsemblePredictor {
       throw Exception('❌ No models loaded! Ensure TFLite models exist in assets/ml/');
     }
 
+    // Load legacy fallback if new models fail
+    if (!_isLoaded) {
+      debugPrint('⚠️ New models failed, loading legacy TCN fallback...');
+      try {
+        await _loadLegacyTcnModel();
+        _useLegacyFallback = true;
+        _isLoaded = true;
+      } catch (e) {
+        debugPrint('❌ Legacy fallback also failed: $e');
+      }
+    }
+
     debugPrint('✅ Ensemble models loaded:');
-    debugPrint('   Transformer: ${_modelStatus['transformer'] ? "✅" : "❌"}');
-    debugPrint('   LSTM: ${_modelStatus['lstm'] ? "✅" : "❌"}');
-    debugPrint('   Random Forest: ${_modelStatus['randomForest'] ? "✅" : "❌ (fallback)"}');
+    debugPrint('   Transformer: ${(_modelStatus['transformer'] ?? false) ? "✅" : "❌"}');
+    debugPrint('   LSTM: ${(_modelStatus['lstm'] ?? false) ? "✅" : "❌"}');
+    debugPrint('   Random Forest: ${(_modelStatus['randomForest'] ?? false) ? "✅" : "❌ (fallback)"}');
+    if (_useLegacyFallback) {
+      debugPrint('   💡 Using Legacy TCN Fallback');
+    }
   }
 
   /// Load Transformer model
   Future<void> _loadTransformerModel() async {
-    _transformerModel = await Interpreter.fromAsset('assets/ml/transformer_model.tflite');
+    _transformerModel = await Interpreter.fromAsset('assets/ml/transformer_v1_float32.tflite');
     _modelStatus['transformer'] = true;
-    debugPrint('   ✅ Transformer loaded');
+    debugPrint('   ✅ Transformer loaded (v1 - 58.67% accuracy)');
   }
 
   /// Load LSTM model
   Future<void> _loadLstmModel() async {
-    _lstmModel = await Interpreter.fromAsset('assets/ml/lstm_model.tflite');
-    _modelStatus['lstm'] = true;
-    debugPrint('   ✅ LSTM loaded');
+    try {
+      // LSTM uses Flex ops - try loading directly first
+      _lstmModel = await Interpreter.fromAsset('assets/ml/lstm_model.tflite');
+      _modelStatus['lstm'] = true;
+      debugPrint('   ✅ LSTM loaded (Bidirectional - 51% accuracy)');
+    } catch (e) {
+      // If loading fails, try with options
+      try {
+        debugPrint('   ⚠️ LSTM direct load failed, trying with options...');
+        final options = InterpreterOptions()..threads = 2;
+        _lstmModel = await Interpreter.fromAsset(
+          'assets/ml/lstm_model.tflite',
+          options: options,
+        );
+        _modelStatus['lstm'] = true;
+        debugPrint('   ✅ LSTM loaded (with options)');
+      } catch (e2) {
+        debugPrint('   ❌ LSTM load failed completely: $e2');
+        rethrow;
+      }
+    }
   }
 
   /// Load Random Forest model (if available as TFLite)
@@ -120,10 +158,16 @@ class EnsemblePredictor {
     debugPrint('   ⚠️ Random Forest: Using rule-based fallback');
   }
 
+  /// Load legacy TCN model as fallback
+  Future<void> _loadLegacyTcnModel() async {
+    _legacyTcnModel = await Interpreter.fromAsset('assets/models/legacy/mytrademate_v8_tcn_mtf_float32.tflite');
+    debugPrint('   ✅ Legacy TCN loaded (v8)');
+  }
+
   /// Predict using ensemble voting
   ///
   /// Args:
-  ///   features: [120, 42] feature matrix from MtfFeatureBuilderV2
+  ///   features: [120, 42] or [60, 34] feature matrix
   ///
   /// Returns:
   ///   EnsemblePrediction with weighted consensus
@@ -132,9 +176,15 @@ class EnsemblePredictor {
       throw Exception('Models not loaded. Call loadModels() first.');
     }
 
+    // Auto-convert 60x34 -> 120x42 if needed
+    if (features.length == 60 && features.first.length == 34) {
+      debugPrint('⚙️ Converting 60x34 -> 120x42 features');
+      features = _convert60x34To120x42(features);
+    }
+
     // Validate input shape
     if (features.length != 120 || features[0].length != 42) {
-      throw Exception('Invalid input shape: ${features.length}x${features[0].length}. Expected 120x42');
+      throw Exception('Invalid input shape: ${features.length}x${features[0].length}. Expected 120x42 or 60x34');
     }
 
     // Get predictions from each model
@@ -172,19 +222,25 @@ class EnsemblePredictor {
       return [0.25, 0.25, 0.25, 0.25]; // Neutral if model not loaded
     }
 
+    final startTime = DateTime.now();
     try {
       // Reshape input: [1, 120, 42]
       var input = [features];
 
       // Output buffer: [1, 4]
-      var output = List.filled(4, 0.0).reshape([1, 4]);
+      var output = List.generate(1, (_) => List.filled(4, 0.0));
 
       // Run inference
       _transformerModel!.run(input, output);
 
-      return output[0].map((e) => e.toDouble()).toList();
+      // Track latency
+      final latency = DateTime.now().difference(startTime).inMilliseconds;
+      _modelLatency['transformer'] = latency.toDouble();
+
+      return List<double>.from(output[0]);
     } catch (e) {
       debugPrint('⚠️ Transformer inference failed: $e');
+      _modelErrors['transformer'] = (_modelErrors['transformer'] ?? 0) + 1;
       return [0.25, 0.25, 0.25, 0.25];
     }
   }
@@ -195,19 +251,25 @@ class EnsemblePredictor {
       return [0.25, 0.25, 0.25, 0.25]; // Neutral if model not loaded
     }
 
+    final startTime = DateTime.now();
     try {
       // Reshape input: [1, 120, 42]
       var input = [features];
 
       // Output buffer: [1, 4]
-      var output = List.filled(4, 0.0).reshape([1, 4]);
+      var output = List.generate(1, (_) => List.filled(4, 0.0));
 
       // Run inference
       _lstmModel!.run(input, output);
 
-      return output[0].map((e) => e.toDouble()).toList();
+      // Track latency
+      final latency = DateTime.now().difference(startTime).inMilliseconds;
+      _modelLatency['lstm'] = latency.toDouble();
+
+      return List<double>.from(output[0]);
     } catch (e) {
       debugPrint('⚠️ LSTM inference failed: $e');
+      _modelErrors['lstm'] = (_modelErrors['lstm'] ?? 0) + 1;
       return [0.25, 0.25, 0.25, 0.25];
     }
   }
@@ -309,12 +371,55 @@ class EnsemblePredictor {
   /// Get model load status
   Map<String, bool> get modelStatus => _modelStatus;
 
+  /// Get model performance metrics (latency in ms)
+  Map<String, double> get modelLatency => Map.unmodifiable(_modelLatency);
+
+  /// Get model error counts
+  Map<String, int> get modelErrors => Map.unmodifiable(_modelErrors);
+
+  /// Check if using legacy fallback
+  bool get isUsingLegacyFallback => _useLegacyFallback;
+
+  /// Get performance summary
+  String get performanceSummary {
+    if (_modelLatency.isEmpty) return 'No metrics yet';
+
+    final buffer = StringBuffer('📊 Model Performance:\n');
+    _modelLatency.forEach((model, latency) {
+      final errors = _modelErrors[model] ?? 0;
+      buffer.writeln('   $model: ${latency.toStringAsFixed(0)}ms (errors: $errors)');
+    });
+    return buffer.toString();
+  }
+
+  /// Convert 60x34 features to 120x42
+  ///
+  /// Strategy: Duplicate timesteps (60->120) and pad features (34->42)
+  /// - Timesteps: Repeat each of the 60 timesteps twice to get 120
+  /// - Features: Pad with zeros for missing 8 features (alternative data)
+  List<List<double>> _convert60x34To120x42(List<List<double>> input) {
+    final output = <List<double>>[];
+
+    for (final row in input) {
+      // Pad row from 34 to 42 features (add 8 zeros for alt data)
+      final paddedRow = [...row, ...List.filled(8, 0.0)];
+
+      // Duplicate each timestep to go from 60 to 120
+      output.add(List.from(paddedRow));
+      output.add(List.from(paddedRow));
+    }
+
+    return output;
+  }
+
   /// Dispose interpreters
   void dispose() {
     _transformerModel?.close();
     _lstmModel?.close();
     _randomForestModel?.close();
+    _legacyTcnModel?.close();
     debugPrint('🧹 Ensemble models disposed');
+    debugPrint(performanceSummary);
   }
 }
 
@@ -428,3 +533,6 @@ enum SignalType {
 /// // Dispose when done
 /// predictor.dispose();
 /// ```
+
+// Global singleton for convenient access from UI layers
+final EnsemblePredictor globalEnsemblePredictor = EnsemblePredictor();

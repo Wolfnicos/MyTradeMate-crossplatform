@@ -166,15 +166,15 @@ class MLService {
     final double probHold = calibrated[1];
     final double probBuy = calibrated[2];
 
-    final double maxProb = [probSell, probHold, probBuy].reduce(max);
-    final _Thresh t = _getThresholds(symbol);
-    if (maxProb < t.confidence) return TradingSignal.HOLD;
-
-    // If BUY is strictly the highest with small margin, accept it; same for SELL
-    const double margin = 0.02; // 2% margin over HOLD
-    if (probBuy > probHold && (probBuy >= t.buy || (probBuy - probHold) >= margin)) return TradingSignal.BUY;
-    if (probSell > probHold && (probSell >= t.sell || (probSell - probHold) >= margin)) return TradingSignal.SELL;
-    return TradingSignal.HOLD;
+    // Simple logic: return the class with highest probability
+    // No complex thresholds - just show what the model actually predicts
+    if (probSell > probHold && probSell > probBuy) {
+      return TradingSignal.SELL;
+    } else if (probBuy > probHold && probBuy > probSell) {
+      return TradingSignal.BUY;
+    } else {
+      return TradingSignal.HOLD;
+    }
   }
 
   _Thresh _getThresholds(String? symbol) {

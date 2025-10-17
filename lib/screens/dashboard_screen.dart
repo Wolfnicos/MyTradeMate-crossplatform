@@ -335,7 +335,9 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
       _sol = await _binance.fetchTicker24h('SOL$quote');
       _wif = await _binance.fetchTicker24hWithFallback(['WLFI$quote', 'WLFIEUR','WLFIUSDT', 'WLFIUSDC', 'WLFIBUSD']);
       _trump = await _binance.fetchTicker24hWithFallback(['TRUMP$quote', 'TRUMPUSDT', 'DJTUSDT']);
-    } catch (_) {}
+    } catch (e) {
+      print('Dashboard: Error fetching market data: $e');
+    }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -396,17 +398,37 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
               ),
             )
           else ...[
-            _buildPnLRow('BTC', _btc),
-            _buildDivider(),
-            _buildPnLRow('ETH', _eth),
-            _buildDivider(),
-            _buildPnLRow('BNB', _bnb),
-            _buildDivider(),
-            _buildPnLRow('SOL', _sol),
-            _buildDivider(),
-            _buildPnLRow('WIF', _wif),
-            _buildDivider(),
-            _buildPnLRow('TRUMP', _trump),
+            if (_btc != null) ...[
+              _buildPnLRow('BTC', _btc),
+              if (_eth != null || _bnb != null || _sol != null || _wif != null || _trump != null) _buildDivider(),
+            ],
+            if (_eth != null) ...[
+              _buildPnLRow('ETH', _eth),
+              if (_bnb != null || _sol != null || _wif != null || _trump != null) _buildDivider(),
+            ],
+            if (_bnb != null) ...[
+              _buildPnLRow('BNB', _bnb),
+              if (_sol != null || _wif != null || _trump != null) _buildDivider(),
+            ],
+            if (_sol != null) ...[
+              _buildPnLRow('SOL', _sol),
+              if (_wif != null || _trump != null) _buildDivider(),
+            ],
+            if (_wif != null) ...[
+              _buildPnLRow('WIF', _wif),
+              if (_trump != null) _buildDivider(),
+            ],
+            if (_trump != null) _buildPnLRow('TRUMP', _trump),
+            if (_btc == null && _eth == null && _bnb == null && _sol == null && _wif == null && _trump == null)
+              Padding(
+                padding: const EdgeInsets.all(AppTheme.spacing20),
+                child: Center(
+                  child: Text(
+                    'No market data available',
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
+                  ),
+                ),
+              ),
           ],
         ],
       ),

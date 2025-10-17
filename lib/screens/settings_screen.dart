@@ -5,9 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/theme_provider.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
-import '../design_system/screen_backgrounds.dart';
-import '../design_system/widgets/glass_card.dart';
-import '../design_system/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -102,13 +101,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final apiSecret = _apiSecretController.text.trim();
 
     if (apiKey.isEmpty || apiSecret.isEmpty) {
-      _showSnackBar('Completează ambele câmpuri', isError: true);
+      _showSnackBar('Please fill both fields', isError: true);
       return;
     }
 
     try {
       await _binanceService.saveCredentials(apiKey, apiSecret);
-      _showSnackBar('Credentials saved', isError: false);
+      _showSnackBar('Credentials saved successfully', isError: false);
       _apiKeyController.clear();
       _apiSecretController.clear();
     } catch (e) {
@@ -122,9 +121,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final success = await _binanceService.testConnection();
       if (success) {
-        _showSnackBar('Connection successful! Keys valid.', isError: false);
+        _showSnackBar('Connection successful! API keys are valid.', isError: false);
       } else {
-        _showSnackBar('Connection failed. Check API keys.', isError: true);
+        _showSnackBar('Connection failed. Please check your API keys.', isError: true);
       }
     } catch (e) {
       _showSnackBar('Error: $e', isError: true);
@@ -137,16 +136,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmation'),
-        content: const Text('Are you sure you want to delete API credentials?'),
+        backgroundColor: AppTheme.surface,
+        title: Text('Confirm Deletion', style: AppTheme.headingLarge),
+        content: Text(
+          'Are you sure you want to delete your API credentials?',
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -163,8 +166,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppTheme.error : AppTheme.success,
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -174,86 +178,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Settings'),
+        backgroundColor: AppTheme.surface,
         elevation: 0,
+        title: Text('Settings', style: AppTheme.headingLarge),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: Container(
-        decoration: ScreenBackgrounds.market(context),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: Text('Settings', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-          ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppTheme.spacing20),
+        children: [
           // Security Section
-          _buildSectionHeader('Security'),
+          _buildSectionHeader('Security', Icons.security),
           GlassCard(
-            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 if (_canCheckBiometrics)
                   SwitchListTile(
-                    title: const Text('Lock with Face ID / Fingerprint'),
-                    subtitle: Text('Authenticate on each app open', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                    title: Text('Biometric Authentication', style: AppTheme.bodyLarge),
+                    subtitle: Text(
+                      'Lock app with Face ID / Fingerprint',
+                      style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                    ),
                     value: _biometricEnabled,
                     onChanged: _toggleBiometric,
-                    secondary: const Icon(Icons.fingerprint),
+                    activeColor: AppTheme.primary,
+                    secondary: Container(
+                      padding: const EdgeInsets.all(AppTheme.spacing8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      ),
+                      child: const Icon(Icons.fingerprint, color: AppTheme.primary),
+                    ),
                   )
                 else
                   ListTile(
-                    leading: const Icon(Icons.warning_amber, color: Colors.orange),
-                    title: const Text('Biometric authentication unavailable'),
-                    subtitle: Text('This device does not support biometrics', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                    leading: Container(
+                      padding: const EdgeInsets.all(AppTheme.spacing8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.holdYellow.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      ),
+                      child: const Icon(Icons.warning_amber, color: AppTheme.holdYellow),
+                    ),
+                    title: Text('Biometric Unavailable', style: AppTheme.bodyLarge),
+                    subtitle: Text(
+                      'This device does not support biometric authentication',
+                      style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                    ),
                   ),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.spacing24),
 
-          // Quote Currency (placed before Theme)
-          _buildSectionHeader('Quote currency'),
+          // Trading Section
+          _buildSectionHeader('Trading', Icons.trending_up),
           GlassCard(
-            padding: const EdgeInsets.all(16),
-            child: Padding(
-              padding: const EdgeInsets.all(0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('Select the quote currency used for prices and totals', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      'USDT','USDC','USD','EUR'
-                    ].map((q) => ChoiceChip(
-                      label: Text(q),
-                      selected: _quote == q,
-                      onSelected: (_) async {
-                        final svc = AppSettingsService();
-                        await svc.setQuoteCurrency(q);
-                        setState(() => _quote = q);
-                        _showSnackBar('Quote set to: ' + q, isError: false);
-                      },
-                    )).toList(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Trading Mode Section (moved below Security)
-          _buildSectionHeader('Trading'),
-          GlassCard(
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SwitchListTile(
-                  title: const Text('Paper Trading'),
-                  subtitle: Text('Execute orders in simulation mode', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                  title: Text('Paper Trading', style: AppTheme.bodyLarge),
+                  subtitle: Text(
+                    'Simulate orders without real money',
+                    style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                  ),
                   value: _paperTrading,
                   onChanged: (bool v) async {
                     final prefs = await SharedPreferences.getInstance();
@@ -261,66 +256,190 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() => _paperTrading = v);
                     _showSnackBar(v ? 'Paper Trading enabled' : 'Paper Trading disabled', isError: false);
                   },
-                  secondary: const Icon(Icons.description_outlined),
+                  activeColor: AppTheme.primary,
+                  secondary: Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    ),
+                    child: const Icon(Icons.description_outlined, color: AppTheme.primary),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text('Environment', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    {'label': 'Live', 'value': 'live'},
-                    {'label': 'Testnet', 'value': 'testnet'},
-                  ].map((m) {
-                    return ChoiceChip(
-                      label: Text(m['label'] as String),
-                      selected: AppSettingsService().tradingEnvironment == m['value'],
-                      onSelected: (_) async {
-                        await AppSettingsService().setTradingEnvironment(m['value'] as String);
-                        setState(() {});
-                        _showSnackBar('Environment: ' + (m['label'] as String), isError: false);
-                      },
-                    );
-                  }).toList(),
+                const Divider(color: AppTheme.glassBorder),
+                Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacing16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Environment', style: AppTheme.headingSmall),
+                      const SizedBox(height: AppTheme.spacing12),
+                      Wrap(
+                        spacing: AppTheme.spacing8,
+                        children: [
+                          {'label': 'Live', 'value': 'live'},
+                          {'label': 'Testnet', 'value': 'testnet'},
+                        ].map((m) {
+                          final isSelected = AppSettingsService().tradingEnvironment == m['value'];
+                          return GestureDetector(
+                            onTap: () async {
+                              await AppSettingsService().setTradingEnvironment(m['value'] as String);
+                              setState(() {});
+                              _showSnackBar('Environment: ${m['label']}', isError: false);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacing16,
+                                vertical: AppTheme.spacing12,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: isSelected ? AppTheme.primaryGradient : null,
+                                color: isSelected ? null : AppTheme.glassWhite,
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                border: Border.all(
+                                  color: isSelected ? Colors.transparent : AppTheme.glassBorder,
+                                ),
+                              ),
+                              child: Text(
+                                m['label'] as String,
+                                style: AppTheme.bodyMedium.copyWith(
+                                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.spacing24),
+
+          // Quote Currency
+          _buildSectionHeader('Quote Currency', Icons.currency_exchange),
+          GlassCard(
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select the currency for prices and totals',
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                  ),
+                  const SizedBox(height: AppTheme.spacing16),
+                  Wrap(
+                    spacing: AppTheme.spacing8,
+                    runSpacing: AppTheme.spacing8,
+                    children: ['USDT', 'USDC', 'USD', 'EUR'].map((q) {
+                      final isSelected = _quote == q;
+                      return GestureDetector(
+                        onTap: () async {
+                          final svc = AppSettingsService();
+                          await svc.setQuoteCurrency(q);
+                          setState(() => _quote = q);
+                          _showSnackBar('Quote currency set to: $q', isError: false);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacing16,
+                            vertical: AppTheme.spacing12,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: isSelected ? AppTheme.primaryGradient : null,
+                            color: isSelected ? null : AppTheme.glassWhite,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                            border: Border.all(
+                              color: isSelected ? Colors.transparent : AppTheme.glassBorder,
+                            ),
+                          ),
+                          child: Text(
+                            q,
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: isSelected ? Colors.white : AppTheme.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing24),
 
           // API Section
-          _buildSectionHeader('Binance API'),
+          _buildSectionHeader('Binance API', Icons.vpn_key),
           GlassCard(
-            padding: const EdgeInsets.all(16),
             child: Padding(
-              padding: const EdgeInsets.all(0),
+              padding: const EdgeInsets.all(AppTheme.spacing16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   TextField(
                     controller: _apiKeyController,
-                    decoration: const InputDecoration(
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
                       labelText: 'API Key',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.vpn_key),
+                      labelStyle: TextStyle(color: AppTheme.textSecondary),
+                      filled: true,
+                      fillColor: AppTheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderSide: BorderSide(color: AppTheme.glassBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderSide: BorderSide(color: AppTheme.glassBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                      ),
+                      prefixIcon: const Icon(Icons.vpn_key, color: AppTheme.primary),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacing16),
                   TextField(
                     controller: _apiSecretController,
                     obscureText: _obscureSecret,
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Secret Key',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.lock),
+                      labelStyle: TextStyle(color: AppTheme.textSecondary),
+                      filled: true,
+                      fillColor: AppTheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderSide: BorderSide(color: AppTheme.glassBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderSide: BorderSide(color: AppTheme.glassBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                      ),
+                      prefixIcon: const Icon(Icons.lock, color: AppTheme.primary),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscureSecret ? Icons.visibility : Icons.visibility_off),
+                        icon: Icon(
+                          _obscureSecret ? Icons.visibility : Icons.visibility_off,
+                          color: AppTheme.textSecondary,
+                        ),
                         onPressed: () => setState(() => _obscureSecret = !_obscureSecret),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacing20),
                   Row(
                     children: [
                       Expanded(
@@ -328,9 +447,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onPressed: _saveApiCredentials,
                           icon: const Icon(Icons.save),
                           label: const Text('Save'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppTheme.spacing12),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: _isTestingConnection ? null : _testConnection,
@@ -341,91 +468,130 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.wifi),
-                          label: const Text('Test connection'),
+                          label: const Text('Test'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.primary,
+                            side: const BorderSide(color: AppTheme.primary),
+                            padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.spacing12),
                   TextButton.icon(
                     onPressed: _clearCredentials,
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    label: const Text('Delete credentials', style: TextStyle(color: Colors.red)),
+                    icon: const Icon(Icons.delete_outline, color: AppTheme.error),
+                    label: const Text('Delete Credentials', style: TextStyle(color: AppTheme.error)),
                   ),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.spacing24),
 
           // Appearance Section
-          _buildSectionHeader('Appearance'),
+          _buildSectionHeader('Appearance', Icons.palette),
           GlassCard(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.brightness_6),
-                  title: const Text('Theme'),
-                  subtitle: Text(_getThemeLabel(themeProvider.themeMode), style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: SegmentedButton<AppThemeMode>(
-                    segments: const [
-                      ButtonSegment(
-                        value: AppThemeMode.light,
-                        label: Text('Light'),
-                        icon: Icon(Icons.light_mode),
-                      ),
-                      ButtonSegment(
-                        value: AppThemeMode.dark,
-                        label: Text('Dark'),
-                        icon: Icon(Icons.dark_mode),
-                      ),
-                      ButtonSegment(
-                        value: AppThemeMode.system,
-                        label: Text('System'),
-                        icon: Icon(Icons.settings_brightness),
-                      ),
-                    ],
-                    selected: {themeProvider.themeMode},
-                    onSelectionChanged: (Set<AppThemeMode> selection) {
-                      themeProvider.setThemeMode(selection.first);
-                    },
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Theme Mode', style: AppTheme.headingSmall),
+                  const SizedBox(height: AppTheme.spacing16),
+                  Wrap(
+                    spacing: AppTheme.spacing8,
+                    runSpacing: AppTheme.spacing8,
+                    children: [
+                      {'label': 'Light', 'icon': Icons.light_mode, 'mode': AppThemeMode.light},
+                      {'label': 'Dark', 'icon': Icons.dark_mode, 'mode': AppThemeMode.dark},
+                      {'label': 'System', 'icon': Icons.settings_brightness, 'mode': AppThemeMode.system},
+                    ].map((theme) {
+                      final isSelected = themeProvider.themeMode == theme['mode'];
+                      return GestureDetector(
+                        onTap: () {
+                          themeProvider.setThemeMode(theme['mode'] as AppThemeMode);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacing16,
+                            vertical: AppTheme.spacing12,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: isSelected ? AppTheme.primaryGradient : null,
+                            color: isSelected ? null : AppTheme.glassWhite,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                            border: Border.all(
+                              color: isSelected ? Colors.transparent : AppTheme.glassBorder,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                theme['icon'] as IconData,
+                                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: AppTheme.spacing8),
+                              Text(
+                                theme['label'] as String,
+                                style: AppTheme.bodyMedium.copyWith(
+                                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.spacing24),
 
           // About Section
-          _buildSectionHeader('About'),
+          _buildSectionHeader('About', Icons.info_outline),
           GlassCard(
-            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('MyTradeMate'),
-                  subtitle: Text('Version 1.0.0', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                  leading: Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing8),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    ),
+                    child: const Icon(Icons.rocket_launch, color: Colors.white),
+                  ),
+                  title: Text('MyTradeMate', style: AppTheme.headingMedium),
+                  subtitle: Text(
+                    'Version 1.0.0 - Premium AI Trading',
+                    style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                  ),
                 ),
-                const Divider(),
+                const Divider(color: AppTheme.glassBorder),
                 ListTile(
-                  leading: const Icon(Icons.bug_report),
-                  title: const Text('Report a problem'),
-                  trailing: const Icon(Icons.open_in_new),
+                  leading: const Icon(Icons.bug_report, color: AppTheme.primary),
+                  title: Text('Report a Problem', style: AppTheme.bodyMedium),
+                  trailing: const Icon(Icons.chevron_right, color: AppTheme.textTertiary),
                   onTap: () {
                     _showSnackBar('Coming soon', isError: false);
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.privacy_tip),
-                  title: const Text('Privacy Policy'),
-                  trailing: const Icon(Icons.open_in_new),
+                  leading: const Icon(Icons.privacy_tip, color: AppTheme.primary),
+                  title: Text('Privacy Policy', style: AppTheme.bodyMedium),
+                  trailing: const Icon(Icons.chevron_right, color: AppTheme.textTertiary),
                   onTap: () {
                     _showSnackBar('Coming soon', isError: false);
                   },
@@ -434,57 +600,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
-          const SizedBox(height: 24),
-          _buildSectionHeader('Strategies Guide'),
-          GlassCard(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'What each strategy does and when to use it:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                Text('• Hybrid (Strategies): Combines rule-based logic (e.g., RSI, trend filters) with the AI model signal. Use when you want stricter risk filters and fewer false positives.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
-                const SizedBox(height: 8),
-                Text('• AI Model: Pure model-driven signals from the on-device TFLite model. Use when you want more frequent, model-led entries; pair with tighter position sizing.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
-                const SizedBox(height: 8),
-                Text('• Market: Immediate execution at the current market price. Use for manual quick entries and testing.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
-                const SizedBox(height: 12),
-                Text('Tip: Set your preferred mode in Orders. Hybrid suits swing trading; AI Model suits short-term momentum; Market is manual.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
+          const SizedBox(height: AppTheme.spacing40),
         ],
-        ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted),
+      padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
+      child: Row(
+        children: [
+          Icon(icon, color: AppTheme.primary, size: 20),
+          const SizedBox(width: AppTheme.spacing8),
+          Text(
+            title,
+            style: AppTheme.headingMedium.copyWith(color: AppTheme.textSecondary),
+          ),
+        ],
       ),
     );
-  }
-
-  String _getThemeLabel(AppThemeMode mode) {
-    switch (mode) {
-      case AppThemeMode.light:
-        return 'Light';
-      case AppThemeMode.dark:
-        return 'Dark';
-      case AppThemeMode.system:
-        return 'System';
-    }
   }
 }

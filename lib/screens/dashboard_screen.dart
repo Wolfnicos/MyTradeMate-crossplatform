@@ -348,31 +348,38 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppTheme.spacing8),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              Flexible(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppTheme.spacing8),
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Icon(
+                        Icons.trending_up,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.trending_up,
-                      color: Colors.white,
-                      size: 20,
+                    const SizedBox(width: AppTheme.spacing12),
+                    Flexible(
+                      child: Text(
+                        'Market',
+                        style: AppTheme.headingMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppTheme.spacing12),
-                  Text(
-                    'Market Performance',
-                    style: AppTheme.headingMedium,
-                  ),
-                ],
+                  ],
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.refresh, size: 20),
                 onPressed: _isLoading ? null : _refresh,
                 color: AppTheme.textSecondary,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
@@ -468,7 +475,7 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '\$${price.toStringAsFixed(price >= 100 ? 0 : 2)}',
+                  '${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${price.toStringAsFixed(price >= 100 ? 0 : 2)}',
                   style: AppTheme.bodySmall.copyWith(
                     color: AppTheme.textTertiary,
                   ),

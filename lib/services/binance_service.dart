@@ -8,7 +8,7 @@ import 'dart:convert' show utf8;
 import '../models/candle.dart';
 import '../services/app_settings_service.dart';
 // import '../services/technical_indicator_calculator.dart';
-import '../services/mtf_feature_builder.dart';
+import '../services/full_feature_builder.dart';
 
 class BinanceService {
   static const String _baseHostLive = 'api.binance.com';
@@ -448,13 +448,15 @@ class BinanceService {
         highData = await fetchCustomKlines(symbol, '4h', limit: 260 ~/ 4 + 10);
       }
 
-      if (baseData.length < 60) {
-        throw Exception('Insufficient $interval candles: got ${baseData.length}, need >=60');
+      if (baseData.length < 260) {
+        throw Exception('Insufficient $interval candles: got ${baseData.length}, need >=260 (for SMA200)');
       }
 
-      final mtf = MtfFeatureBuilder().buildFeatures(symbol: symbol, base1h: baseData, low15m: lowData, high4h: highData);
-      debugPrint('✅ BinanceService: MTF features ${mtf.length}x${mtf.isNotEmpty ? mtf.first.length : 0} [@$interval]');
-      return mtf;
+      debugPrint('🔧 BinanceService: Building 76 features from ${baseData.length} candles');
+      final fullBuilder = FullFeatureBuilder();
+      final features = fullBuilder.buildFeatures(candles: baseData);
+      debugPrint('✅ BinanceService: Full features ${features.length}x${features.isNotEmpty ? features.first.length : 0} [@$interval]');
+      return features;
     } catch (e) {
       debugPrint('❌ BinanceService: Error getting features → $e');
       rethrow;

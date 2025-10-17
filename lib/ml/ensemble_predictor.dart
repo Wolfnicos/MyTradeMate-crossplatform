@@ -4,15 +4,15 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 /// Ensemble Predictor for MyTradeMate
 ///
 /// Combines 3 AI models with weighted voting:
-/// - Transformer (50% weight): Best for complex temporal patterns
+/// - Transformer (50% weight): Best for complex temporal patterns (40.77% accuracy)
 /// - LSTM (30% weight): Strong at sequential dependencies
 /// - Random Forest (20% weight): Interpretable baseline
 ///
 /// This ensemble approach reduces overfitting and improves generalization
 /// by leveraging strengths of different model architectures.
 ///
-/// Input: 120 timesteps × 42 features (from MtfFeatureBuilderV2)
-/// Output: 4-class probabilities [STRONG_SELL, SELL, BUY, STRONG_BUY]
+/// Input: 60 timesteps × 76 features (25 candle patterns + 51 technical indicators)
+/// Output: 5-class probabilities [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
 ///
 /// Example:
 /// ```dart
@@ -50,12 +50,13 @@ class EnsemblePredictor {
   final Map<String, int> _modelErrors = {};
   bool _useLegacyFallback = false;
 
-  // Class labels
+  // Class labels (5 classes to match training)
   static const List<String> _classLabels = [
     'STRONG_SELL', // 0
     'SELL', // 1
-    'BUY', // 2
-    'STRONG_BUY', // 3
+    'HOLD', // 2
+    'BUY', // 3
+    'STRONG_BUY', // 4
   ];
 
   /// Load all ensemble models
@@ -115,25 +116,25 @@ class EnsemblePredictor {
 
   /// Load Transformer model
   Future<void> _loadTransformerModel() async {
-    _transformerModel = await Interpreter.fromAsset('assets/ml/transformer_v1_float32.tflite');
+    _transformerModel = await Interpreter.fromAsset('assets/models/transformer_crypto_model.tflite');
     _modelStatus['transformer'] = true;
-    debugPrint('   ✅ Transformer loaded (v1 - 58.67% accuracy)');
+    debugPrint('   ✅ Transformer loaded (40.77% accuracy on 76 features)');
   }
 
   /// Load LSTM model
   Future<void> _loadLstmModel() async {
     try {
       // LSTM uses Flex ops - try loading directly first
-      _lstmModel = await Interpreter.fromAsset('assets/ml/lstm_model.tflite');
+      _lstmModel = await Interpreter.fromAsset('assets/models/lstm_crypto_model.tflite');
       _modelStatus['lstm'] = true;
-      debugPrint('   ✅ LSTM loaded (Bidirectional - 51% accuracy)');
+      debugPrint('   ✅ LSTM loaded (trained on 76 features)');
     } catch (e) {
       // If loading fails, try with options
       try {
         debugPrint('   ⚠️ LSTM direct load failed, trying with options...');
         final options = InterpreterOptions()..threads = 2;
         _lstmModel = await Interpreter.fromAsset(
-          'assets/ml/lstm_model.tflite',
+          'assets/models/lstm_crypto_model.tflite',
           options: options,
         );
         _modelStatus['lstm'] = true;
@@ -167,7 +168,7 @@ class EnsemblePredictor {
   /// Predict using ensemble voting
   ///
   /// Args:
-  ///   features: [120, 42] or [60, 34] feature matrix
+  ///   features: [60, 76] feature matrix (60 timesteps × 76 features)
   ///
   /// Returns:
   ///   EnsemblePrediction with weighted consensus
@@ -176,16 +177,12 @@ class EnsemblePredictor {
       throw Exception('Models not loaded. Call loadModels() first.');
     }
 
-    // Auto-convert 60x34 -> 120x42 if needed
-    if (features.length == 60 && features.first.length == 34) {
-      debugPrint('⚙️ Converting 60x34 -> 120x42 features');
-      features = _convert60x34To120x42(features);
+    // Validate input shape
+    if (features.length != 60 || features[0].length != 76) {
+      throw Exception('Invalid input shape: ${features.length}x${features[0].length}. Expected 60x76 (60 timesteps × 76 features)');
     }
 
-    // Validate input shape
-    if (features.length != 120 || features[0].length != 42) {
-      throw Exception('Invalid input shape: ${features.length}x${features[0].length}. Expected 120x42 or 60x34');
-    }
+    debugPrint('✅ Input shape validated: ${features.length}x${features[0].length}');
 
     // Get predictions from each model
     final transformerProbs = await _predictTransformer(features);
@@ -230,16 +227,16 @@ class EnsemblePredictor {
   /// Predict using Transformer model
   Future<List<double>> _predictTransformer(List<List<double>> features) async {
     if (_transformerModel == null || !_modelStatus['transformer']!) {
-      return [0.25, 0.25, 0.25, 0.25]; // Neutral if model not loaded
+      return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral if model not loaded (5 classes)
     }
 
     final startTime = DateTime.now();
     try {
-      // Reshape input: [1, 120, 42]
+      // Reshape input: [1, 60, 76]
       var input = [features];
 
-      // Output buffer: [1, 4]
-      var output = List.generate(1, (_) => List.filled(4, 0.0));
+      // Output buffer: [1, 5] (5 classes: STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY)
+      var output = List.generate(1, (_) => List.filled(5, 0.0));
 
       // Run inference
       _transformerModel!.run(input, output);
@@ -252,23 +249,23 @@ class EnsemblePredictor {
     } catch (e) {
       debugPrint('⚠️ Transformer inference failed: $e');
       _modelErrors['transformer'] = (_modelErrors['transformer'] ?? 0) + 1;
-      return [0.25, 0.25, 0.25, 0.25];
+      return [0.2, 0.2, 0.2, 0.2, 0.2];
     }
   }
 
   /// Predict using LSTM model
   Future<List<double>> _predictLstm(List<List<double>> features) async {
     if (_lstmModel == null || !_modelStatus['lstm']!) {
-      return [0.25, 0.25, 0.25, 0.25]; // Neutral if model not loaded
+      return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral if model not loaded (5 classes)
     }
 
     final startTime = DateTime.now();
     try {
-      // Reshape input: [1, 120, 42]
+      // Reshape input: [1, 60, 76]
       var input = [features];
 
-      // Output buffer: [1, 4]
-      var output = List.generate(1, (_) => List.filled(4, 0.0));
+      // Output buffer: [1, 5] (5 classes)
+      var output = List.generate(1, (_) => List.filled(5, 0.0));
 
       // Run inference
       _lstmModel!.run(input, output);
@@ -281,54 +278,52 @@ class EnsemblePredictor {
     } catch (e) {
       debugPrint('⚠️ LSTM inference failed: $e');
       _modelErrors['lstm'] = (_modelErrors['lstm'] ?? 0) + 1;
-      return [0.25, 0.25, 0.25, 0.25];
+      return [0.2, 0.2, 0.2, 0.2, 0.2];
     }
   }
 
   /// Predict using Random Forest (fallback rule-based)
   ///
-  /// NOTE: Features are normalized to 0-1 range, NOT original ranges!
-  /// RSI: normalized as (rsi-30)/40, so 30->0, 70->1
-  /// MACD: normalized, positive values > baseline
+  /// Uses technical indicators from the 76-feature vector
   Future<List<double>> _predictRandomForest(List<List<double>> features) async {
-    // Fallback: Simple rule-based prediction
-    // NOTE: After convert 60x34->120x42, features have PADDING ZEROS at indices 34-41!
-    // Original 34 features are at indices 0-33
+    // Fallback: Simple rule-based prediction using 76-feature vector
+    // Feature indices (from Python training):
+    // 30-32: RSI (rsi, rsi_oversold, rsi_overbought)
+    // 33-37: MACD (macd, macd_signal, macd_histogram, macd_cross_above, macd_cross_below)
+    // 73-75: Trend (higher_high, lower_low, uptrend, downtrend)
 
-    // Get features from MIDDLE of sequence (not last - might be padding)
+    // Get features from MIDDLE of sequence
     final midIdx = features.length ~/ 2;
     final midTimestep = features[midIdx];
 
-    // Extract key indicators from BASE 1h timeframe (indices 0-9)
-    // Index mapping based on MTFBuilder:
-    // 0: ret1, 1: rv_24, 2: rsi, 3: macd, 4: ich_a, 5: ich_b, 6: atr, 7: trend_up, 8: close, 9: volume
-    final rsiNorm = midTimestep[2];  // RSI (normalized)
-    final macdNorm = midTimestep[3]; // MACD (normalized)
-    final trendUp = midTimestep[7];  // Trend direction (0 or 1)
+    // Extract key indicators (these are RAW values, not normalized 0-1)
+    final rsi = midTimestep[30];  // RSI (0-100)
+    final macd = midTimestep[33]; // MACD (can be negative)
+    final uptrend = midTimestep[74]; // Uptrend indicator (0 or 1)
 
     // 🔍 DEBUG: Print RF inputs
-    debugPrint('🔍 RF INPUTS (NORMALIZED): RSI=$rsiNorm, MACD=$macdNorm, Trend=$trendUp');
+    debugPrint('🔍 RF INPUTS: RSI=$rsi, MACD=$macd, Uptrend=$uptrend');
 
-    // Simple rules using NORMALIZED values (0-1 range)
+    // Simple rules using RAW values
     double strongSellProb = 0.0;
     double sellProb = 0.0;
+    double holdProb = 0.2; // Base hold probability
     double buyProb = 0.0;
     double strongBuyProb = 0.0;
 
-    // RSI logic (normalized: <0.3 is oversold, >0.7 is overbought in 0-1 range)
-    if (rsiNorm < 0.3) {
+    // RSI logic (0-100 scale)
+    if (rsi < 30) {
       strongBuyProb += 0.4; // Oversold
       buyProb += 0.2;
-    } else if (rsiNorm > 0.7) {
+    } else if (rsi > 70) {
       strongSellProb += 0.4; // Overbought
       sellProb += 0.2;
     } else {
-      buyProb += 0.2;
-      sellProb += 0.2;
+      holdProb += 0.3; // Neutral RSI -> hold
     }
 
-    // MACD logic (normalized: >0.5 is bullish, <0.5 is bearish)
-    if (macdNorm > 0.5) {
+    // MACD logic (positive = bullish, negative = bearish)
+    if (macd > 0) {
       buyProb += 0.3;
       strongBuyProb += 0.2;
     } else {
@@ -337,7 +332,7 @@ class EnsemblePredictor {
     }
 
     // Trend logic (binary: 1 = uptrend, 0 = downtrend)
-    if (trendUp > 0.5) {
+    if (uptrend > 0.5) {
       // Uptrend - favor buys
       buyProb += 0.2;
       strongBuyProb += 0.1;
@@ -348,18 +343,19 @@ class EnsemblePredictor {
     }
 
     // Normalize
-    final total = strongSellProb + sellProb + buyProb + strongBuyProb;
+    final total = strongSellProb + sellProb + holdProb + buyProb + strongBuyProb;
     if (total > 0) {
       strongSellProb /= total;
       sellProb /= total;
+      holdProb /= total;
       buyProb /= total;
       strongBuyProb /= total;
     } else {
       // Fallback to neutral
-      strongSellProb = sellProb = buyProb = strongBuyProb = 0.25;
+      strongSellProb = sellProb = holdProb = buyProb = strongBuyProb = 0.2;
     }
 
-    return [strongSellProb, sellProb, buyProb, strongBuyProb];
+    return [strongSellProb, sellProb, holdProb, buyProb, strongBuyProb];
   }
 
   /// Weighted voting ensemble
@@ -370,9 +366,9 @@ class EnsemblePredictor {
     required List<double> lstmProbs,
     required List<double> rfProbs,
   }) {
-    final ensembleProbs = List<double>.filled(4, 0.0);
+    final ensembleProbs = List<double>.filled(5, 0.0); // 5 classes
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
       ensembleProbs[i] = _transformerWeight * transformerProbs[i] +
           _lstmWeight * lstmProbs[i] +
           _randomForestWeight * rfProbs[i];
@@ -381,7 +377,7 @@ class EnsemblePredictor {
     // Normalize (should already sum to ~1.0, but ensure it)
     final sum = ensembleProbs.reduce((a, b) => a + b);
     if (sum > 0) {
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 5; i++) {
         ensembleProbs[i] /= sum;
       }
     }
@@ -416,25 +412,6 @@ class EnsemblePredictor {
     return buffer.toString();
   }
 
-  /// Convert 60x34 features to 120x42
-  ///
-  /// Strategy: Duplicate timesteps (60->120) and pad features (34->42)
-  /// - Timesteps: Repeat each of the 60 timesteps twice to get 120
-  /// - Features: Pad with zeros for missing 8 features (alternative data)
-  List<List<double>> _convert60x34To120x42(List<List<double>> input) {
-    final output = <List<double>>[];
-
-    for (final row in input) {
-      // Pad row from 34 to 42 features (add 8 zeros for alt data)
-      final paddedRow = [...row, ...List.filled(8, 0.0)];
-
-      // Duplicate each timestep to go from 60 to 120
-      output.add(List.from(paddedRow));
-      output.add(List.from(paddedRow));
-    }
-
-    return output;
-  }
 
   /// Dispose interpreters
   void dispose() {
@@ -469,8 +446,10 @@ class EnsemblePrediction {
       case 0: // STRONG_SELL
       case 1: // SELL
         return SignalType.sell;
-      case 2: // BUY
-      case 3: // STRONG_BUY
+      case 2: // HOLD
+        return SignalType.hold;
+      case 3: // BUY
+      case 4: // STRONG_BUY
         return SignalType.buy;
       default:
         return SignalType.hold;
@@ -485,7 +464,7 @@ class EnsemblePrediction {
 
   /// Check if prediction is strong (STRONG_SELL or STRONG_BUY)
   bool get isStrong {
-    return classIndex == 0 || classIndex == 3;
+    return classIndex == 0 || classIndex == 4;
   }
 
   @override
@@ -497,8 +476,9 @@ Confidence: ${(confidence * 100).toStringAsFixed(1)}%
 Probabilities:
   STRONG_SELL: ${(probabilities[0] * 100).toStringAsFixed(1)}%
   SELL: ${(probabilities[1] * 100).toStringAsFixed(1)}%
-  BUY: ${(probabilities[2] * 100).toStringAsFixed(1)}%
-  STRONG_BUY: ${(probabilities[3] * 100).toStringAsFixed(1)}%
+  HOLD: ${(probabilities[2] * 100).toStringAsFixed(1)}%
+  BUY: ${(probabilities[3] * 100).toStringAsFixed(1)}%
+  STRONG_BUY: ${(probabilities[4] * 100).toStringAsFixed(1)}%
 Tradeable: ${isTradeable ? "YES ✅" : "NO ❌"}
 ''';
   }

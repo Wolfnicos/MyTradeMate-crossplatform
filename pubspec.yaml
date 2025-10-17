@@ -45,6 +45,7 @@ dependencies:
 
   # Networking
   http: ^1.2.2
+  dio: ^5.4.0  # Better HTTP client with interceptors and retry logic
   xml: ^6.5.0
 
   # State Management
@@ -89,6 +90,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/models/
+    - assets/models/multi_pattern_model.tflite
+    - assets/models/multi_pattern_scaler.json
+    - assets/ml/  # TFLite models for ensemble predictor
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

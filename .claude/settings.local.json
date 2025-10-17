@@ -14,7 +14,9 @@
       "Read(//Users/lupudragos/Library/Android/sdk/**)",
       "Bash(/Users/lupudragos/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager:*)",
       "Bash(export JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home)",
-      "Bash(/Users/lupudragos/Library/Android/sdk/emulator/emulator:*)"
+      "Bash(/Users/lupudragos/Library/Android/sdk/emulator/emulator:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

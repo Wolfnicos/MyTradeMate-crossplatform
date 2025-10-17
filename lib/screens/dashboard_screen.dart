@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
-import '../design_system/screen_backgrounds.dart';
-import '../design_system/widgets/glass_card.dart';
-import '../widgets/dashboard/dashboard_grid.dart';
-import '../widgets/dashboard/collapsible_news_banner.dart';
- 
+import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/ai_indicator.dart';
+import '../ml/ensemble_predictor.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -13,20 +12,81 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: SafeArea(
-        child: Container(
-          decoration: ScreenBackgrounds.market(context),
-          child: ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Text('Dashboard', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              const CollapsibleNewsBanner(),
-              const SizedBox(height: 16),
-              const DashboardGrid(),
-              const SizedBox(height: 24),
-            ],
-          ),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Header
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacing20,
+                  AppTheme.spacing24,
+                  AppTheme.spacing20,
+                  AppTheme.spacing16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title with AI Indicator
+                    Row(
+                      children: [
+                        Text(
+                          'Dashboard',
+                          style: AppTheme.displayLarge,
+                        ),
+                        const SizedBox(width: AppTheme.spacing12),
+                        AIIndicator(
+                          isActive: globalEnsemblePredictor.isLoaded,
+                          isLoading: !globalEnsemblePredictor.isLoaded,
+                          label: 'AI Active',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spacing8),
+                    Text(
+                      'Welcome back to MyTradeMate',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Content
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: AppTheme.spacing16),
+
+                  // Portfolio Overview Card
+                  const RepaintBoundary(
+                    child: PortfolioOverviewCard(),
+                  ),
+
+                  const SizedBox(height: AppTheme.spacing16),
+
+                  // AI Models Status Card
+                  const RepaintBoundary(
+                    child: AIModelsStatusCard(),
+                  ),
+
+                  const SizedBox(height: AppTheme.spacing16),
+
+                  // P&L Today Section
+                  const RepaintBoundary(
+                    child: PnLTodaySection(),
+                  ),
+
+                  const SizedBox(height: AppTheme.spacing32),
+                ]),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -38,39 +98,205 @@ class PortfolioOverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final gainColor = theme.colorScheme.secondary;
+    const totalValue = 122000.0;
+    const dailyPnL = 4200.0;
+    const dailyPnLPercent = 2.0;
+    final isGain = dailyPnL >= 0;
 
     return GlassCard(
-      padding: const EdgeInsets.all(20.0),
-      showGlow: true,
-      child: Padding(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Portfolio Overview', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(
-              (AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)) + '122,000',
-              style: theme.textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  '+' + AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency) + '4,200 (2.0%)',
-                  style: theme.textTheme.titleMedium?.copyWith(color: gainColor, fontWeight: FontWeight.bold),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing8),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                 ),
-                const SizedBox(width: 4),
-                Icon(Icons.arrow_upward, color: gainColor, size: 18),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacing12),
+              Text(
+                'Portfolio Overview',
+                style: AppTheme.headingMedium,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppTheme.spacing20),
+
+          // Total Value
+          Text(
+            'Total Value',
+            style: AppTheme.bodySmall.copyWith(
+              color: AppTheme.textTertiary,
+              textBaseline: TextBaseline.alphabetic,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing4),
+          Text(
+            '${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${totalValue.toStringAsFixed(0)}',
+            style: AppTheme.monoLarge,
+          ),
+
+          const SizedBox(height: AppTheme.spacing16),
+
+          // Daily P&L
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacing12),
+            decoration: BoxDecoration(
+              gradient: isGain ? AppTheme.buyGradient : AppTheme.sellGradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      isGain ? Icons.trending_up : Icons.trending_down,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Text(
+                      'Today',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                Flexible(
+                  child: Text(
+                    '${isGain ? '+' : ''}${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${dailyPnL.toStringAsFixed(0)} (${dailyPnLPercent.toStringAsFixed(1)}%)',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// AI Models Status Card
+class AIModelsStatusCard extends StatelessWidget {
+  const AIModelsStatusCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing8),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.secondaryGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
+                child: const Icon(
+                  Icons.psychology,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacing12),
+              Text(
+                'AI Models',
+                style: AppTheme.headingMedium,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppTheme.spacing16),
+
+          // Model badges
+          Wrap(
+            spacing: AppTheme.spacing8,
+            runSpacing: AppTheme.spacing8,
+            children: [
+              AIStatusBadge(
+                isActive: globalEnsemblePredictor.isLoaded,
+                modelName: 'Transformer',
+                confidence: 0.587,
+              ),
+              AIStatusBadge(
+                isActive: globalEnsemblePredictor.isLoaded,
+                modelName: 'LSTM',
+                confidence: 0.51,
+              ),
+              AIStatusBadge(
+                isActive: globalEnsemblePredictor.isLoaded,
+                modelName: 'Random Forest',
+                confidence: 0.438,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppTheme.spacing16),
+
+          // Status message
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacing12),
+            decoration: BoxDecoration(
+              color: globalEnsemblePredictor.isLoaded
+                  ? AppTheme.success.withOpacity(0.1)
+                  : AppTheme.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              border: Border.all(
+                color: globalEnsemblePredictor.isLoaded
+                    ? AppTheme.success
+                    : AppTheme.warning,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  globalEnsemblePredictor.isLoaded
+                      ? Icons.check_circle
+                      : Icons.hourglass_empty,
+                  color: globalEnsemblePredictor.isLoaded
+                      ? AppTheme.success
+                      : AppTheme.warning,
+                  size: 16,
+                ),
+                const SizedBox(width: AppTheme.spacing8),
+                Expanded(
+                  child: Text(
+                    globalEnsemblePredictor.isLoaded
+                        ? 'All AI models loaded and ready'
+                        : 'Loading AI models...',
+                    style: AppTheme.bodySmall.copyWith(
+                      color: globalEnsemblePredictor.isLoaded
+                          ? AppTheme.success
+                          : AppTheme.warning,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -91,6 +317,7 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
   Map<String, double>? _sol;
   Map<String, double>? _wif;
   Map<String, double>? _trump;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -99,6 +326,7 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
   }
 
   Future<void> _refresh() async {
+    setState(() => _isLoading = true);
     try {
       _btc = await _binance.fetchTicker24h('BTCUSDT');
       _eth = await _binance.fetchTicker24h('ETHUSDT');
@@ -107,55 +335,177 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
       _wif = await _binance.fetchTicker24hWithFallback(['WLFIEUR','WLFIUSDT', 'WLFIUSDC', 'WLFIBUSD']);
       _trump = await _binance.fetchTicker24hWithFallback(['TRUMPUSDT', 'DJTUSDT']);
     } catch (_) {}
-    if (mounted) setState(() {});
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      padding: const EdgeInsets.all(20.0),
-      child: Padding(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'P&L Today',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            _buildPnLRow(context, 'BTC', _btc),
-            _buildPnLRow(context, 'ETH', _eth),
-            _buildPnLRow(context, 'BNB', _bnb),
-            _buildPnLRow(context, 'SOL', _sol),
-            _buildPnLRow(context, 'WIF', _wif),
-            _buildPnLRow(context, 'TRUMP', _trump),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing8),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                    ),
+                    child: const Icon(
+                      Icons.trending_up,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacing12),
+                  Text(
+                    'Market Performance',
+                    style: AppTheme.headingMedium,
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, size: 20),
+                onPressed: _isLoading ? null : _refresh,
+                color: AppTheme.textSecondary,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppTheme.spacing16),
+
+          // Coin list
+          if (_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(AppTheme.spacing20),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else ...[
+            _buildPnLRow('BTC', _btc),
+            _buildDivider(),
+            _buildPnLRow('ETH', _eth),
+            _buildDivider(),
+            _buildPnLRow('BNB', _bnb),
+            _buildDivider(),
+            _buildPnLRow('SOL', _sol),
+            _buildDivider(),
+            _buildPnLRow('WIF', _wif),
+            _buildDivider(),
+            _buildPnLRow('TRUMP', _trump),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildPnLRow(BuildContext context, String coin, Map<String, double>? t) {
+  Widget _buildDivider() {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      color: AppTheme.glassBorder,
+    );
+  }
+
+  Widget _buildPnLRow(String coin, Map<String, double>? t) {
     final double chg = t?['priceChangePercent'] ?? 0.0;
+    final double price = t?['lastPrice'] ?? 0.0;
     final bool isGain = chg >= 0;
-    final color = isGain ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.error;
-    final icon = isGain ? Icons.arrow_upward : Icons.arrow_downward;
+    final color = isGain ? AppTheme.buyGreen : AppTheme.sellRed;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing12),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: Colors.grey.shade300,
-            child: Text(coin.substring(0, 1), style: const TextStyle(fontWeight: FontWeight.bold)),
+          // Coin avatar
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  color.withOpacity(0.3),
+                  color.withOpacity(0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              border: Border.all(
+                color: color.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                coin.substring(0, 1),
+                style: AppTheme.headingSmall.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 16),
-          Text(coin, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-          const Spacer(),
-          Text((isGain ? '+' : '') + chg.toStringAsFixed(2) + '%', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: color, fontWeight: FontWeight.bold)),
-          const SizedBox(width: 8),
-          Icon(icon, color: color, size: 18),
+
+          const SizedBox(width: AppTheme.spacing12),
+
+          // Coin name & price
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  coin,
+                  style: AppTheme.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '\$${price.toStringAsFixed(price >= 100 ? 0 : 2)}',
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Change percentage
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing12,
+              vertical: AppTheme.spacing8,
+            ),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isGain ? Icons.arrow_upward : Icons.arrow_downward,
+                  color: color,
+                  size: 16,
+                ),
+                const SizedBox(width: AppTheme.spacing4),
+                Text(
+                  '${isGain ? '+' : ''}${chg.toStringAsFixed(2)}%',
+                  style: AppTheme.monoMedium.copyWith(
+                    color: color,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

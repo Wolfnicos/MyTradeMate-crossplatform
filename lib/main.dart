@@ -11,7 +11,7 @@ import 'screens/orders_screen.dart';
 import 'screens/portfolio_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/app_settings_service.dart';
-import 'design_system/app_theme.dart';
+import 'theme/app_theme.dart';
 import 'providers/navigation_provider.dart';
 import 'services/achievement_service.dart';
 
@@ -61,9 +61,9 @@ class MyTradeMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'MyTradeMate',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(context),
-      darkTheme: AppTheme.dark(context),
-      themeMode: themeProvider.currentThemeMode,
+      theme: AppTheme.darkTheme, // Using premium dark theme for all modes
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.dark, // Force dark mode for premium look
       home: const HomePage(),
     );
   }

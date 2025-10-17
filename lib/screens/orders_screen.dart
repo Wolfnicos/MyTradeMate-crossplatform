@@ -207,35 +207,129 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             return OpenOrdersCard(symbol: _selectedPair, paperMode: paper);
                           },
                         ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 110,
-                          child: AiStrategyCarousel(
-                            strategies: hybridStrategiesService.strategies,
-                            onSelect: (_) {},
+                        const SizedBox(height: AppTheme.spacing16),
+
+                        // Main Order Card - ALL IN ONE
+                        GlassCard(
+                          padding: const EdgeInsets.all(AppTheme.spacing20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Pair Selector
+                              Text(
+                                'Trading Pair',
+                                style: AppTheme.labelMedium.copyWith(
+                                  color: AppTheme.textTertiary,
+                                ),
+                              ),
+                              const SizedBox(height: AppTheme.spacing8),
+                              _buildPairSelector(context),
+
+                              const SizedBox(height: AppTheme.spacing20),
+
+                              // Amount Input
+                              Text(
+                                'Amount',
+                                style: AppTheme.labelMedium.copyWith(
+                                  color: AppTheme.textTertiary,
+                                ),
+                              ),
+                              const SizedBox(height: AppTheme.spacing8),
+                              TextField(
+                                controller: _amountCtrl,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                style: AppTheme.bodyLarge,
+                                decoration: InputDecoration(
+                                  hintText: '0.00',
+                                  hintStyle: AppTheme.bodyLarge.copyWith(
+                                    color: AppTheme.textDisabled,
+                                  ),
+                                  filled: true,
+                                  fillColor: AppTheme.surfaceVariant,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacing16,
+                                    vertical: AppTheme.spacing16,
+                                  ),
+                                  suffixText: _selectedPair.replaceAll('USDT', '').replaceAll('EUR', '').replaceAll('USD', ''),
+                                  suffixStyle: AppTheme.bodyMedium.copyWith(
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                                onChanged: (v) {
+                                  if (!_updatingFields) {
+                                    setState(() {
+                                      _updatingFields = true;
+                                      final amt = double.tryParse(v) ?? 0.0;
+                                      final price = double.tryParse(_priceCtrl.text) ?? 0.0;
+                                      _totalCtrl.text = (amt * price).toStringAsFixed(2);
+                                      _updatingFields = false;
+                                    });
+                                  }
+                                },
+                              ),
+
+                              const SizedBox(height: AppTheme.spacing20),
+
+                              // Current Price Display
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Current Price',
+                                    style: AppTheme.labelMedium.copyWith(
+                                      color: AppTheme.textTertiary,
+                                    ),
+                                  ),
+                                  Text(
+                                    _priceCtrl.text.isEmpty ? 'Loading...' : '${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${double.tryParse(_priceCtrl.text)?.toStringAsFixed(2) ?? '0.00'}',
+                                    style: AppTheme.monoMedium.copyWith(
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: AppTheme.spacing12),
+
+                              // Total Display
+                              Container(
+                                padding: const EdgeInsets.all(AppTheme.spacing16),
+                                decoration: BoxDecoration(
+                                  color: (isBuy ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                  border: Border.all(
+                                    color: (isBuy ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Total',
+                                      style: AppTheme.labelLarge.copyWith(
+                                        color: isBuy ? AppTheme.buyGreen : AppTheme.sellRed,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${_totalCtrl.text.isEmpty ? '0.00' : _totalCtrl.text}',
+                                      style: AppTheme.monoMedium.copyWith(
+                                        color: isBuy ? AppTheme.buyGreen : AppTheme.sellRed,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        CollapsibleProtectionBanner(
-                          enabled: _ocoEnabled,
-                          stopLossPct: _stopLossPct,
-                          takeProfitPct: _takeProfitPct,
-                          onEnabledChanged: (v) => setState(() => _ocoEnabled = v),
-                          onStopLossChanged: (v) => setState(() => _stopLossPct = v),
-                          onTakeProfitChanged: (v) => setState(() => _takeProfitPct = v),
-                        ),
-                        const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(16), child: _buildPairSelector(context)),
-                        const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(16), child: _buildOrderTypeBanner(context)),
-                        const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(16), child: _buildAmountField()),
-                        const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(16), child: _buildLimitPriceField()),
-                        const SizedBox(height: 16),
-                        GlassCard(padding: const EdgeInsets.all(16), child: _buildTotalFiatField()),
-                        _buildAmountSummary(),
-                        const SizedBox(height: AppTheme.spacing32),
+
+                        const SizedBox(height: AppTheme.spacing24),
 
                         // Execute Button - SUPER CLEAR
                         RepaintBoundary(

@@ -78,6 +78,53 @@ class BinanceService {
     }
   }
 
+  /// Get account balances
+  /// Returns Map<String, double> with asset symbol as key and free balance as value
+  Future<Map<String, double>> getAccountBalances() async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final queryString = 'timestamp=$timestamp';
+      final signature = _generateSignature(queryString);
+
+      final uri = Uri.https(_baseHost, '/api/v3/account', {
+        'timestamp': timestamp.toString(),
+        'signature': signature,
+      });
+
+      final response = await http.get(
+        uri,
+        headers: {'X-MBX-APIKEY': _apiKey!},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Binance account error ${response.statusCode}: ${response.body}');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final balances = data['balances'] as List<dynamic>;
+
+      final Map<String, double> result = {};
+      for (final balance in balances) {
+        final asset = balance['asset'] as String;
+        final free = double.tryParse(balance['free'].toString()) ?? 0.0;
+        final locked = double.tryParse(balance['locked'].toString()) ?? 0.0;
+        final total = free + locked;
+        if (total > 0) {
+          result[asset] = total;
+        }
+      }
+
+      return result;
+    } catch (e) {
+      debugPrint('Failed to fetch account balances: $e');
+      rethrow;
+    }
+  }
+
   String _generateSignature(String queryString) {
     final key = utf8.encode(_apiSecret!);
     final bytes = utf8.encode(queryString);

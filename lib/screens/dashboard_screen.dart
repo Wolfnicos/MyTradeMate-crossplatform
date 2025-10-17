@@ -93,16 +93,82 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-class PortfolioOverviewCard extends StatelessWidget {
+class PortfolioOverviewCard extends StatefulWidget {
   const PortfolioOverviewCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const totalValue = 122000.0;
-    const dailyPnL = 4200.0;
-    const dailyPnLPercent = 2.0;
-    final isGain = dailyPnL >= 0;
+  State<PortfolioOverviewCard> createState() => _PortfolioOverviewCardState();
+}
 
+class _PortfolioOverviewCardState extends State<PortfolioOverviewCard> {
+  final BinanceService _binance = BinanceService();
+  bool _isLoading = true;
+  double _totalValue = 0.0;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPortfolio();
+  }
+
+  Future<void> _loadPortfolio() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await _binance.loadCredentials();
+      final balances = await _binance.getAccountBalances();
+      final quote = AppSettingsService().quoteCurrency.toUpperCase();
+
+      double total = 0.0;
+
+      // Add quote currency balance directly (EUR, USD, USDT, USDC)
+      total += balances[quote] ?? 0.0;
+
+      // Convert other assets to quote currency
+      for (final entry in balances.entries) {
+        final asset = entry.key;
+        final amount = entry.value;
+
+        if (asset == quote) continue; // Already added
+
+        try {
+          // Try to get price for this asset in quote currency
+          final ticker = await _binance.fetchTicker24hWithFallback([
+            '$asset$quote',
+            '${asset}USDT',
+            '${asset}EUR',
+            '${asset}USDC'
+          ]);
+          final price = ticker['lastPrice'] ?? 0.0;
+          total += amount * price;
+        } catch (e) {
+          print('Portfolio: Could not get price for $asset: $e');
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _totalValue = total;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Portfolio: Error loading portfolio: $e');
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to load portfolio';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,48 +207,46 @@ class PortfolioOverviewCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppTheme.spacing4),
-          Text(
-            '${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${totalValue.toStringAsFixed(0)}',
-            style: AppTheme.monoLarge,
-          ),
+
+          if (_isLoading)
+            const CircularProgressIndicator()
+          else if (_error != null)
+            Text(
+              _error!,
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+            )
+          else
+            Text(
+              '${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${_totalValue.toStringAsFixed(2)}',
+              style: AppTheme.monoLarge,
+            ),
 
           const SizedBox(height: AppTheme.spacing16),
 
-          // Daily P&L
+          // Daily P&L - Hidden for now (requires historical data)
           Container(
             padding: const EdgeInsets.all(AppTheme.spacing12),
             decoration: BoxDecoration(
-              gradient: isGain ? AppTheme.buyGradient : AppTheme.sellGradient,
+              color: AppTheme.glassWhite,
               borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              border: Border.all(
+                color: AppTheme.glassBorder,
+                width: 1,
+              ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      isGain ? Icons.trending_up : Icons.trending_down,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppTheme.spacing8),
-                    Text(
-                      'Today',
-                      style: AppTheme.bodyMedium.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                Icon(
+                  Icons.info_outline,
+                  color: AppTheme.textTertiary,
+                  size: 16,
                 ),
-                Flexible(
-                  child: Text(
-                    '${isGain ? '+' : ''}${AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency)}${dailyPnL.toStringAsFixed(0)} (${dailyPnLPercent.toStringAsFixed(1)}%)',
-                    style: AppTheme.bodyMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.right,
-                    overflow: TextOverflow.ellipsis,
+                const SizedBox(width: AppTheme.spacing8),
+                Text(
+                  'Live portfolio value',
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textTertiary,
                   ),
                 ),
               ],
@@ -329,11 +393,13 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
     setState(() => _isLoading = true);
     try {
       final quote = AppSettingsService().quoteCurrency.toUpperCase();
-      _btc = await _binance.fetchTicker24h('BTC$quote');
-      _eth = await _binance.fetchTicker24h('ETH$quote');
-      _bnb = await _binance.fetchTicker24h('BNB$quote');
-      _sol = await _binance.fetchTicker24h('SOL$quote');
-      _wif = await _binance.fetchTicker24hWithFallback(['WLFI$quote', 'WLFIEUR','WLFIUSDT', 'WLFIUSDC', 'WLFIBUSD']);
+
+      // Use fallback lists for all coins to support EUR, USD, USDT, USDC
+      _btc = await _binance.fetchTicker24hWithFallback(['BTC$quote', 'BTCUSDT', 'BTCEUR', 'BTCUSDC']);
+      _eth = await _binance.fetchTicker24hWithFallback(['ETH$quote', 'ETHUSDT', 'ETHEUR', 'ETHUSDC']);
+      _bnb = await _binance.fetchTicker24hWithFallback(['BNB$quote', 'BNBUSDT', 'BNBEUR', 'BNBUSDC']);
+      _sol = await _binance.fetchTicker24hWithFallback(['SOL$quote', 'SOLUSDT', 'SOLEUR', 'SOLUSDC']);
+      _wif = await _binance.fetchTicker24hWithFallback(['WLFI$quote', 'WLFIUSDT', 'WLFIEUR', 'WLFIUSDC']);
       _trump = await _binance.fetchTicker24hWithFallback(['TRUMP$quote', 'TRUMPUSDT', 'DJTUSDT']);
     } catch (e) {
       print('Dashboard: Error fetching market data: $e');

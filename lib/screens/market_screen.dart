@@ -111,6 +111,7 @@ class _MarketScreenState extends State<MarketScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -151,7 +152,7 @@ class _MarketScreenState extends State<MarketScreen> {
             // Coin Carousel
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 120,
+                height: 125,
                 child: _loadingTickers
                     ? const Center(child: CircularProgressIndicator())
                     : ListView(
@@ -314,8 +315,9 @@ class _MarketScreenState extends State<MarketScreen> {
         },
         child: Container(
           width: 140,
+          height: 115,
           margin: const EdgeInsets.only(right: AppTheme.spacing12),
-          padding: const EdgeInsets.all(AppTheme.spacing16),
+          padding: const EdgeInsets.all(AppTheme.spacing12),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
             color: isSelected ? null : AppTheme.glassWhite,
@@ -328,13 +330,14 @@ class _MarketScreenState extends State<MarketScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Coin name
               Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: (isGain ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(AppTheme.radiusSM),
@@ -346,7 +349,7 @@ class _MarketScreenState extends State<MarketScreen> {
                     child: Center(
                       child: Text(
                         base.substring(0, 1),
-                        style: AppTheme.headingSmall.copyWith(
+                        style: AppTheme.bodySmall.copyWith(
                           color: isGain ? AppTheme.buyGreen : AppTheme.sellRed,
                           fontWeight: FontWeight.w700,
                         ),
@@ -357,7 +360,7 @@ class _MarketScreenState extends State<MarketScreen> {
                   Expanded(
                     child: Text(
                       base,
-                      style: AppTheme.bodyLarge.copyWith(
+                      style: AppTheme.bodyMedium.copyWith(
                         color: isSelected ? Colors.white : AppTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -367,7 +370,7 @@ class _MarketScreenState extends State<MarketScreen> {
                 ],
               ),
 
-              const SizedBox(height: AppTheme.spacing8),
+              const SizedBox(height: AppTheme.spacing4),
 
               // Price
               Text(
@@ -385,7 +388,7 @@ class _MarketScreenState extends State<MarketScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppTheme.spacing8,
-                  vertical: AppTheme.spacing4,
+                  vertical: 2,
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
@@ -401,9 +404,9 @@ class _MarketScreenState extends State<MarketScreen> {
                       color: isSelected
                           ? Colors.white
                           : (isGain ? AppTheme.buyGreen : AppTheme.sellRed),
-                      size: 12,
+                      size: 10,
                     ),
-                    const SizedBox(width: AppTheme.spacing4),
+                    const SizedBox(width: 2),
                     Text(
                       '${isGain ? '+' : ''}${chg.toStringAsFixed(2)}%',
                       style: AppTheme.bodySmall.copyWith(
@@ -475,11 +478,29 @@ class CandlestickChart extends StatelessWidget {
       );
     }
 
+    final double maxPrice = data.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final double minPrice = data.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    final double range = maxPrice - minPrice;
+
+    // Calculate smart interval - aim for 4-5 labels
+    double interval = range / 4;
+
+    // Round interval to nice numbers
+    if (interval > 1000) {
+      interval = (interval / 1000).ceilToDouble() * 1000;
+    } else if (interval > 100) {
+      interval = (interval / 100).ceilToDouble() * 100;
+    } else if (interval > 10) {
+      interval = (interval / 10).ceilToDouble() * 10;
+    } else if (interval > 1) {
+      interval = interval.ceilToDouble();
+    }
+
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceBetween,
-        maxY: data.map((e) => e.high).reduce((a, b) => a > b ? a : b) * 1.03,
-        minY: data.map((e) => e.low).reduce((a, b) => a < b ? a : b) * 0.97,
+        maxY: maxPrice * 1.03,
+        minY: minPrice * 0.97,
         groupsSpace: 6,
         barTouchData: BarTouchData(
           enabled: true,
@@ -510,7 +531,8 @@ class CandlestickChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 60,
+              reservedSize: 70,
+              interval: interval > 0 ? interval : null,
               getTitlesWidget: (value, meta) {
                 final double absValue = value.abs();
                 final int decimals = absValue >= 100
@@ -518,10 +540,17 @@ class CandlestickChart extends StatelessWidget {
                     : absValue >= 1
                         ? 2
                         : 4;
-                return Text(
-                  '\$${value.toStringAsFixed(decimals)}',
-                  style: AppTheme.bodySmall.copyWith(
-                    color: AppTheme.textTertiary,
+                return Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text(
+                    '\$${value.toStringAsFixed(decimals)}',
+                    style: AppTheme.bodySmall.copyWith(
+                      color: AppTheme.textTertiary,
+                      fontSize: 9,
+                    ),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
                   ),
                 );
               },

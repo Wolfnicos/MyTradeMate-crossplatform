@@ -13,6 +13,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),

@@ -6,9 +6,8 @@ import '../services/binance_service.dart';
 import '../services/hybrid_strategies_service.dart';
 import '../ml/ml_service.dart';
 import 'dart:async';
-import '../design_system/screen_backgrounds.dart';
-import '../design_system/widgets/glass_card.dart';
-import '../design_system/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
 import '../services/app_settings_service.dart';
 import '../widgets/orders/ai_strategy_carousel.dart';
 import '../widgets/orders/achievement_toast.dart';
@@ -111,63 +110,88 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final activeColor = isBuy ? theme.colorScheme.secondary : theme.colorScheme.error;
+    final activeColor = isBuy ? AppTheme.buyGreen : AppTheme.sellRed;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: Container(
-            decoration: ScreenBackgrounds.market(context),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Orders', style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.spacing20,
+                    AppTheme.spacing24,
+                    AppTheme.spacing20,
+                    AppTheme.spacing16,
                   ),
+                  child: Text('Orders', style: AppTheme.displayLarge),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 250),
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeIn,
+              ),
+
+              // Content
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                        // BUY/SELL Toggle - SUPER CLEAR
+                        RepaintBoundary(
                           child: GlassCard(
-                            key: ValueKey(isBuy),
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(AppTheme.spacing12),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: GestureDetector(
                                     onTap: () => setState(() => isBuy = true),
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      duration: AppTheme.animationNormal,
+                                      curve: Curves.easeInOut,
+                                      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing16),
                                       decoration: BoxDecoration(
-                                        color: isBuy ? activeColor : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(12),
+                                        gradient: isBuy ? AppTheme.buyGradient : null,
+                                        color: isBuy ? null : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                        boxShadow: isBuy ? AppTheme.glassShadow : null,
                                       ),
-                                      child: Center(child: Text('Buy', style: TextStyle(color: isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
+                                      child: Center(
+                                        child: Text(
+                                          'BUY',
+                                          style: AppTheme.labelLarge.copyWith(
+                                            color: isBuy ? Colors.white : AppTheme.textSecondary,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
+                                const SizedBox(width: AppTheme.spacing12),
                                 Expanded(
                                   child: GestureDetector(
                                     onTap: () => setState(() => isBuy = false),
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      duration: AppTheme.animationNormal,
+                                      curve: Curves.easeInOut,
+                                      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing16),
                                       decoration: BoxDecoration(
-                                        color: !isBuy ? activeColor : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(12),
+                                        gradient: !isBuy ? AppTheme.sellGradient : null,
+                                        color: !isBuy ? null : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                        boxShadow: !isBuy ? AppTheme.glassShadow : null,
                                       ),
-                                      child: Center(child: Text('Sell', style: TextStyle(color: !isBuy ? Colors.white : theme.colorScheme.onSurface, fontWeight: FontWeight.bold))),
+                                      child: Center(
+                                        child: Text(
+                                          'SELL',
+                                          style: AppTheme.labelLarge.copyWith(
+                                            color: !isBuy ? Colors.white : AppTheme.textSecondary,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -175,7 +199,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppTheme.spacing16),
                         FutureBuilder<SharedPreferences>(
                           future: SharedPreferences.getInstance(),
                           builder: (context, snap) {
@@ -211,11 +235,20 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         const SizedBox(height: 16),
                         GlassCard(padding: const EdgeInsets.all(16), child: _buildTotalFiatField()),
                         _buildAmountSummary(),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
+                        const SizedBox(height: AppTheme.spacing32),
+
+                        // Execute Button - SUPER CLEAR
+                        RepaintBoundary(
+                          child: Container(
+                            width: double.infinity,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              gradient: isBuy ? AppTheme.buyGradient : AppTheme.sellGradient,
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                              boxShadow: AppTheme.glowShadow,
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () async {
                               final prefs = await SharedPreferences.getInstance();
                               final bool paper = prefs.getBool('paper_trading') ?? false;
                               if (_orderType == OrderType.market) {
@@ -319,21 +352,40 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                 }
                               }
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: activeColor,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              foregroundColor: Colors.white,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    isBuy ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: AppTheme.spacing8),
+                                  Text(
+                                    '${isBuy ? 'BUY' : 'SELL'} ${_formatPairLabel(_selectedPair).split('/').first}',
+                                    style: AppTheme.headingMedium.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: Text((isBuy ? 'Buy ' : 'Sell ') + _formatPairLabel(_selectedPair).split('/').first, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+
+                        const SizedBox(height: AppTheme.spacing32),
+                      ]),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -343,25 +395,27 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   // Removed unused _buildTextField
 
   Widget _buildAmountField() {
-    final theme = Theme.of(context);
     final String base = _selectedPair.replaceAll(RegExp(r'(USDT|USDC|EUR)$'), '');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Amount', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text('Amount', style: AppTheme.headingSmall),
+        const SizedBox(height: AppTheme.spacing8),
         TextField(
           controller: _amountCtrl,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: AppTheme.bodyLarge,
           decoration: InputDecoration(
-            hintText: '',
+            hintText: '0.0',
+            hintStyle: AppTheme.bodyLarge.copyWith(color: AppTheme.textTertiary),
             filled: true,
-            fillColor: theme.cardColor,
+            fillColor: AppTheme.surfaceVariant,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               borderSide: BorderSide.none,
             ),
             suffixText: base,
+            suffixStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
           ),
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -381,7 +435,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   Widget _buildLimitPriceField() {
-    final theme = Theme.of(context);
     final String quote = _selectedPair.endsWith('USDT')
         ? 'USDT'
         : _selectedPair.endsWith('USDC')
@@ -390,21 +443,25 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Limit Price', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text('Limit Price', style: AppTheme.headingSmall),
+        const SizedBox(height: AppTheme.spacing8),
         TextField(
           controller: _priceCtrl,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: AppTheme.bodyLarge,
           decoration: InputDecoration(
-            hintText: '',
+            hintText: '0.00',
+            hintStyle: AppTheme.bodyLarge.copyWith(color: AppTheme.textTertiary),
             filled: true,
-            fillColor: theme.cardColor,
+            fillColor: AppTheme.surfaceVariant,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               borderSide: BorderSide.none,
             ),
             prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? '\$ ' : '',
+            prefixStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
             suffixText: quote,
+            suffixStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
           ),
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -443,7 +500,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   Widget _buildTotalFiatField() {
-    final theme = Theme.of(context);
     final String quote = _selectedPair.endsWith('USDT')
         ? 'USDT'
         : _selectedPair.endsWith('USDC')
@@ -452,21 +508,25 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Total (' + quote + ")", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text('Total ($quote)', style: AppTheme.headingSmall),
+        const SizedBox(height: AppTheme.spacing8),
         TextField(
           controller: _totalCtrl,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: AppTheme.bodyLarge,
           decoration: InputDecoration(
-            hintText: '',
+            hintText: '0.00',
+            hintStyle: AppTheme.bodyLarge.copyWith(color: AppTheme.textTertiary),
             filled: true,
-            fillColor: theme.cardColor,
+            fillColor: AppTheme.surfaceVariant,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               borderSide: BorderSide.none,
             ),
             prefixText: quote == 'EUR' ? '€ ' : (quote == 'USDC' || quote == 'USDT') ? '\$ ' : '',
+            prefixStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
             suffixText: quote,
+            suffixStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
           ),
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -550,33 +610,44 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   Widget _buildOrderTypeBanner(BuildContext context) {
-    final theme = Theme.of(context);
     return InkWell(
       onTap: _pickOrderType,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppTheme.spacing16),
         decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           border: Border.all(
-            color: (theme.brightness == Brightness.dark ? AppColors.outline : AppColors.lightOutline).withOpacity(0.20),
+            color: AppTheme.glassBorder,
+            width: 1,
           ),
         ),
         child: Row(
           children: [
-            Icon(_orderTypeIcon(_orderType), color: theme.colorScheme.primary),
-            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing8),
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              ),
+              child: Icon(
+                _orderTypeIcon(_orderType),
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Type', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                  Text('Order Type', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
                   const SizedBox(height: 2),
-                  Text(_orderTypeLabel(_orderType), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(_orderTypeLabel(_orderType), style: AppTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded),
+            Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textSecondary),
           ],
         ),
       ),
@@ -584,21 +655,21 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   Widget _buildPairSelector(BuildContext context) {
-    final theme = Theme.of(context);
     return InkWell(
       onTap: () async {
         await showModalBottomSheet<void>(
           context: context,
           showDragHandle: true,
           isScrollControlled: true,
+          backgroundColor: AppTheme.surface,
           builder: (context) {
             return SafeArea(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text('Select Pair', style: Theme.of(context).textTheme.titleLarge),
+                    padding: const EdgeInsets.all(AppTheme.spacing16),
+                    child: Text('Select Pair', style: AppTheme.headingLarge),
                   ),
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.6,
@@ -612,8 +683,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               final base = m['base'] ?? '';
                               final quote = m['quote'] ?? '';
                               return ListTile(
-                                title: Text(base + '/' + quote),
-                                subtitle: Text(sym),
+                                title: Text('$base/$quote', style: AppTheme.bodyLarge),
+                                subtitle: Text(sym, style: AppTheme.bodySmall),
                                 onTap: () {
                                   setState(() => _selectedPair = sym);
                                   Navigator.of(context).pop();
@@ -629,29 +700,41 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppTheme.spacing16),
         decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           border: Border.all(
-            color: (theme.brightness == Brightness.dark ? AppColors.outline : AppColors.lightOutline).withOpacity(0.20),
+            color: AppTheme.glassBorder,
+            width: 1,
           ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search),
-            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing8),
+              decoration: BoxDecoration(
+                gradient: AppTheme.secondaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              ),
+              child: const Icon(
+                Icons.currency_bitcoin,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Coin/Pair', style: theme.textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                  Text('Coin/Pair', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
                   const SizedBox(height: 2),
-                  Text(_formatPairLabel(_selectedPair), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(_formatPairLabel(_selectedPair), style: AppTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded),
+            Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textSecondary),
           ],
         ),
       ),

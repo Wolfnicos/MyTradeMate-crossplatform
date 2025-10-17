@@ -192,6 +192,12 @@ class EnsemblePredictor {
     final lstmProbs = await _predictLstm(features);
     final rfProbs = await _predictRandomForest(features);
 
+    // 🔍 DEBUG: Print raw model outputs
+    debugPrint('🔍 RAW MODEL OUTPUTS:');
+    debugPrint('   Transformer: [${transformerProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+    debugPrint('   LSTM: [${lstmProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+    debugPrint('   RF: [${rfProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+
     // Weighted voting
     final ensembleProbs = _weightedVoting(
       transformerProbs: transformerProbs,
@@ -199,9 +205,14 @@ class EnsemblePredictor {
       rfProbs: rfProbs,
     );
 
+    // 🔍 DEBUG: Print weighted ensemble result
+    debugPrint('🔍 ENSEMBLE RESULT: [${ensembleProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+
     // Get final prediction
     final maxIndex = ensembleProbs.indexOf(ensembleProbs.reduce((a, b) => a > b ? a : b));
     final confidence = ensembleProbs[maxIndex];
+
+    debugPrint('🔍 FINAL: ${_classLabels[maxIndex]} (${(confidence * 100).toStringAsFixed(1)}%)');
 
     return EnsemblePrediction(
       label: _classLabels[maxIndex],
@@ -285,6 +296,9 @@ class EnsemblePredictor {
     final rsi1h = lastTimestep[0];
     final macd1h = lastTimestep[1];
     final adx1h = lastTimestep[7];
+
+    // 🔍 DEBUG: Print RF inputs
+    debugPrint('🔍 RF INPUTS: RSI=$rsi1h, MACD=$macd1h, ADX=$adx1h');
 
     // Simple rules (this is a placeholder - ideally load actual RF model)
     double strongSellProb = 0.0;

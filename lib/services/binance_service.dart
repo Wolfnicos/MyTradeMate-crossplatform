@@ -7,7 +7,7 @@ import 'dart:convert' show utf8;
 
 import '../models/candle.dart';
 // import '../services/technical_indicator_calculator.dart';
-import '../services/mtf_feature_builder.dart';
+import '../services/full_feature_builder.dart';
 
 class BinanceService {
   static const String _baseHost = 'api.binance.com';
@@ -205,22 +205,41 @@ class BinanceService {
     return fetchDailyKlines(symbol, start: start, end: end, limit: 1000);
   }
 
-  /// Fetch ML features in the exact Python MTF order (1h base + aligned 15m + upsampled 4h + one-hot symbol)
-  /// Returns List<List<double>> with shape 60x34
+  /// Fetch ML features with all 76 features (25 candle patterns + 51 technical indicators)
+  /// Returns List<List<double>> with shape 60x76
   Future<List<List<double>>> getFeaturesForModel(String symbol, {String interval = '1h'}) async {
     try {
-      // Always fetch base=1h, low=15m, high=4h
-      final base1h = await fetchCustomKlines(symbol, '1h', limit: 260); // more to allow indicators warmup
-      final low15m = await fetchCustomKlines(symbol, '15m', limit: 260 * 4);
-      final high4h = await fetchCustomKlines(symbol, '4h', limit: 260 ~/ 4 + 10);
+      // Fetch candles based on requested interval
+      List<Candle> baseData;
+      List<Candle> lowData;
+      List<Candle> highData;
 
-      if (base1h.length < 60) {
-        throw Exception('Insufficient 1h candles: got ${base1h.length}, need >=60');
+      if (interval == '15m') {
+        // Base: 15m, Low: 5m, High: 1h
+        baseData = await fetchCustomKlines(symbol, '15m', limit: 260);
+        lowData = await fetchCustomKlines(symbol, '5m', limit: 260 * 3);
+        highData = await fetchCustomKlines(symbol, '1h', limit: 260 ~/ 4 + 10);
+      } else if (interval == '4h') {
+        // Base: 4h, Low: 1h, High: 1d
+        baseData = await fetchCustomKlines(symbol, '4h', limit: 260);
+        lowData = await fetchCustomKlines(symbol, '1h', limit: 260 * 4);
+        highData = await fetchCustomKlines(symbol, '1d', limit: 260 ~/ 6 + 10);
+      } else {
+        // Default: Base: 1h, Low: 15m, High: 4h
+        baseData = await fetchCustomKlines(symbol, '1h', limit: 260);
+        lowData = await fetchCustomKlines(symbol, '15m', limit: 260 * 4);
+        highData = await fetchCustomKlines(symbol, '4h', limit: 260 ~/ 4 + 10);
       }
 
-      final mtf = MtfFeatureBuilder().buildFeatures(symbol: symbol, base1h: base1h, low15m: low15m, high4h: high4h);
-      debugPrint('✅ BinanceService: MTF features ${mtf.length}x${mtf.isNotEmpty ? mtf.first.length : 0}');
-      return mtf;
+      if (baseData.length < 260) {
+        throw Exception('Insufficient $interval candles: got ${baseData.length}, need >=260 (for SMA200)');
+      }
+
+      debugPrint('🔧 BinanceService: Building 76 features from ${baseData.length} candles');
+      final fullBuilder = FullFeatureBuilder();
+      final features = fullBuilder.buildFeatures(candles: baseData);
+      debugPrint('✅ BinanceService: Full features ${features.length}x${features.isNotEmpty ? features.first.length : 0} [@$interval]');
+      return features;
     } catch (e) {
       debugPrint('❌ BinanceService: Error getting features → $e');
       rethrow;

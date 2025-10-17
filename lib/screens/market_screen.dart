@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/candle.dart';
-
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
-import '../design_system/screen_backgrounds.dart';
-import '../design_system/widgets/glass_card.dart';
+import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -17,21 +16,22 @@ class MarketScreen extends StatefulWidget {
 class _MarketScreenState extends State<MarketScreen> {
   final BinanceService _binance = BinanceService();
   final Map<String, Map<String, double>> _tickers = {};
-  String _interval = '15m';
+  String _interval = '1h';
   String _selectedSymbol = 'BTCUSDT';
   List<CandleData> _candles = <CandleData>[];
   bool _loadingChart = true;
+  bool _loadingTickers = true;
   String _chartError = '';
 
   List<List<String>> get _symbols {
     final q = AppSettingsService().quoteCurrency.toUpperCase();
     return [
-      ['BTC$q'],
-      ['ETH$q'],
-      ['BNB$q'],
-      ['SOL$q'],
-      ['WLFI$q'],
-      ['TRUMP$q'],
+      ['BTC$q', 'BTCUSDT', 'BTCEUR', 'BTCUSDC'],
+      ['ETH$q', 'ETHUSDT', 'ETHEUR', 'ETHUSDC'],
+      ['BNB$q', 'BNBUSDT', 'BNBEUR', 'BNBUSDC'],
+      ['SOL$q', 'SOLUSDT', 'SOLEUR', 'SOLUSDC'],
+      ['WLFI$q', 'WLFIUSDT', 'WLFIEUR', 'WLFIUSDC'],
+      ['TRUMP$q', 'TRUMPUSDT', 'DJTUSDT'],
     ];
   }
 
@@ -39,17 +39,25 @@ class _MarketScreenState extends State<MarketScreen> {
   void initState() {
     super.initState();
     final q = AppSettingsService().quoteCurrency.toUpperCase();
-    _selectedSymbol = 'BTC' + q;
+    _selectedSymbol = 'BTC$q';
     _refreshTickers();
     _loadChart();
   }
 
   Future<void> _refreshTickers() async {
-    for (final List<String> s in _symbols) {
+    setState(() => _loadingTickers = true);
+    for (final List<String> symbolList in _symbols) {
       try {
-        final Map<String, double> t = await _binance.fetchTicker24hWithFallback(s);
-        setState(() => _tickers[s.first] = t);
-      } catch (_) {}
+        final Map<String, double> t = await _binance.fetchTicker24hWithFallback(symbolList);
+        if (mounted) {
+          setState(() => _tickers[symbolList.first] = t);
+        }
+      } catch (e) {
+        print('Market: Failed to fetch ticker for ${symbolList.first}: $e');
+      }
+    }
+    if (mounted) {
+      setState(() => _loadingTickers = false);
     }
   }
 
@@ -71,15 +79,20 @@ class _MarketScreenState extends State<MarketScreen> {
           close: c.close,
         ));
       }
-      setState(() {
-        _candles = data;
-        _loadingChart = false;
-      });
+      if (mounted) {
+        setState(() {
+          _candles = data;
+          _loadingChart = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _chartError = 'Failed to load chart: ' + e.toString();
-        _loadingChart = false;
-      });
+      print('Market: Failed to load chart: $e');
+      if (mounted) {
+        setState(() {
+          _chartError = 'Failed to load chart';
+          _loadingChart = false;
+        });
+      }
     }
   }
 
@@ -91,285 +104,336 @@ class _MarketScreenState extends State<MarketScreen> {
     return symbol;
   }
 
-  // Placeholder to show where interval would feed chart data
-  // In a next step, fetch klines via _binance.fetchCustomKlines(selectedSymbol, _interval)
-
   @override
   Widget build(BuildContext context) {
-    final double rawCarouselHeight = MediaQuery.of(context).size.height * 0.16;
-    final double carouselHeight = rawCarouselHeight < 110 ? 110 : rawCarouselHeight;
     final quote = AppSettingsService().quoteCurrency;
     final prefix = AppSettingsService.currencyPrefix(quote);
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        body: SafeArea(
-          child: Container(
-            decoration: ScreenBackgrounds.market(context),
-            child: Column(
-          children: [
-            // Header with title and search
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Market', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: () {},
-                    tooltip: 'Search markets',
-                  ),
-                ],
-              ),
-            ),
-            // Carousel de monede (selectează simbolul pentru grafic)
-            SizedBox(
-              height: carouselHeight,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: _buildTickerCards(quote, prefix),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Graficul Candlestick cu date reale
-            Expanded(
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Header
+            SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.spacing20,
+                  AppTheme.spacing24,
+                  AppTheme.spacing20,
+                  AppTheme.spacing16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Market',
+                      style: AppTheme.displayLarge,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.refresh,
+                        color: AppTheme.textSecondary,
+                      ),
+                      onPressed: _loadingTickers ? null : () {
+                        _refreshTickers();
+                        _loadChart();
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Coin Carousel
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 120,
+                child: _loadingTickers
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
+                        children: _buildTickerCards(quote, prefix),
+                      ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacing20)),
+
+            // Chart Card
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
+              sliver: SliverToBoxAdapter(
                 child: GlassCard(
-                  padding: const EdgeInsets.all(0),
-                  showGlow: true,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _labelForSymbol(_selectedSymbol),
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Chart Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _labelForSymbol(_selectedSymbol),
+                                style: AppTheme.headingLarge,
+                              ),
+                              const SizedBox(height: AppTheme.spacing4),
+                              if (_candles.isNotEmpty)
+                                Text(
+                                  prefix + (_candles.last.close >= 100
+                                      ? _candles.last.close.toStringAsFixed(0)
+                                      : _candles.last.close.toStringAsFixed(4)),
+                                  style: AppTheme.monoLarge.copyWith(
+                                    color: _candles.last.close > _candles.last.open
+                                        ? AppTheme.buyGreen
+                                        : AppTheme.sellRed,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing12,
+                              vertical: AppTheme.spacing8,
                             ),
-                            Text(
-                              _candles.isNotEmpty ? prefix + (_candles.last.close >= 100 ? _candles.last.close.toStringAsFixed(0) : _candles.last.close.toStringAsFixed(4)) : '—',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: _candles.isNotEmpty && _candles.last.close > _candles.last.open
-                                    ? Theme.of(context).colorScheme.secondary
-                                    : Theme.of(context).colorScheme.error,
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.secondaryGradient,
+                              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            ),
+                            child: Text(
+                              _interval.toUpperCase(),
+                              style: AppTheme.bodyMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: _loadingChart
-                              ? const Center(child: CircularProgressIndicator())
-                              : _chartError.isNotEmpty
-                                  ? Center(child: Text(_chartError))
-                                  : CandlestickChart(
-                                      data: _candles,
-                                      bullColor: Theme.of(context).colorScheme.secondary,
-                                      bearColor: Theme.of(context).colorScheme.error,
-                                      isDark: Theme.of(context).brightness == Brightness.dark,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppTheme.spacing20),
+
+                      // Chart
+                      SizedBox(
+                        height: 300,
+                        child: _loadingChart
+                            ? const Center(child: CircularProgressIndicator())
+                            : _chartError.isNotEmpty
+                                ? Center(
+                                    child: Text(
+                                      _chartError,
+                                      style: AppTheme.bodyMedium.copyWith(
+                                        color: AppTheme.error,
+                                      ),
                                     ),
-                        ),
-                      ],
-                    ),
+                                  )
+                                : CandlestickChart(
+                                    data: _candles,
+                                    bullColor: AppTheme.buyGreen,
+                                    bearColor: AppTheme.sellRed,
+                                  ),
+                      ),
+
+                      const SizedBox(height: AppTheme.spacing20),
+
+                      // Interval Selector
+                      Wrap(
+                        spacing: AppTheme.spacing8,
+                        children: [
+                          _buildIntervalChip('15m', '15m'),
+                          _buildIntervalChip('1H', '1h'),
+                          _buildIntervalChip('4H', '4h'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            // Placeholder pentru intervalele de timp ale graficului
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                children: [
-                  {'label': '15m', 'value': '15m'},
-                  {'label': '1H', 'value': '1h'},
-                  {'label': '4H', 'value': '4h'},
-                ].map((item) {
-                  final bool selected = _interval == item['value'];
-                  return ChoiceChip(
-                    label: Text(item['label'] as String),
-                    selected: selected,
-                    onSelected: (_) {
-                      setState(() => _interval = item['value'] as String);
-                      _loadChart();
-                    },
-                  );
-                }).toList(),
-              ),
-            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacing32)),
           ],
         ),
-        ),
       ),
+    );
+  }
+
+  Widget _buildIntervalChip(String label, String value) {
+    final bool selected = _interval == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _interval = value);
+        _loadChart();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing16,
+          vertical: AppTheme.spacing8,
+        ),
+        decoration: BoxDecoration(
+          gradient: selected ? AppTheme.primaryGradient : null,
+          color: selected ? null : AppTheme.glassWhite,
+          borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+          border: Border.all(
+            color: selected ? Colors.transparent : AppTheme.glassBorder,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTheme.bodyMedium.copyWith(
+            color: selected ? Colors.white : AppTheme.textSecondary,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
 
   List<Widget> _buildTickerCards(String quote, String prefix) {
-    Widget buildCard(String base, Map<String, double>? t) {
+    final q = quote.toUpperCase();
+
+    Widget buildCard(String base, String key) {
+      final t = _tickers[key];
       final double price = t?['lastPrice'] ?? 0.0;
       final double chg = t?['priceChangePercent'] ?? 0.0;
       final bool isGain = chg >= 0;
-      final pairLabel = base + '/' + quote;
-      final symbol = base + quote;
+      final symbol = key;
+      final bool isSelected = _selectedSymbol == symbol;
+
       return GestureDetector(
         onTap: () {
-          _onSelectSymbol(symbol);
+          setState(() => _selectedSymbol = symbol);
+          _loadChart();
         },
-        child: CoinCard(
-          pair: pairLabel,
-          price: price > 0 ? prefix + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
-          change: (isGain ? '+' : '') + chg.toStringAsFixed(2) + '%',
-          isGain: isGain,
-        ),
-      );
-    }
-
-    final q = quote.toUpperCase();
-    return [
-      buildCard('BTC', _tickers['BTC$q']),
-      buildCard('ETH', _tickers['ETH$q']),
-      buildCard('BNB', _tickers['BNB$q']),
-      buildCard('SOL', _tickers['SOL$q']),
-      buildCard('WLFI', _tickers['WLFI$q']),
-      buildCard('TRUMP', _tickers['TRUMP$q']),
-    ];
-  }
-
-  void _onSelectSymbol(String symbol) {
-    setState(() {
-      _selectedSymbol = symbol;
-    });
-    _loadChart();
-  }
-}
-
-class CoinCard extends StatelessWidget {
-  final String pair;
-  final String price;
-  final String change;
-  final bool isGain;
-
-  const CoinCard({
-    super.key,
-    required this.pair,
-    required this.price,
-    required this.change,
-    required this.isGain,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isGain ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.error;
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: 150,
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(pair, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(price, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(change, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// helper methods moved into _MarketScreenState
-
-class _ChartPlaceholder extends StatefulWidget {
-  const _ChartPlaceholder();
-
-  @override
-  State<_ChartPlaceholder> createState() => _ChartPlaceholderState();
-}
-
-class _ChartPlaceholderState extends State<_ChartPlaceholder> {
-  List<CandleData> _generateSampleData() {
-    // Generate sample candlestick data for demonstration
-    final data = <CandleData>[];
-    double price = 34500;
-
-    for (int i = 0; i < 50; i++) {
-      final open = price;
-      final close = price + (i % 3 == 0 ? -200 : 150) + (i % 5 * 10);
-      final high = [open, close].reduce((a, b) => a > b ? a : b) + 100;
-      final low = [open, close].reduce((a, b) => a < b ? a : b) - 100;
-
-      data.add(CandleData(
-        x: i.toDouble(),
-        open: open,
-        high: high,
-        low: low,
-        close: close,
-      ));
-
-      price = close;
-    }
-
-    return data;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final candleData = _generateSampleData();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        child: Container(
+          width: 140,
+          margin: const EdgeInsets.only(right: AppTheme.spacing12),
+          padding: const EdgeInsets.all(AppTheme.spacing16),
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppTheme.primaryGradient : null,
+            color: isSelected ? null : AppTheme.glassWhite,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : AppTheme.glassBorder,
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'BTC/USDT',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              // Coin name
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: (isGain ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      border: Border.all(
+                        color: (isGain ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        base.substring(0, 1),
+                        style: AppTheme.headingSmall.copyWith(
+                          color: isGain ? AppTheme.buyGreen : AppTheme.sellRed,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: Text(
+                      base,
+                      style: AppTheme.bodyLarge.copyWith(
+                        color: isSelected ? Colors.white : AppTheme.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
+
+              const SizedBox(height: AppTheme.spacing8),
+
+              // Price
               Text(
-                '\$${candleData.last.close.toStringAsFixed(0)}',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: candleData.last.close > candleData.last.open
-                      ? theme.colorScheme.secondary
-                      : theme.colorScheme.error,
+                price > 0 ? prefix + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
+                style: AppTheme.monoMedium.copyWith(
+                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              const SizedBox(height: AppTheme.spacing4),
+
+              // Change %
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing8,
+                  vertical: AppTheme.spacing4,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.2)
+                      : (isGain ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isGain ? Icons.arrow_upward : Icons.arrow_downward,
+                      color: isSelected
+                          ? Colors.white
+                          : (isGain ? AppTheme.buyGreen : AppTheme.sellRed),
+                      size: 12,
+                    ),
+                    const SizedBox(width: AppTheme.spacing4),
+                    Text(
+                      '${isGain ? '+' : ''}${chg.toStringAsFixed(2)}%',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: isSelected
+                            ? Colors.white
+                            : (isGain ? AppTheme.buyGreen : AppTheme.sellRed),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: CandlestickChart(
-              data: candleData,
-              bullColor: theme.colorScheme.secondary,
-              bearColor: theme.colorScheme.error,
-              isDark: isDark,
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
+
+    return [
+      buildCard('BTC', 'BTC$q'),
+      buildCard('ETH', 'ETH$q'),
+      buildCard('BNB', 'BNB$q'),
+      buildCard('SOL', 'SOL$q'),
+      buildCard('WLFI', 'WLFI$q'),
+      buildCard('TRUMP', 'TRUMP$q'),
+    ];
   }
 }
 
+// CandleData and CandlestickChart remain the same
 class CandleData {
   final double x;
   final double open;
@@ -392,18 +456,25 @@ class CandlestickChart extends StatelessWidget {
   final List<CandleData> data;
   final Color bullColor;
   final Color bearColor;
-  final bool isDark;
 
   const CandlestickChart({
     super.key,
     required this.data,
     required this.bullColor,
     required this.bearColor,
-    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (data.isEmpty) {
+      return Center(
+        child: Text(
+          'No data available',
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
+        ),
+      );
+    }
+
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceBetween,
@@ -414,8 +485,8 @@ class CandlestickChart extends StatelessWidget {
           enabled: true,
           handleBuiltInTouches: true,
           touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => isDark ? Colors.grey[900]! : Colors.white,
-            tooltipPadding: const EdgeInsets.all(8),
+            getTooltipColor: (group) => AppTheme.surface,
+            tooltipPadding: const EdgeInsets.all(AppTheme.spacing8),
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final candle = data[group.x.toInt()];
               return BarTooltipItem(
@@ -423,9 +494,8 @@ class CandlestickChart extends StatelessWidget {
                 'H: ${candle.high.toStringAsFixed(4)}\n'
                 'L: ${candle.low.toStringAsFixed(4)}\n'
                 'C: ${candle.close.toStringAsFixed(4)}',
-                TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontSize: 12,
+                AppTheme.bodySmall.copyWith(
+                  color: AppTheme.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               );
@@ -449,10 +519,9 @@ class CandlestickChart extends StatelessWidget {
                         ? 2
                         : 4;
                 return Text(
-                  '\$' + value.toStringAsFixed(decimals),
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    fontSize: 10,
+                  '\$${value.toStringAsFixed(decimals)}',
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textTertiary,
                   ),
                 );
               },
@@ -465,9 +534,8 @@ class CandlestickChart extends StatelessWidget {
                 if (value.toInt() % 10 == 0) {
                   return Text(
                     value.toInt().toString(),
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      fontSize: 10,
+                    style: AppTheme.bodySmall.copyWith(
+                      color: AppTheme.textTertiary,
                     ),
                   );
                 }
@@ -482,7 +550,7 @@ class CandlestickChart extends StatelessWidget {
           horizontalInterval: 500,
           getDrawingHorizontalLine: (value) {
             return FlLine(
-              color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+              color: AppTheme.glassBorder,
               strokeWidth: 0.5,
             );
           },
@@ -526,4 +594,3 @@ class CandlestickChart extends StatelessWidget {
     );
   }
 }
-

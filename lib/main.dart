@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'ml/tflite_predictor.dart';
 import 'ml/ml_service.dart';
 import 'ml/ensemble_predictor.dart';
@@ -56,8 +57,6 @@ class MyTradeMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return MaterialApp(
       title: 'MyTradeMate',
       debugShowCheckedModeBanner: false,
@@ -85,51 +84,230 @@ class _HomePageState extends State<HomePage> {
     PortfolioScreen(),
   ];
 
+  static const List<_NavItem> _navItems = [
+    _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Dashboard'),
+    _NavItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart, label: 'Market'),
+    _NavItem(icon: Icons.smart_toy_outlined, activeIcon: Icons.smart_toy, label: 'AI'),
+    _NavItem(icon: Icons.swap_horiz, activeIcon: Icons.swap_horiz, label: 'Orders'),
+    _NavItem(icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet, label: 'Portfolio'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final nav = Provider.of<NavigationProvider>(context);
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-            tooltip: 'Settings',
-          ),
-        ],
-      ),
+      extendBody: true,
+      appBar: _PremiumAppBar(),
       body: Center(
         child: _widgetOptions.elementAt(nav.index),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Market'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI'),
-          BottomNavigationBarItem(icon: Icon(Icons.swap_horiz), label: 'Orders'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'Portfolio'),
-        ],
+      bottomNavigationBar: _PremiumBottomNav(
         currentIndex: nav.index,
         onTap: nav.setIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
-        backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
       ),
-      bottomSheet: Container(
-        height: 0.01,
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF2E2E33)
-                  : const Color(0xFF1F2937),
-              width: 2,
+    );
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+}
+
+// Premium Top App Bar - Only Settings
+class _PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _PremiumAppBar();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              child: Container(
+                padding: const EdgeInsets.all(AppTheme.spacing8),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.glassGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                  border: Border.all(
+                    color: AppTheme.glassBorder,
+                    width: 1,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.settings_outlined,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Premium Bottom Navigation Bar
+class _PremiumBottomNav extends StatelessWidget {
+  final int currentIndex;
+  final Function(int) onTap;
+
+  const _PremiumBottomNav({
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  static const List<_NavItem> _navItems = _HomePageState._navItems;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.surface.withOpacity(0.85),
+                AppTheme.surface.withOpacity(0.75),
+              ],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+            border: Border(
+              top: BorderSide(
+                color: AppTheme.glassBorder,
+                width: 1,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing4, vertical: AppTheme.spacing4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(_navItems.length, (index) {
+                  final item = _navItems[index];
+                  final isActive = currentIndex == index;
+                  return _BottomNavItem(
+                    icon: item.icon,
+                    activeIcon: item.activeIcon,
+                    label: item.label,
+                    isActive: isActive,
+                    onTap: () => onTap(index),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          child: AnimatedContainer(
+            duration: AppTheme.animationNormal,
+            padding: const EdgeInsets.symmetric(
+              vertical: AppTheme.spacing4,
+              horizontal: AppTheme.spacing4,
+            ),
+            decoration: BoxDecoration(
+              gradient: isActive
+                  ? LinearGradient(
+                      colors: [
+                        AppTheme.primary.withOpacity(0.15),
+                        AppTheme.secondary.withOpacity(0.15),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              border: isActive
+                  ? Border.all(
+                      color: AppTheme.primary.withOpacity(0.3),
+                      width: 1.5,
+                    )
+                  : null,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Icon with gradient glow when active
+                Icon(
+                  isActive ? activeIcon : icon,
+                  color: isActive ? AppTheme.primary : AppTheme.textSecondary,
+                  size: 22,
+                ),
+                const SizedBox(height: 2),
+                // Label
+                Text(
+                  label,
+                  style: AppTheme.labelSmall.copyWith(
+                    color: isActive ? AppTheme.textPrimary : AppTheme.textTertiary,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 9,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ),

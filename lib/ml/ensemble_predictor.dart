@@ -189,34 +189,47 @@ class EnsemblePredictor {
     debugPrint('   ✅ Legacy TCN loaded (v8)');
   }
 
-  /// Load per-coin specialized models
+  /// Load per-coin specialized models (Single TF GRU @ 1H)
   Future<void> _loadPerCoinModels() async {
-    debugPrint('🪙 Loading per-coin models...');
-    debugPrint('🪙 Looking for models in: assets/models/');
+    debugPrint('');
+    debugPrint('🪙 ========================================');
+    debugPrint('🪙 Loading per-coin Single TF GRU models (1H timeframe)');
+    debugPrint('🪙 Location: assets/ml/');
+    debugPrint('🪙 ========================================');
 
     for (var entry in _perCoinModels.keys) {
       try {
         final coinLower = entry.toLowerCase();
-        final modelPath = 'assets/models/${coinLower}_model.tflite';
-        debugPrint('🪙 Attempting to load: $modelPath');
+        final modelPath = 'assets/ml/${coinLower}_model.tflite';
+        debugPrint('');
+        debugPrint('🪙 [$entry] Attempting to load: $modelPath');
 
         _perCoinModels[entry] = await Interpreter.fromAsset(modelPath);
 
         debugPrint('   ✅ $entry model loaded successfully!');
-        debugPrint('   📊 Model size: ~27MB transformer');
+        debugPrint('   📊 Model: Single TF GRU (quantized)');
+        debugPrint('   📏 Size: ~73KB (optimized for mobile)');
+        debugPrint('   ⏰ Timeframe: 1H');
         debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
+        debugPrint('   🎯 Test Accuracy: ~44-48%');
       } catch (e) {
-        debugPrint('   ❌ $entry model not found!');
-        debugPrint('   ⚠️ Error: $e');
+        debugPrint('');
+        debugPrint('   ❌ $entry model NOT FOUND!');
+        debugPrint('   ⚠️  Error: $e');
+        debugPrint('   💡 Will fallback to general ensemble models');
         _perCoinModels[entry] = null;
       }
     }
 
     debugPrint('');
-    debugPrint('🪙 Per-coin models summary:');
+    debugPrint('🪙 ========================================');
+    debugPrint('🪙 Per-coin models loading summary:');
+    debugPrint('🪙 ========================================');
     _perCoinModels.forEach((coin, model) {
-      debugPrint('   $coin: ${model != null ? "✅ LOADED" : "❌ NOT LOADED"}');
+      debugPrint('   $coin: ${model != null ? "✅ LOADED (Single TF GRU 1H)" : "❌ NOT LOADED (will use ensemble fallback)"}');
     });
+    debugPrint('🪙 ========================================');
+    debugPrint('');
   }
 
   /// Predict using ensemble voting

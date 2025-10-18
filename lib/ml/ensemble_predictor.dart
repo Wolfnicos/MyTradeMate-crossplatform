@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 /// Ensemble Predictor for MyTradeMate
@@ -35,6 +37,16 @@ class EnsemblePredictor {
 
   // Single TF GRU general model interpreters (trained on 1H data, 73KB each)
   final Map<String, Interpreter?> _singleTfGruModels = {
+    'BTC': null,
+    'ETH': null,
+    'BNB': null,
+    'SOL': null,
+    'WLFI': null,
+    'TRUMP': null,
+  };
+
+  // Scalers for Single TF GRU models (StandardScaler parameters)
+  final Map<String, Map<String, dynamic>?> _singleTfGruScalers = {
     'BTC': null,
     'ETH': null,
     'BNB': null,
@@ -264,22 +276,36 @@ class EnsemblePredictor {
       try {
         final coinLower = entry.toLowerCase();
         final modelPath = 'assets/ml/${coinLower}_model.tflite';
+        final scalerPath = 'assets/ml/${coinLower}_scaler.json';
         debugPrint('');
         debugPrint('🧠 [$entry] Attempting to load: $modelPath');
 
         _singleTfGruModels[entry] = await Interpreter.fromAsset(modelPath);
 
-        debugPrint('   ✅ $entry Single TF GRU loaded successfully!');
-        debugPrint('   📊 Model: Single TF GRU (quantized)');
-        debugPrint('   📏 Size: ~73KB (optimized for mobile)');
-        debugPrint('   ⏰ Timeframe: 1H');
-        debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
-        debugPrint('   🎯 Test Accuracy: ~44-48%');
+        // Load scaler parameters
+        try {
+          final scalerJson = await rootBundle.loadString(scalerPath);
+          _singleTfGruScalers[entry] = json.decode(scalerJson) as Map<String, dynamic>;
+          final nFeatures = _singleTfGruScalers[entry]!['n_features'] as int;
+          debugPrint('   ✅ $entry Single TF GRU loaded successfully!');
+          debugPrint('   📊 Model: Single TF GRU (quantized)');
+          debugPrint('   📏 Size: ~73KB (optimized for mobile)');
+          debugPrint('   ⏰ Timeframe: 1H');
+          debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
+          debugPrint('   🎯 Test Accuracy: ~44-48%');
+          debugPrint('   🔧 Scaler: StandardScaler with $nFeatures features loaded');
+        } catch (scalerError) {
+          debugPrint('   ⚠️  Model loaded but scaler failed: $scalerError');
+          debugPrint('   ⚠️  Model will be disabled without scaler');
+          _singleTfGruModels[entry] = null;
+          _singleTfGruScalers[entry] = null;
+        }
       } catch (e) {
         debugPrint('');
         debugPrint('   ❌ $entry Single TF GRU NOT FOUND!');
         debugPrint('   ⚠️  Error: $e');
         _singleTfGruModels[entry] = null;
+        _singleTfGruScalers[entry] = null;
       }
     }
 
@@ -549,11 +575,6 @@ class EnsemblePredictor {
   /// proper feature normalization. To fix, the user needs to re-export scalers
   /// to JSON format from the training script.
   Future<List<double>> _predictSingleTfGru(List<List<double>> features, String? coinSymbol) async {
-    // TEMPORARILY DISABLED - scalers needed for proper normalization
-    debugPrint('   ⚠️  Single TF GRU: DISABLED (scalers not available in Dart format)');
-    return [0.0, 0.0, 1.0, 0.0, 0.0]; // Return HOLD until scalers are fixed
-
-    /* ORIGINAL CODE - REQUIRES SCALER FILES IN JSON FORMAT
     if (coinSymbol == null) {
       debugPrint('   ⚠️  Single TF GRU: No coin symbol provided, returning HOLD');
       return [0.0, 0.0, 1.0, 0.0, 0.0];
@@ -561,16 +582,29 @@ class EnsemblePredictor {
 
     final coin = _extractCoinSymbol(coinSymbol);
     final model = _singleTfGruModels[coin];
+    final scaler = _singleTfGruScalers[coin];
 
-    if (model == null) {
-      debugPrint('   ⚠️  Single TF GRU ($coin): Model not loaded, returning HOLD');
+    if (model == null || scaler == null) {
+      debugPrint('   ⚠️  Single TF GRU ($coin): Model or scaler not loaded, returning HOLD');
       return [0.0, 0.0, 1.0, 0.0, 0.0];
     }
 
     debugPrint('   🧠 Single TF GRU ($coin): Running inference...');
-    debugPrint('      Input shape: [1, ${features.length}, ${features[0].length}]');
+    debugPrint('      Input shape (raw): [1, ${features.length}, ${features[0].length}]');
 
-    var input = List.generate(1, (_) => features);
+    // Apply StandardScaler normalization using loaded scaler parameters
+    final mean = (scaler['mean'] as List).cast<double>();
+    final scale = (scaler['scale'] as List).cast<double>();
+
+    var normalizedFeatures = List.generate(features.length, (i) {
+      return List.generate(features[i].length, (j) {
+        return (features[i][j] - mean[j]) / scale[j];
+      });
+    });
+
+    debugPrint('      Applied StandardScaler normalization (76 features)');
+
+    var input = List.generate(1, (_) => normalizedFeatures);
     var output = List.generate(1, (_) => List.filled(3, 0.0));
 
     try {
@@ -607,7 +641,6 @@ class EnsemblePredictor {
     debugPrint('      Converted to 5-class: [${result.map((p) => (p * 100).toStringAsFixed(2)).join(', ')}]');
 
     return result;
-    */
   }
 
   /// Predict using Random Forest (fallback rule-based)

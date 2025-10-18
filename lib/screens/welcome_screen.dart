@@ -577,10 +577,15 @@ class _AuthPageState extends State<_AuthPage> {
             child: TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: AppTheme.bodyMedium,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                hintStyle: const TextStyle(color: AppTheme.textTertiary, fontSize: 14),
                 prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primary),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
@@ -595,10 +600,15 @@ class _AuthPageState extends State<_AuthPage> {
             child: TextField(
               controller: _passwordController,
               obscureText: true,
-              style: AppTheme.bodyMedium,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                hintStyle: const TextStyle(color: AppTheme.textTertiary, fontSize: 14),
                 prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primary),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,

@@ -226,22 +226,22 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
             const SizedBox(height: AppTheme.spacing32),
 
-            // Info Cards
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            // Info Cards (Compact)
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: AppTheme.spacing8,
+              runSpacing: AppTheme.spacing8,
               children: [
                 _InfoChip(
                   icon: Icons.schedule,
                   label: 'Real-time',
                   color: AppTheme.primary,
                 ),
-                const SizedBox(width: AppTheme.spacing12),
                 _InfoChip(
                   icon: Icons.security,
                   label: 'Secure',
                   color: AppTheme.success,
                 ),
-                const SizedBox(width: AppTheme.spacing12),
                 _InfoChip(
                   icon: Icons.cloud_sync,
                   label: 'Synced',
@@ -644,8 +644,8 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacing12,
-        vertical: AppTheme.spacing8,
+        horizontal: AppTheme.spacing8,
+        vertical: AppTheme.spacing4,
       ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
@@ -660,15 +660,16 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 16,
+            size: 14,
             color: color,
           ),
           const SizedBox(width: AppTheme.spacing4),
           Text(
             label,
-            style: AppTheme.labelMedium.copyWith(
+            style: AppTheme.labelSmall.copyWith(
               color: color,
               fontWeight: FontWeight.w600,
+              fontSize: 11,
             ),
           ),
         ],

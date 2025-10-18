@@ -137,6 +137,21 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     }
   }
 
+  Future<void> _loadCurrentPrice() async {
+    try {
+      final binance = BinanceService();
+      final ticker = await binance.fetchTicker24h(_selectedPair);
+      final price = ticker['lastPrice'] ?? 0.0;
+      if (mounted) {
+        setState(() {
+          _priceCtrl.text = price.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading current price: $e');
+    }
+  }
+
   @override
   void dispose() {
     _hybridSub?.cancel();
@@ -818,6 +833,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                 onTap: () {
                                   setState(() => _selectedPair = sym);
                                   Navigator.of(context).pop();
+                                  _loadCurrentPrice();
                                 },
                               );
                             },

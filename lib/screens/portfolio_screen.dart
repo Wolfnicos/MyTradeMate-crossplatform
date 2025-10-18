@@ -336,7 +336,7 @@ class _HoldingsList extends StatelessWidget {
       );
     }
 
-    // Filter out zero balances and sort by value (descending)
+    // Filter out zero balances and holdings below $5, then sort by value (descending)
     final holdings = balances.entries
         .where((e) => e.value > 0.0)
         .map((e) {
@@ -346,6 +346,7 @@ class _HoldingsList extends StatelessWidget {
           final value = amount * price;
           return MapEntry(asset, {'amount': amount, 'price': price, 'value': value});
         })
+        .where((e) => (e.value['value'] as double) >= 5.0) // Hide coins below $5
         .toList()
       ..sort((a, b) => (b.value['value'] as double).compareTo(a.value['value'] as double));
 

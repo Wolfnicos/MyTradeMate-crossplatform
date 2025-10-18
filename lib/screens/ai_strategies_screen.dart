@@ -62,12 +62,28 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       final balances = await binance.getAccountBalances();
       final quote = AppSettingsService().quoteCurrency.toUpperCase();
 
-      // Extract coins from portfolio (excluding quote currency)
+      // Extract coins from portfolio (excluding quote currency and coins below $5)
       final Set<String> coins = {};
       for (final asset in balances.keys) {
         final upperAsset = asset.toUpperCase();
         if (upperAsset != quote && balances[asset]! > 0.0) {
-          coins.add('$upperAsset$quote');
+          // Calculate value to filter out coins below $5
+          try {
+            final ticker = await binance.fetchTicker24hWithFallback([
+              '$upperAsset$quote',
+              '${upperAsset}USDT',
+              '${upperAsset}EUR',
+              '${upperAsset}USDC'
+            ]);
+            final price = ticker['lastPrice'] ?? 0.0;
+            final value = balances[asset]! * price;
+            if (value >= 5.0) {
+              coins.add('$upperAsset$quote');
+            }
+          } catch (e) {
+            // If price fetch fails, skip this coin
+            debugPrint('AI Strategies: Could not get price for $upperAsset: $e');
+          }
         }
       }
 

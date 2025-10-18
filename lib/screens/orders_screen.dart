@@ -79,12 +79,28 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       final all = await binance.fetchTradingPairs();
       final String selectedQuote = AppSettingsService().quoteCurrency.toUpperCase();
 
-      // Extract base currencies from user's portfolio (excluding quote currency)
+      // Extract base currencies from user's portfolio (excluding quote currency and coins below $5)
       final Set<String> allowedBases = <String>{};
       for (final asset in balances.keys) {
         final upperAsset = asset.toUpperCase();
         if (upperAsset != selectedQuote && balances[asset]! > 0.0) {
-          allowedBases.add(upperAsset);
+          // Calculate value to filter out coins below $5
+          try {
+            final ticker = await binance.fetchTicker24hWithFallback([
+              '$upperAsset$selectedQuote',
+              '${upperAsset}USDT',
+              '${upperAsset}EUR',
+              '${upperAsset}USDC'
+            ]);
+            final price = ticker['lastPrice'] ?? 0.0;
+            final value = balances[asset]! * price;
+            if (value >= 5.0) {
+              allowedBases.add(upperAsset);
+            }
+          } catch (e) {
+            // If price fetch fails, skip this coin
+            debugPrint('Orders: Could not get price for $upperAsset: $e');
+          }
         }
       }
 

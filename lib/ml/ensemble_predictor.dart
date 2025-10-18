@@ -546,6 +546,7 @@ class EnsemblePredictor {
   Future<List<double>> _predictSingleTfGru(List<List<double>> features, String? coinSymbol) async {
     if (coinSymbol == null) {
       // No coin specified, return neutral
+      debugPrint('   ⚠️  Single TF GRU: No coin symbol provided, returning HOLD');
       return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
     }
 
@@ -554,8 +555,12 @@ class EnsemblePredictor {
 
     if (model == null) {
       // Model not loaded, return neutral
+      debugPrint('   ⚠️  Single TF GRU ($coin): Model not loaded, returning HOLD');
       return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
     }
+
+    debugPrint('   🧠 Single TF GRU ($coin): Running inference...');
+    debugPrint('      Input shape: [1, ${features.length}, ${features[0].length}]');
 
     // Prepare input: [1, 60, 76]
     var input = List.generate(1, (_) => features);
@@ -563,7 +568,16 @@ class EnsemblePredictor {
     // Output buffer: [1, 3] for 3-class models (SELL, HOLD, BUY)
     var output = List.generate(1, (_) => List.filled(3, 0.0));
 
-    model.run(input, output);
+    try {
+      model.run(input, output);
+
+      // Log RAW model output before conversion
+      debugPrint('      RAW 3-class output: [SELL: ${(output[0][0] * 100).toStringAsFixed(2)}%, HOLD: ${(output[0][1] * 100).toStringAsFixed(2)}%, BUY: ${(output[0][2] * 100).toStringAsFixed(2)}%]');
+
+    } catch (e) {
+      debugPrint('   ❌ Single TF GRU ($coin): Inference error: $e');
+      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD on error
+    }
 
     // Convert 3-class [SELL, HOLD, BUY] to 5-class [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
     final sell = output[0][0];
@@ -589,7 +603,10 @@ class EnsemblePredictor {
       normalBuy = buy * 0.8;
     }
 
-    return [strongSell, normalSell, hold, normalBuy, strongBuy];
+    final result = [strongSell, normalSell, hold, normalBuy, strongBuy];
+    debugPrint('      Converted to 5-class: [${result.map((p) => (p * 100).toStringAsFixed(2)).join(', ')}]');
+
+    return result;
   }
 
   /// Predict using Random Forest (fallback rule-based)

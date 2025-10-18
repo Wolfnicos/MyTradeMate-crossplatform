@@ -259,106 +259,354 @@ class _PortfolioOverviewCardState extends State<PortfolioOverviewCard> {
   }
 }
 
-/// AI Models Status Card
-class AIModelsStatusCard extends StatelessWidget {
+/// AI Neural Engine - Modern 2025 Design
+class AIModelsStatusCard extends StatefulWidget {
   const AIModelsStatusCard({super.key});
 
   @override
+  State<AIModelsStatusCard> createState() => _AIModelsStatusCardState();
+}
+
+class _AIModelsStatusCardState extends State<AIModelsStatusCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _pulseAnimation;
+  int _activityIndex = 0;
+  int _progressKey = 0;
+
+  final List<String> _activities = [
+    'Analyzing market patterns',
+    'Processing technical indicators',
+    'Evaluating price movements',
+    'Detecting trend reversals',
+    'Calculating risk factors',
+    'Monitoring volatility signals',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Pulsing animation for brain icon
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    // Cycle through activities every 5 seconds
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 5));
+      if (mounted) {
+        setState(() {
+          _activityIndex = (_activityIndex + 1) % _activities.length;
+        });
+        return true;
+      }
+      return false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isActive = globalEnsemblePredictor.isLoaded;
+
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Neural Engine Header with animated brain
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(AppTheme.spacing8),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.secondaryGradient,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                ),
-                child: const Icon(
-                  Icons.psychology,
-                  color: Colors.white,
-                  size: 20,
-                ),
+              // Animated brain icon with gradient glow
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing12),
+                    decoration: BoxDecoration(
+                      gradient: isActive
+                          ? LinearGradient(
+                              colors: [
+                                AppTheme.primary.withOpacity(0.9),
+                                AppTheme.secondary.withOpacity(0.9),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : LinearGradient(
+                              colors: [
+                                AppTheme.textTertiary.withOpacity(0.5),
+                                AppTheme.textTertiary.withOpacity(0.3),
+                              ],
+                            ),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: AppTheme.primary.withOpacity(0.4 * _pulseAnimation.value),
+                                blurRadius: 16,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Transform.scale(
+                      scale: isActive ? _pulseAnimation.value : 1.0,
+                      child: const Icon(
+                        Icons.psychology,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: AppTheme.spacing12),
-              Text(
-                'AI Models',
-                style: AppTheme.headingMedium,
+              const SizedBox(width: AppTheme.spacing16),
+
+              // Title and subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            'Neural Engine',
+                            style: AppTheme.headingMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacing8),
+                        if (isActive)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing8,
+                              vertical: AppTheme.spacing4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.success.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                              border: Border.all(
+                                color: AppTheme.success,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.success,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.success,
+                                        blurRadius: 4,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: AppTheme.spacing4),
+                                Text(
+                                  'LIVE',
+                                  style: AppTheme.bodySmall.copyWith(
+                                    color: AppTheme.success,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 10,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spacing4),
+                    Text(
+                      'Deep learning • 76 indicators',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.textTertiary,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
 
-          const SizedBox(height: AppTheme.spacing16),
+          const SizedBox(height: AppTheme.spacing20),
 
-          // Model badges
-          Wrap(
-            spacing: AppTheme.spacing8,
-            runSpacing: AppTheme.spacing8,
-            children: [
-              AIStatusBadge(
-                isActive: globalEnsemblePredictor.isLoaded,
-                modelName: 'Transformer',
-                confidence: 0.587,
-              ),
-              AIStatusBadge(
-                isActive: globalEnsemblePredictor.isLoaded,
-                modelName: 'LSTM',
-                confidence: 0.51,
-              ),
-              AIStatusBadge(
-                isActive: globalEnsemblePredictor.isLoaded,
-                modelName: 'Random Forest',
-                confidence: 0.438,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppTheme.spacing16),
-
-          // Status message
+          // AI Activity Display
           Container(
-            padding: const EdgeInsets.all(AppTheme.spacing12),
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppTheme.spacing16),
             decoration: BoxDecoration(
-              color: globalEnsemblePredictor.isLoaded
-                  ? AppTheme.success.withOpacity(0.1)
-                  : AppTheme.warning.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              gradient: LinearGradient(
+                colors: isActive
+                    ? [
+                        AppTheme.primary.withOpacity(0.1),
+                        AppTheme.secondary.withOpacity(0.05),
+                      ]
+                    : [
+                        AppTheme.glassWhite,
+                        AppTheme.glassWhite,
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               border: Border.all(
-                color: globalEnsemblePredictor.isLoaded
-                    ? AppTheme.success
-                    : AppTheme.warning,
-                width: 1,
+                color: isActive
+                    ? AppTheme.primary.withOpacity(0.3)
+                    : AppTheme.glassBorder,
+                width: 1.5,
               ),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  globalEnsemblePredictor.isLoaded
-                      ? Icons.check_circle
-                      : Icons.hourglass_empty,
-                  color: globalEnsemblePredictor.isLoaded
-                      ? AppTheme.success
-                      : AppTheme.warning,
-                  size: 16,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.data_usage,
+                      color: isActive ? AppTheme.primary : AppTheme.textTertiary,
+                      size: 18,
+                    ),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 800),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.2),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Text(
+                          isActive ? _activities[_activityIndex] : 'Initializing neural engine...',
+                          key: ValueKey<String>(isActive ? _activities[_activityIndex] : 'loading'),
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: isActive ? AppTheme.textPrimary : AppTheme.textTertiary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AppTheme.spacing8),
-                Expanded(
-                  child: Text(
-                    globalEnsemblePredictor.isLoaded
-                        ? 'All AI models loaded and ready'
-                        : 'Loading AI models...',
-                    style: AppTheme.bodySmall.copyWith(
-                      color: globalEnsemblePredictor.isLoaded
-                          ? AppTheme.success
-                          : AppTheme.warning,
+
+                if (isActive) ...[
+                  const SizedBox(height: AppTheme.spacing12),
+
+                  // Processing bar animation (slower)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    child: TweenAnimationBuilder<double>(
+                      key: ValueKey<int>(_progressKey),
+                      duration: const Duration(seconds: 3),
+                      curve: Curves.easeInOut,
+                      tween: Tween<double>(
+                        begin: 0.0,
+                        end: 1.0,
+                      ),
+                      onEnd: () {
+                        // Restart animation when it ends
+                        if (mounted) {
+                          setState(() {
+                            _progressKey++;
+                          });
+                        }
+                      },
+                      builder: (context, value, _) {
+                        return LinearProgressIndicator(
+                          value: value,
+                          backgroundColor: AppTheme.glassBorder,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.primary.withOpacity(0.8),
+                          ),
+                          minHeight: 3,
+                        );
+                      },
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: AppTheme.spacing12),
+
+                  // Real-time stats
+                  Wrap(
+                    spacing: AppTheme.spacing8,
+                    runSpacing: AppTheme.spacing8,
+                    alignment: WrapAlignment.spaceBetween,
+                    children: [
+                      _buildStatChip(
+                        icon: Icons.speed,
+                        label: 'Real-time',
+                        color: AppTheme.primary,
+                      ),
+                      _buildStatChip(
+                        icon: Icons.layers,
+                        label: 'Multi-layer',
+                        color: AppTheme.secondary,
+                      ),
+                    ],
+                  ),
+                ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing8,
+        vertical: AppTheme.spacing4,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: AppTheme.spacing4),
+          Text(
+            label,
+            style: AppTheme.bodySmall.copyWith(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

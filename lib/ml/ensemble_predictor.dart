@@ -189,29 +189,27 @@ class EnsemblePredictor {
     debugPrint('   ✅ Legacy TCN loaded (v8)');
   }
 
-  /// Load per-coin specialized models (Single TF GRU @ 1H)
+  /// Load per-coin specialized models
   Future<void> _loadPerCoinModels() async {
     debugPrint('');
     debugPrint('🪙 ========================================');
-    debugPrint('🪙 Loading per-coin Single TF GRU models (1H timeframe)');
-    debugPrint('🪙 Location: assets/ml/');
+    debugPrint('🪙 Loading per-coin specialized models');
+    debugPrint('🪙 Location: assets/models/');
     debugPrint('🪙 ========================================');
 
     for (var entry in _perCoinModels.keys) {
       try {
         final coinLower = entry.toLowerCase();
-        final modelPath = 'assets/ml/${coinLower}_model.tflite';
+        final modelPath = 'assets/models/${coinLower}_model.tflite';
         debugPrint('');
         debugPrint('🪙 [$entry] Attempting to load: $modelPath');
 
         _perCoinModels[entry] = await Interpreter.fromAsset(modelPath);
 
         debugPrint('   ✅ $entry model loaded successfully!');
-        debugPrint('   📊 Model: Single TF GRU (quantized)');
-        debugPrint('   📏 Size: ~73KB (optimized for mobile)');
-        debugPrint('   ⏰ Timeframe: 1H');
+        debugPrint('   📊 Model: Per-coin specialized');
+        debugPrint('   📏 Size: ~27MB');
         debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
-        debugPrint('   🎯 Test Accuracy: ~44-48%');
       } catch (e) {
         debugPrint('');
         debugPrint('   ❌ $entry model NOT FOUND!');
@@ -226,7 +224,7 @@ class EnsemblePredictor {
     debugPrint('🪙 Per-coin models loading summary:');
     debugPrint('🪙 ========================================');
     _perCoinModels.forEach((coin, model) {
-      debugPrint('   $coin: ${model != null ? "✅ LOADED (Single TF GRU 1H)" : "❌ NOT LOADED (will use ensemble fallback)"}');
+      debugPrint('   $coin: ${model != null ? "✅ LOADED (specialized 27MB model)" : "❌ NOT LOADED (will use ensemble fallback)"}');
     });
     debugPrint('🪙 ========================================');
     debugPrint('');

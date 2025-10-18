@@ -8,21 +8,21 @@ class AppSettingsService extends ChangeNotifier {
   AppSettingsService._internal();
 
   static const String _kQuoteKey = 'quote_currency';
-  static const String _kEnvKey = 'trading_env';
+  static const String _kPermissionKey = 'api_permission_level';
 
   String _quote = 'USDT';
-  String _env = 'live'; // 'live' | 'testnet'
+  String _permissionLevel = 'read'; // 'read' | 'trading'
   bool _loaded = false;
 
   String get quoteCurrency => _quote;
-  String get tradingEnvironment => _env;
-  bool get isTestnet => _env.toLowerCase() == 'testnet';
+  String get permissionLevel => _permissionLevel;
+  bool get isTradingEnabled => _permissionLevel.toLowerCase() == 'trading';
 
   Future<void> load() async {
     if (_loaded) return;
     final prefs = await SharedPreferences.getInstance();
     _quote = prefs.getString(_kQuoteKey) ?? 'USDT';
-    _env = prefs.getString(_kEnvKey) ?? 'live';
+    _permissionLevel = prefs.getString(_kPermissionKey) ?? 'read';
     _loaded = true;
     notifyListeners();
   }
@@ -34,11 +34,11 @@ class AppSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setTradingEnvironment(String env) async {
-    final normalized = (env.toLowerCase() == 'testnet') ? 'testnet' : 'live';
-    _env = normalized;
+  Future<void> setPermissionLevel(String level) async {
+    final normalized = (level.toLowerCase() == 'trading') ? 'trading' : 'read';
+    _permissionLevel = normalized;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kEnvKey, _env);
+    await prefs.setString(_kPermissionKey, _permissionLevel);
     notifyListeners();
   }
 

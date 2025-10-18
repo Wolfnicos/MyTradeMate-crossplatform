@@ -26,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _canCheckBiometrics = false;
   bool _isTestingConnection = false;
   bool _obscureSecret = true;
-  bool _paperTrading = false;
+  String _permissionLevel = 'read';
   String _quote = 'USDT';
 
   @override
@@ -59,8 +59,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
-      _paperTrading = prefs.getBool('paper_trading') ?? false;
-      _quote = prefs.getString('quote_currency') ?? 'USDT';
+      _permissionLevel = AppSettingsService().permissionLevel;
+      _quote = AppSettingsService().quoteCurrency;
     });
 
     // Load API credentials
@@ -237,84 +237,197 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: AppTheme.spacing24),
 
-          // Trading Section
-          _buildSectionHeader('Trading', Icons.trending_up),
+          // API Permission Level
+          _buildSectionHeader('API Permission Level', Icons.vpn_lock),
           GlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SwitchListTile(
-                  title: Text('Paper Trading', style: AppTheme.bodyLarge),
-                  subtitle: Text(
-                    'Simulate orders without real money',
-                    style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Control what your AI assistant can do',
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
                   ),
-                  value: _paperTrading,
-                  onChanged: (bool v) async {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool('paper_trading', v);
-                    setState(() => _paperTrading = v);
-                    _showSnackBar(v ? 'Paper Trading enabled' : 'Paper Trading disabled', isError: false);
-                  },
-                  activeColor: AppTheme.primary,
-                  secondary: Container(
-                    padding: const EdgeInsets.all(AppTheme.spacing8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                    ),
-                    child: const Icon(Icons.description_outlined, color: AppTheme.primary),
-                  ),
-                ),
-                const Divider(color: AppTheme.glassBorder),
-                Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacing16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: AppTheme.spacing16),
+                  Wrap(
+                    spacing: AppTheme.spacing12,
+                    runSpacing: AppTheme.spacing12,
                     children: [
-                      Text('Environment', style: AppTheme.headingSmall),
-                      const SizedBox(height: AppTheme.spacing12),
-                      Wrap(
-                        spacing: AppTheme.spacing8,
-                        children: [
-                          {'label': 'Live', 'value': 'live'},
-                          {'label': 'Testnet', 'value': 'testnet'},
-                        ].map((m) {
-                          final isSelected = AppSettingsService().tradingEnvironment == m['value'];
-                          return GestureDetector(
-                            onTap: () async {
-                              await AppSettingsService().setTradingEnvironment(m['value'] as String);
-                              setState(() {});
-                              _showSnackBar('Environment: ${m['label']}', isError: false);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppTheme.spacing16,
-                                vertical: AppTheme.spacing12,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: isSelected ? AppTheme.primaryGradient : null,
-                                color: isSelected ? null : AppTheme.glassWhite,
-                                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                                border: Border.all(
-                                  color: isSelected ? Colors.transparent : AppTheme.glassBorder,
-                                ),
-                              ),
-                              child: Text(
-                                m['label'] as String,
-                                style: AppTheme.bodyMedium.copyWith(
-                                  color: isSelected ? Colors.white : AppTheme.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                      // READ ONLY (Free)
+                      GestureDetector(
+                        onTap: () async {
+                          await AppSettingsService().setPermissionLevel('read');
+                          setState(() => _permissionLevel = 'read');
+                          _showSnackBar('API Permission: Read Only (Free)', isError: false);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(AppTheme.spacing16),
+                          decoration: BoxDecoration(
+                            gradient: _permissionLevel == 'read' ? AppTheme.primaryGradient : null,
+                            color: _permissionLevel == 'read' ? null : AppTheme.glassWhite,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                            border: Border.all(
+                              color: _permissionLevel == 'read' ? AppTheme.primary : AppTheme.glassBorder,
+                              width: 2,
                             ),
-                          );
-                        }).toList(),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(AppTheme.spacing8),
+                                decoration: BoxDecoration(
+                                  color: _permissionLevel == 'read'
+                                      ? Colors.white.withOpacity(0.2)
+                                      : AppTheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                ),
+                                child: Icon(
+                                  Icons.visibility,
+                                  color: _permissionLevel == 'read' ? Colors.white : AppTheme.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: AppTheme.spacing12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'READ ONLY',
+                                          style: AppTheme.labelLarge.copyWith(
+                                            color: _permissionLevel == 'read' ? Colors.white : AppTheme.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppTheme.spacing8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacing8,
+                                            vertical: AppTheme.spacing4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.success.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                          ),
+                                          child: Text(
+                                            'FREE',
+                                            style: AppTheme.labelSmall.copyWith(
+                                              color: AppTheme.success,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: AppTheme.spacing4),
+                                    Text(
+                                      'View portfolio & get AI analysis',
+                                      style: AppTheme.bodySmall.copyWith(
+                                        color: _permissionLevel == 'read'
+                                            ? Colors.white.withOpacity(0.8)
+                                            : AppTheme.textTertiary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // TRADING ENABLED (Premium)
+                      GestureDetector(
+                        onTap: () async {
+                          // TODO: Show payment/subscription dialog in future
+                          await AppSettingsService().setPermissionLevel('trading');
+                          setState(() => _permissionLevel = 'trading');
+                          _showSnackBar('API Permission: Trading Enabled (Premium)', isError: false);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(AppTheme.spacing16),
+                          decoration: BoxDecoration(
+                            gradient: _permissionLevel == 'trading' ? AppTheme.buyGradient : null,
+                            color: _permissionLevel == 'trading' ? null : AppTheme.glassWhite,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                            border: Border.all(
+                              color: _permissionLevel == 'trading' ? AppTheme.buyGreen : AppTheme.glassBorder,
+                              width: 2,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(AppTheme.spacing8),
+                                decoration: BoxDecoration(
+                                  color: _permissionLevel == 'trading'
+                                      ? Colors.white.withOpacity(0.2)
+                                      : AppTheme.buyGreen.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                ),
+                                child: Icon(
+                                  Icons.swap_horiz,
+                                  color: _permissionLevel == 'trading' ? Colors.white : AppTheme.buyGreen,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: AppTheme.spacing12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'TRADING ENABLED',
+                                          style: AppTheme.labelLarge.copyWith(
+                                            color: _permissionLevel == 'trading' ? Colors.white : AppTheme.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppTheme.spacing8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacing8,
+                                            vertical: AppTheme.spacing4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.warning.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                          ),
+                                          child: Text(
+                                            'PREMIUM',
+                                            style: AppTheme.labelSmall.copyWith(
+                                              color: AppTheme.warning,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: AppTheme.spacing4),
+                                    Text(
+                                      'AI can execute trades for you',
+                                      style: AppTheme.bodySmall.copyWith(
+                                        color: _permissionLevel == 'trading'
+                                            ? Colors.white.withOpacity(0.8)
+                                            : AppTheme.textTertiary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 

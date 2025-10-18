@@ -1,8 +1,8 @@
 {
   "coin": "WLFI",
-  "train_accuracy": 0.28225806451612906,
-  "test_accuracy": 0.41397849462365593,
-  "gap": -0.13172043010752688,
-  "num_classes": 3,
-  "date": "2025-10-18T01:52:00.944810"
+  "train_accuracy": 0.5994623655913979,
+  "test_accuracy": 0.45698924731182794,
+  "model_type": "Single TF GRU",
+  "timeframe": "1h",
+  "date": "2025-10-18T14:12:14.688899"
 }

@@ -1,8 +1,8 @@
 {
   "coin": "BNB",
-  "train_accuracy": 0.43548387096774194,
-  "test_accuracy": 0.4838709677419355,
-  "gap": -0.04838709677419356,
-  "num_classes": 3,
-  "date": "2025-10-18T01:50:10.395374"
+  "train_accuracy": 0.45564516129032256,
+  "test_accuracy": 0.45698924731182794,
+  "model_type": "Single TF GRU",
+  "timeframe": "1h",
+  "date": "2025-10-18T14:10:03.302347"
 }

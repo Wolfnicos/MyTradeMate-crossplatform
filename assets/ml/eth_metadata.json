@@ -1,8 +1,8 @@
 {
   "coin": "ETH",
-  "train_accuracy": 0.3817204301075269,
-  "test_accuracy": 0.4838709677419355,
-  "gap": -0.10215053763440862,
-  "num_classes": 3,
-  "date": "2025-10-18T01:49:22.440498"
+  "train_accuracy": 0.6276881720430108,
+  "test_accuracy": 0.46236559139784944,
+  "model_type": "Single TF GRU",
+  "timeframe": "1h",
+  "date": "2025-10-18T14:09:10.404064"
 }

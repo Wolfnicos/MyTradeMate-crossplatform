@@ -1,0 +1,771 @@
+import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
+import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
+import '../services/auth_service.dart';
+import 'package:provider/provider.dart';
+
+class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  int _currentPage = 0;
+  final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (index) => setState(() => _currentPage = index),
+          children: const [
+            _IntroPage(),
+            _FeatureTiersPage(),
+            _AuthPage(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _BottomIndicator(
+        currentPage: _currentPage,
+        pageController: _pageController,
+      ),
+    );
+  }
+}
+
+// Page 1: App Introduction
+class _IntroPage extends StatelessWidget {
+  const _IntroPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacing24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Animated AI Icon
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primary.withOpacity(0.4),
+                  blurRadius: 40,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.smart_toy,
+              size: 64,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing32),
+
+          // App Title
+          ShaderMask(
+            shaderCallback: (bounds) => AppTheme.primaryGradient.createShader(bounds),
+            child: Text(
+              'MyTradeMate',
+              style: AppTheme.displayLarge.copyWith(
+                fontSize: 48,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing16),
+
+          // Subtitle
+          Text(
+            'Your AI-Powered Crypto Trading Assistant',
+            style: AppTheme.headingLarge.copyWith(
+              color: AppTheme.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing48),
+
+          // Feature Pills
+          GlassCard(
+            child: Column(
+              children: [
+                _FeaturePill(
+                  icon: Icons.auto_graph,
+                  title: 'Smart AI Analysis',
+                  description: 'Advanced machine learning models analyze market trends in real-time',
+                ),
+                const Divider(color: AppTheme.glassBorder, height: 24),
+                _FeaturePill(
+                  icon: Icons.security,
+                  title: 'Secure & Private',
+                  description: 'Your data is encrypted and stored locally on your device',
+                ),
+                const Divider(color: AppTheme.glassBorder, height: 24),
+                _FeaturePill(
+                  icon: Icons.wallet,
+                  title: 'Portfolio Tracking',
+                  description: 'Monitor your crypto holdings and performance',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeaturePill extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _FeaturePill({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          ),
+          child: Icon(icon, color: Colors.white, size: 24),
+        ),
+        const SizedBox(width: AppTheme.spacing16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTheme.headingSmall),
+              const SizedBox(height: AppTheme.spacing4),
+              Text(
+                description,
+                style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Page 2: Feature Tiers (Free vs Premium)
+class _FeatureTiersPage extends StatelessWidget {
+  const _FeatureTiersPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacing24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Title
+          Text(
+            'Choose Your Plan',
+            style: AppTheme.displayLarge.copyWith(fontSize: 32),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing8),
+          Text(
+            'Start free, upgrade anytime',
+            style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing32),
+
+          // FREE Tier Card
+          GlassCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.primary.withOpacity(0.3),
+                            AppTheme.secondary.withOpacity(0.3),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Icon(Icons.visibility, color: AppTheme.primary, size: 24),
+                    ),
+                    const SizedBox(width: AppTheme.spacing12),
+                    Expanded(
+                      child: Text('READ ONLY', style: AppTheme.headingLarge),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing12,
+                        vertical: AppTheme.spacing4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.success.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      ),
+                      child: Text(
+                        'FREE',
+                        style: AppTheme.labelSmall.copyWith(
+                          color: AppTheme.success,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing16),
+                _TierFeature(icon: Icons.bar_chart, text: 'View portfolio & market data'),
+                _TierFeature(icon: Icons.lightbulb_outline, text: 'Get AI trading recommendations'),
+                _TierFeature(icon: Icons.analytics_outlined, text: 'Real-time market analysis'),
+                _TierFeature(icon: Icons.lock_outline, text: 'Safe & secure (read-only API)'),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing16),
+
+          // PREMIUM Tier Card
+          GlassCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.warning.withOpacity(0.3),
+                            AppTheme.warning.withOpacity(0.5),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Icon(Icons.auto_awesome, color: AppTheme.warning, size: 24),
+                    ),
+                    const SizedBox(width: AppTheme.spacing12),
+                    Flexible(
+                      child: Text(
+                        'TRADING ENABLED',
+                        style: AppTheme.headingLarge,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing12,
+                        vertical: AppTheme.spacing4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.warning.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      ),
+                      child: Text(
+                        'PRO',
+                        style: AppTheme.labelSmall.copyWith(
+                          color: AppTheme.warning,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing16),
+                _TierFeature(icon: Icons.check_circle, text: 'Everything in FREE'),
+                _TierFeature(icon: Icons.rocket_launch, text: 'AI executes trades automatically'),
+                _TierFeature(icon: Icons.trending_up, text: 'Advanced trading strategies'),
+                _TierFeature(icon: Icons.shield, text: 'Risk management & stop-loss'),
+                const SizedBox(height: AppTheme.spacing12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppTheme.spacing12),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.white, size: 16),
+                      const SizedBox(width: AppTheme.spacing8),
+                      Text(
+                        'Can be enabled later in Settings',
+                        style: AppTheme.bodySmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TierFeature extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _TierFeature({
+    required this.icon,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.spacing8),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppTheme.primary),
+          const SizedBox(width: AppTheme.spacing8),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Page 3: Authentication (Email/Password + Biometrics)
+class _AuthPage extends StatefulWidget {
+  const _AuthPage();
+
+  @override
+  State<_AuthPage> createState() => _AuthPageState();
+}
+
+class _AuthPageState extends State<_AuthPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _canUseBiometrics = false;
+  List<BiometricType> _availableBiometrics = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometrics();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkBiometrics() async {
+    final authService = context.read<AuthService>();
+    final canUse = await authService.canUseBiometrics();
+    final available = await authService.getAvailableBiometrics();
+    setState(() {
+      _canUseBiometrics = canUse;
+      _availableBiometrics = available;
+    });
+  }
+
+  Future<void> _signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showError('Please enter email and password');
+      return;
+    }
+
+    if (!email.contains('@')) {
+      _showError('Please enter a valid email');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final authService = context.read<AuthService>();
+    final success = await authService.signInWithEmailPassword(email, password);
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      _showError('Invalid email or password');
+    }
+  }
+
+  Future<void> _register() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showError('Please enter email and password');
+      return;
+    }
+
+    if (!email.contains('@')) {
+      _showError('Please enter a valid email');
+      return;
+    }
+
+    if (password.length < 6) {
+      _showError('Password must be at least 6 characters');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final authService = context.read<AuthService>();
+    final success = await authService.register(email, password);
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      // Optionally offer to enable biometrics
+      if (_canUseBiometrics) {
+        _offerBiometrics();
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } else {
+      _showError('Failed to create account');
+    }
+  }
+
+  Future<void> _signInWithBiometrics() async {
+    setState(() => _isLoading = true);
+
+    final authService = context.read<AuthService>();
+    final success = await authService.authenticateWithBiometrics();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      _showError('Biometric authentication failed');
+    }
+  }
+
+  void _offerBiometrics() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text('Enable Biometric Login?', style: AppTheme.headingLarge),
+        content: Text(
+          'Use Face ID / Touch ID for quick and secure access',
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacementNamed('/home');
+            },
+            child: const Text('Not Now'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              final authService = context.read<AuthService>();
+              final enabled = await authService.enableBiometrics();
+              if (enabled && mounted) {
+                Navigator.of(context).pushReplacementNamed('/home');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Enable'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.error,
+      ),
+    );
+  }
+
+  String get _biometricLabel {
+    if (_availableBiometrics.contains(BiometricType.face)) {
+      return 'Face ID';
+    } else if (_availableBiometrics.contains(BiometricType.fingerprint)) {
+      return 'Touch ID';
+    }
+    return 'Biometric';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacing24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Get Started',
+            style: AppTheme.displayLarge.copyWith(fontSize: 32),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing8),
+          Text(
+            'Sign in or create an account',
+            style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing32),
+
+          // Email Field
+          GlassCard(
+            child: TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              style: AppTheme.bodyMedium,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primary),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing12),
+
+          // Password Field
+          GlassCard(
+            child: TextField(
+              controller: _passwordController,
+              obscureText: true,
+              style: AppTheme.bodyMedium,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primary),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing24),
+
+          // Sign In Button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _signIn,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing12),
+
+          // Register Button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: OutlinedButton(
+              onPressed: _isLoading ? null : _register,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primary,
+                side: const BorderSide(color: AppTheme.primary, width: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
+              ),
+              child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+          ),
+
+          // Biometric Login (if available)
+          if (_canUseBiometrics) ...[
+            const SizedBox(height: AppTheme.spacing24),
+            Row(
+              children: [
+                Expanded(child: Divider(color: AppTheme.glassBorder)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
+                  child: Text('OR', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                ),
+                Expanded(child: Divider(color: AppTheme.glassBorder)),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacing24),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: OutlinedButton.icon(
+                onPressed: _isLoading ? null : _signInWithBiometrics,
+                icon: Icon(
+                  _availableBiometrics.contains(BiometricType.face)
+                      ? Icons.face
+                      : Icons.fingerprint,
+                ),
+                label: Text('Sign in with $_biometricLabel'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.secondary,
+                  side: const BorderSide(color: AppTheme.secondary, width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// Bottom Page Indicator
+class _BottomIndicator extends StatelessWidget {
+  final int currentPage;
+  final PageController pageController;
+
+  const _BottomIndicator({
+    required this.currentPage,
+    required this.pageController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacing24),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        border: Border(
+          top: BorderSide(color: AppTheme.glassBorder),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Back Button
+            TextButton(
+              onPressed: currentPage > 0
+                  ? () => pageController.previousPage(
+                        duration: AppTheme.animationNormal,
+                        curve: Curves.easeInOut,
+                      )
+                  : null,
+              child: Text(
+                'Back',
+                style: AppTheme.labelLarge.copyWith(
+                  color: currentPage > 0 ? AppTheme.primary : AppTheme.textTertiary,
+                ),
+              ),
+            ),
+
+            // Page Indicators
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(3, (index) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacing4),
+                  width: index == currentPage ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: index == currentPage ? AppTheme.primaryGradient : null,
+                    color: index == currentPage ? null : AppTheme.glassBorder,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  ),
+                );
+              }),
+            ),
+
+            // Next/Skip Button
+            TextButton(
+              onPressed: currentPage < 2
+                  ? () => pageController.nextPage(
+                        duration: AppTheme.animationNormal,
+                        curve: Curves.easeInOut,
+                      )
+                  : null,
+              child: Text(
+                currentPage < 2 ? 'Next' : '',
+                style: AppTheme.labelLarge.copyWith(
+                  color: currentPage < 2 ? AppTheme.primary : Colors.transparent,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

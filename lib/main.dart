@@ -11,7 +11,9 @@ import 'screens/ai_strategies_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/portfolio_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'services/app_settings_service.dart';
+import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/navigation_provider.dart';
 import 'services/achievement_service.dart';
@@ -21,6 +23,7 @@ Future<void> main() async {
 
   // Initialize services
   await AppSettingsService().load();
+  await AuthService().load();
   await globalPredictor.init();
   await globalMlService.loadModel();
 
@@ -44,6 +47,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider.value(value: AppSettingsService()),
+        ChangeNotifierProvider.value(value: AuthService()),
         ChangeNotifierProvider.value(value: AchievementService()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
@@ -57,13 +61,21 @@ class MyTradeMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MyTradeMate',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme, // Using premium dark theme for all modes
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark, // Force dark mode for premium look
-      home: const HomePage(),
+    return Consumer<AuthService>(
+      builder: (context, authService, _) {
+        return MaterialApp(
+          title: 'MyTradeMate',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.darkTheme, // Using premium dark theme for all modes
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark, // Force dark mode for premium look
+          home: authService.isAuthenticated ? const HomePage() : const WelcomeScreen(),
+          routes: {
+            '/home': (context) => const HomePage(),
+            '/welcome': (context) => const WelcomeScreen(),
+          },
+        );
+      },
     );
   }
 }

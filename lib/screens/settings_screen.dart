@@ -382,10 +382,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          'TRADING ENABLED',
-                                          style: AppTheme.labelLarge.copyWith(
-                                            color: _permissionLevel == 'trading' ? Colors.white : AppTheme.textPrimary,
+                                        Flexible(
+                                          child: Text(
+                                            'TRADING ENABLED',
+                                            style: AppTheme.labelLarge.copyWith(
+                                              color: _permissionLevel == 'trading' ? Colors.white : AppTheme.textPrimary,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         const SizedBox(width: AppTheme.spacing8),
@@ -399,7 +402,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                                           ),
                                           child: Text(
-                                            'PREMIUM',
+                                            'PRO',
                                             style: AppTheme.labelSmall.copyWith(
                                               color: AppTheme.warning,
                                               fontWeight: FontWeight.w700,

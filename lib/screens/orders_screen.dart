@@ -70,10 +70,30 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   Future<void> _loadPairs() async {
     try {
       final binance = BinanceService();
+
+      // Get user's portfolio balances from Binance
+      await binance.loadCredentials();
+      final balances = await binance.getAccountBalances();
+
+      // Get all available trading pairs
       final all = await binance.fetchTradingPairs();
-      // Keep only user's bases + selected quote
       final String selectedQuote = AppSettingsService().quoteCurrency.toUpperCase();
-      final Set<String> allowedBases = <String>{'BTC','ETH','BNB','SOL','WLFI','TRUMP'};
+
+      // Extract base currencies from user's portfolio (excluding quote currency)
+      final Set<String> allowedBases = <String>{};
+      for (final asset in balances.keys) {
+        final upperAsset = asset.toUpperCase();
+        if (upperAsset != selectedQuote && balances[asset]! > 0.0) {
+          allowedBases.add(upperAsset);
+        }
+      }
+
+      // If user has no holdings, fall back to default coins
+      if (allowedBases.isEmpty) {
+        allowedBases.addAll({'BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'});
+      }
+
+      // Filter trading pairs to only include user's coins
       final List<Map<String, String>> filtered = <Map<String, String>>[];
       final Set<String> seen = <String>{};
       for (final m in all) {

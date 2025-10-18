@@ -1,9 +1,90 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../services/binance_service.dart';
+import '../services/app_settings_service.dart';
 
-class PortfolioScreen extends StatelessWidget {
+class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
+
+  @override
+  State<PortfolioScreen> createState() => _PortfolioScreenState();
+}
+
+class _PortfolioScreenState extends State<PortfolioScreen> {
+  final BinanceService _binance = BinanceService();
+  bool _isLoading = true;
+  Map<String, double> _balances = {};
+  Map<String, double> _prices = {};
+  double _totalValue = 0.0;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPortfolio();
+  }
+
+  Future<void> _loadPortfolio() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await _binance.loadCredentials();
+      final balances = await _binance.getAccountBalances();
+      final quote = AppSettingsService().quoteCurrency.toUpperCase();
+
+      double total = 0.0;
+      final prices = <String, double>{};
+
+      // Add quote currency balance directly (EUR, USD, USDT, USDC)
+      total += balances[quote] ?? 0.0;
+      prices[quote] = 1.0; // Quote currency is always 1:1
+
+      // Convert other assets to quote currency
+      for (final entry in balances.entries) {
+        final asset = entry.key;
+        final amount = entry.value;
+
+        if (asset == quote || amount <= 0.0) continue;
+
+        try {
+          // Try to get price for this asset in quote currency
+          final ticker = await _binance.fetchTicker24hWithFallback([
+            '$asset$quote',
+            '${asset}USDT',
+            '${asset}EUR',
+            '${asset}USDC'
+          ]);
+          final price = ticker['lastPrice'] ?? 0.0;
+          prices[asset] = price;
+          total += amount * price;
+        } catch (e) {
+          debugPrint('Portfolio: Could not get price for $asset: $e');
+          prices[asset] = 0.0;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _balances = balances;
+          _prices = prices;
+          _totalValue = total;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Portfolio: Error loading portfolio: $e');
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to load portfolio';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +113,12 @@ class PortfolioScreen extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
-                    child: const _PortfolioValueCard(),
+                    child: _PortfolioValueCard(
+                      isLoading: _isLoading,
+                      error: _error,
+                      totalValue: _totalValue,
+                      onRefresh: _loadPortfolio,
+                    ),
                   ),
                 ),
 
@@ -59,7 +145,13 @@ class PortfolioScreen extends StatelessWidget {
             },
             body: TabBarView(
               children: [
-                _HoldingsList(),
+                _HoldingsList(
+                  isLoading: _isLoading,
+                  balances: _balances,
+                  prices: _prices,
+                  error: _error,
+                  onRefresh: _loadPortfolio,
+                ),
                 _buildHistoryTab(context),
               ],
             ),
@@ -92,10 +184,23 @@ class PortfolioScreen extends StatelessWidget {
 }
 
 class _PortfolioValueCard extends StatelessWidget {
-  const _PortfolioValueCard();
+  final bool isLoading;
+  final String? error;
+  final double totalValue;
+  final VoidCallback onRefresh;
+
+  const _PortfolioValueCard({
+    required this.isLoading,
+    required this.error,
+    required this.totalValue,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final quote = AppSettingsService().quoteCurrency;
+    final prefix = AppSettingsService.currencyPrefix(quote);
+
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,51 +228,59 @@ class _PortfolioValueCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: onRefresh,
+                color: AppTheme.textSecondary,
+              ),
             ],
           ),
           const SizedBox(height: AppTheme.spacing20),
-          Text(
-            r'$122,000',
-            style: AppTheme.displayLarge.copyWith(
-              fontSize: 40,
-              fontWeight: FontWeight.w700,
+
+          if (isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (error != null)
+            Text(
+              error!,
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+            )
+          else
+            Text(
+              '$prefix${totalValue.toStringAsFixed(2)}',
+              style: AppTheme.displayLarge.copyWith(
+                fontSize: 40,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
+
           const SizedBox(height: AppTheme.spacing12),
+
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing12,
-              vertical: AppTheme.spacing8,
-            ),
+            padding: const EdgeInsets.all(AppTheme.spacing12),
             decoration: BoxDecoration(
-              color: AppTheme.buyGreen.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              color: AppTheme.glassWhite,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               border: Border.all(
-                color: AppTheme.buyGreen.withOpacity(0.3),
+                color: AppTheme.glassBorder,
                 width: 1,
               ),
             ),
-            child: IntrinsicWidth(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.trending_up, color: AppTheme.buyGreen, size: 18),
-                  const SizedBox(width: AppTheme.spacing8),
-                  Flexible(
-                    child: Text(
-                      r'+$4,200 Today',
-                      style: AppTheme.headingSmall.copyWith(color: AppTheme.buyGreen),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: AppTheme.textTertiary,
+                  size: 16,
+                ),
+                const SizedBox(width: AppTheme.spacing8),
+                Text(
+                  'Live portfolio value from Binance',
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textTertiary,
                   ),
-                  const SizedBox(width: AppTheme.spacing4),
-                  Text(
-                    '(+3.44%)',
-                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.buyGreen),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -177,38 +290,109 @@ class _PortfolioValueCard extends StatelessWidget {
 }
 
 class _HoldingsList extends StatelessWidget {
+  final bool isLoading;
+  final Map<String, double> balances;
+  final Map<String, double> prices;
+  final String? error;
+  final VoidCallback onRefresh;
+
+  const _HoldingsList({
+    required this.isLoading,
+    required this.balances,
+    required this.prices,
+    required this.error,
+    required this.onRefresh,
+  });
+
   @override
   Widget build(BuildContext context) {
-    final holdings = [
-      _HoldingData('Bitcoin', 'BTC', '1.5 BTC', r'$51,750', '+4.5%', true, Icons.currency_bitcoin),
-      _HoldingData('Ethereum', 'ETH', '10 ETH', r'$21,000', '-2.1%', false, Icons.diamond_outlined),
-      _HoldingData('BNB', 'BNB', '20 BNB', r'$6,000', '+1.8%', true, Icons.attach_money),
-      _HoldingData('Solana', 'SOL', '50 SOL', r'$8,500', '-5.3%', false, Icons.sunny),
-    ];
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: AppTheme.error),
+            const SizedBox(height: AppTheme.spacing16),
+            Text(
+              error!,
+              style: AppTheme.headingMedium.copyWith(color: AppTheme.error),
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            ElevatedButton.icon(
+              onPressed: onRefresh,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Filter out zero balances and sort by value (descending)
+    final holdings = balances.entries
+        .where((e) => e.value > 0.0)
+        .map((e) {
+          final asset = e.key;
+          final amount = e.value;
+          final price = prices[asset] ?? 0.0;
+          final value = amount * price;
+          return MapEntry(asset, {'amount': amount, 'price': price, 'value': value});
+        })
+        .toList()
+      ..sort((a, b) => (b.value['value'] as double).compareTo(a.value['value'] as double));
+
+    if (holdings.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.account_balance_wallet, size: 64, color: AppTheme.textTertiary),
+            const SizedBox(height: AppTheme.spacing16),
+            Text(
+              'No Holdings',
+              style: AppTheme.headingLarge.copyWith(color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: AppTheme.spacing8),
+            Text(
+              'Your crypto holdings will appear here',
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
+            ),
+          ],
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(AppTheme.spacing20),
       itemCount: holdings.length,
       itemBuilder: (context, index) {
+        final entry = holdings[index];
+        final asset = entry.key;
+        final data = entry.value;
+        final amount = data['amount'] as double;
+        final price = data['price'] as double;
+        final value = data['value'] as double;
+
         return Padding(
           padding: const EdgeInsets.only(bottom: AppTheme.spacing12),
-          child: _HoldingCard(holding: holdings[index]),
+          child: _HoldingCard(
+            asset: asset,
+            amount: amount,
+            price: price,
+            value: value,
+          ),
         );
       },
     );
   }
-}
-
-class _HoldingData {
-  final String name;
-  final String symbol;
-  final String amount;
-  final String value;
-  final String pnl;
-  final bool isGain;
-  final IconData icon;
-
-  _HoldingData(this.name, this.symbol, this.amount, this.value, this.pnl, this.isGain, this.icon);
 }
 
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
@@ -237,13 +421,69 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _HoldingCard extends StatelessWidget {
-  final _HoldingData holding;
+  final String asset;
+  final double amount;
+  final double price;
+  final double value;
 
-  const _HoldingCard({required this.holding});
+  const _HoldingCard({
+    required this.asset,
+    required this.amount,
+    required this.price,
+    required this.value,
+  });
+
+  IconData _getIcon(String asset) {
+    switch (asset.toUpperCase()) {
+      case 'BTC':
+        return Icons.currency_bitcoin;
+      case 'ETH':
+        return Icons.diamond_outlined;
+      case 'BNB':
+        return Icons.attach_money;
+      case 'SOL':
+        return Icons.sunny;
+      case 'WLFI':
+        return Icons.account_balance;
+      case 'TRUMP':
+        return Icons.person;
+      case 'EUR':
+      case 'USD':
+      case 'USDT':
+      case 'USDC':
+        return Icons.euro_symbol;
+      default:
+        return Icons.monetization_on;
+    }
+  }
+
+  String _getDisplayName(String asset) {
+    switch (asset.toUpperCase()) {
+      case 'BTC':
+        return 'Bitcoin';
+      case 'ETH':
+        return 'Ethereum';
+      case 'BNB':
+        return 'BNB';
+      case 'SOL':
+        return 'Solana';
+      case 'WLFI':
+        return 'WLFI';
+      case 'TRUMP':
+        return 'TRUMP';
+      case 'USDT':
+        return 'Tether';
+      case 'USDC':
+        return 'USD Coin';
+      default:
+        return asset;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pnlColor = holding.isGain ? AppTheme.buyGreen : AppTheme.sellRed;
+    final quote = AppSettingsService().quoteCurrency;
+    final prefix = AppSettingsService.currencyPrefix(quote);
 
     return GlassCard(
       child: Row(
@@ -253,11 +493,11 @@ class _HoldingCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: holding.isGain ? AppTheme.buyGradient : AppTheme.sellGradient,
+              gradient: AppTheme.primaryGradient,
               borderRadius: BorderRadius.circular(AppTheme.radiusMD),
             ),
             child: Icon(
-              holding.icon,
+              _getIcon(asset),
               color: Colors.white,
               size: 24,
             ),
@@ -270,42 +510,31 @@ class _HoldingCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  holding.name,
+                  _getDisplayName(asset),
                   style: AppTheme.headingMedium,
                 ),
                 const SizedBox(height: AppTheme.spacing4),
                 Text(
-                  holding.amount,
+                  '$amount $asset',
                   style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
                 ),
               ],
             ),
           ),
 
-          // Value & PnL
+          // Value & Price
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                holding.value,
+                '$prefix${value.toStringAsFixed(2)}',
                 style: AppTheme.headingMedium.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: AppTheme.spacing4),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacing8,
-                  vertical: AppTheme.spacing4,
-                ),
-                decoration: BoxDecoration(
-                  color: pnlColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                ),
-                child: Text(
-                  holding.pnl,
-                  style: AppTheme.bodySmall.copyWith(
-                    color: pnlColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+              Text(
+                price > 0 ? '$prefix${price.toStringAsFixed(2)}' : '-',
+                style: AppTheme.bodySmall.copyWith(
+                  color: AppTheme.textTertiary,
                 ),
               ),
             ],

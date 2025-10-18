@@ -37,16 +37,69 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   String _interval = '1h';
   Timer? _liveTimer;
 
+  // Portfolio coins for dynamic dropdown
+  List<String> _availableCoins = [];
+  bool _loadingCoins = true;
+
   @override
   void initState() {
     super.initState();
     final quote = AppSettingsService().quoteCurrency.toUpperCase();
     _selectedSymbol = 'BTC$quote';
     hybridStrategiesService.updateTradingPair(_selectedSymbol, interval: _interval);
+    _loadAvailableCoins();
     _startLiveFeed();
     // Auto-run first prediction
     if (globalEnsemblePredictor.isLoaded) {
       Future.delayed(const Duration(milliseconds: 500), _runInference);
+    }
+  }
+
+  Future<void> _loadAvailableCoins() async {
+    try {
+      final binance = BinanceService();
+      await binance.loadCredentials();
+      final balances = await binance.getAccountBalances();
+      final quote = AppSettingsService().quoteCurrency.toUpperCase();
+
+      // Extract coins from portfolio (excluding quote currency)
+      final Set<String> coins = {};
+      for (final asset in balances.keys) {
+        final upperAsset = asset.toUpperCase();
+        if (upperAsset != quote && balances[asset]! > 0.0) {
+          coins.add('$upperAsset$quote');
+        }
+      }
+
+      // If no holdings, use default coins
+      if (coins.isEmpty) {
+        coins.addAll(['BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'].map((b) => '$b$quote'));
+      }
+
+      if (mounted) {
+        setState(() {
+          _availableCoins = coins.toList()..sort();
+          _loadingCoins = false;
+          // Ensure selected symbol is in the list
+          if (!_availableCoins.contains(_selectedSymbol) && _availableCoins.isNotEmpty) {
+            _selectedSymbol = _availableCoins.first;
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading coins: $e');
+      // Fall back to default coins
+      final quote = AppSettingsService().quoteCurrency.toUpperCase();
+      if (mounted) {
+        setState(() {
+          _availableCoins = ['BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'].map((b) => '$b$quote').toList();
+          _loadingCoins = false;
+          // Ensure selected symbol is in the list
+          if (!_availableCoins.contains(_selectedSymbol) && _availableCoins.isNotEmpty) {
+            _selectedSymbol = _availableCoins.first;
+          }
+        });
+      }
     }
   }
 
@@ -68,7 +121,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       final features = await BinanceService().getFeaturesForModel(_selectedSymbol, interval: _interval);
       debugPrint('ℹ️ AI: features ${features.length}x${features.isNotEmpty ? features.first.length : 0}');
 
-      final prediction = await globalEnsemblePredictor.predict(features);
+      final prediction = await globalEnsemblePredictor.predict(features, symbol: _selectedSymbol);
       debugPrint('🚀 ENSEMBLE: ${prediction.label} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
 
       if (mounted) {
@@ -89,8 +142,12 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   }
 
   List<String> _buildPairs() {
-    final q = AppSettingsService().quoteCurrency.toUpperCase();
-    return ['BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'].map((b) => '$b$q').toList();
+    if (_availableCoins.isEmpty) {
+      // Fallback while loading
+      final q = AppSettingsService().quoteCurrency.toUpperCase();
+      return ['BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'].map((b) => '$b$q').toList();
+    }
+    return _availableCoins;
   }
 
   void _startLiveFeed() {
@@ -272,8 +329,16 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                     isExpanded: true,
                     underline: const SizedBox(),
                     dropdownColor: AppTheme.surface,
-                    style: AppTheme.bodyLarge.copyWith(color: AppTheme.textPrimary),
-                    items: _buildPairs().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                    items: _buildPairs().map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(
+                        e,
+                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    )).toList(),
                     onChanged: (v) {
                       if (v == null) return;
                       setState(() => _selectedSymbol = v);

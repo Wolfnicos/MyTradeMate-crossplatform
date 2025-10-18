@@ -482,7 +482,7 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
               if (_wif != null || _trump != null) _buildDivider(),
             ],
             if (_wif != null) ...[
-              _buildPnLRow('WIF', _wif),
+              _buildPnLRow('WLFI', _wif),
               if (_trump != null) _buildDivider(),
             ],
             if (_trump != null) _buildPnLRow('TRUMP', _trump),

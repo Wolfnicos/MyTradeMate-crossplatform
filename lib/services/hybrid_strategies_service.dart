@@ -170,7 +170,7 @@ class RSIMLHybridStrategy extends HybridStrategy {
       try {
         debugPrint('[RSI/ML Hybrid] Fetching Transformer prediction for ' + symbol + ' @' + interval);
         final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features);
+        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
 
         // Map 4-class prediction to 3-class SignalType
         if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
@@ -289,7 +289,7 @@ class MomentumScalperStrategy extends HybridStrategy {
     if (globalEnsemblePredictor.isLoaded) {
       try {
         final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features);
+        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
 
         if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
           aiSignal = SignalType.BUY;
@@ -451,7 +451,7 @@ class BreakoutStrategy extends HybridStrategy {
     if (globalEnsemblePredictor.isLoaded) {
       try {
         final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features);
+        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
 
         if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
           aiSignal = SignalType.BUY;
@@ -548,7 +548,7 @@ class MeanReversionStrategy extends HybridStrategy {
     if (globalEnsemblePredictor.isLoaded) {
       try {
         final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features);
+        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
 
         if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
           aiSignal = SignalType.BUY;

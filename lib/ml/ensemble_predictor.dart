@@ -29,13 +29,26 @@ class EnsemblePredictor {
   Interpreter? _lstmModel;
   Interpreter? _randomForestModel; // Note: RF will use fallback if not TFLite
 
+  // Per-coin model interpreters (specialized for each cryptocurrency)
+  final Map<String, Interpreter?> _perCoinModels = {
+    'BTC': null,
+    'ETH': null,
+    'BNB': null,
+    'SOL': null,
+    'WLFI': null,
+    'TRUMP': null,
+  };
+
   // Legacy fallback models
   Interpreter? _legacyTcnModel;
 
   // Model weights (sum to 1.0)
-  static const double _transformerWeight = 0.50;
+  // NEW: Per-coin models get highest weight (40%) as they're specialized for each coin
+  // Transformer and LSTM provide general crypto patterns (30% each)
+  static const double _perCoinWeight = 0.40;
+  static const double _transformerWeight = 0.30;
   static const double _lstmWeight = 0.30;
-  static const double _randomForestWeight = 0.20;
+  static const double _randomForestWeight = 0.00; // Disabled when per-coin model available
 
   // Model load status
   bool _isLoaded = false;
@@ -87,6 +100,13 @@ class EnsemblePredictor {
       debugPrint('⚠️ Failed to load Random Forest: $e (will use fallback)');
     }
 
+    try {
+      // Load per-coin models (BTC, ETH, BNB, SOL, WLFI, TRUMP)
+      await _loadPerCoinModels();
+    } catch (e) {
+      debugPrint('⚠️ Failed to load per-coin models: $e');
+    }
+
     _isLoaded = _modelStatus.values.any((status) => status);
 
     if (!_isLoaded) {
@@ -109,6 +129,10 @@ class EnsemblePredictor {
     debugPrint('   Transformer: ${(_modelStatus['transformer'] ?? false) ? "✅" : "❌"}');
     debugPrint('   LSTM: ${(_modelStatus['lstm'] ?? false) ? "✅" : "❌"}');
     debugPrint('   Random Forest: ${(_modelStatus['randomForest'] ?? false) ? "✅" : "❌ (fallback)"}');
+    debugPrint('   Per-Coin Models:');
+    _perCoinModels.forEach((coin, model) {
+      debugPrint('      $coin: ${model != null ? "✅" : "❌"}');
+    });
     if (_useLegacyFallback) {
       debugPrint('   💡 Using Legacy TCN Fallback');
     }
@@ -165,14 +189,45 @@ class EnsemblePredictor {
     debugPrint('   ✅ Legacy TCN loaded (v8)');
   }
 
+  /// Load per-coin specialized models
+  Future<void> _loadPerCoinModels() async {
+    debugPrint('🪙 Loading per-coin models...');
+    debugPrint('🪙 Looking for models in: assets/models/');
+
+    for (var entry in _perCoinModels.keys) {
+      try {
+        final coinLower = entry.toLowerCase();
+        final modelPath = 'assets/models/${coinLower}_model.tflite';
+        debugPrint('🪙 Attempting to load: $modelPath');
+
+        _perCoinModels[entry] = await Interpreter.fromAsset(modelPath);
+
+        debugPrint('   ✅ $entry model loaded successfully!');
+        debugPrint('   📊 Model size: ~27MB transformer');
+        debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
+      } catch (e) {
+        debugPrint('   ❌ $entry model not found!');
+        debugPrint('   ⚠️ Error: $e');
+        _perCoinModels[entry] = null;
+      }
+    }
+
+    debugPrint('');
+    debugPrint('🪙 Per-coin models summary:');
+    _perCoinModels.forEach((coin, model) {
+      debugPrint('   $coin: ${model != null ? "✅ LOADED" : "❌ NOT LOADED"}');
+    });
+  }
+
   /// Predict using ensemble voting
   ///
   /// Args:
   ///   features: [60, 76] feature matrix (60 timesteps × 76 features)
+  ///   symbol: Trading pair symbol (e.g., 'BTC/USDT', 'BTCEUR') to select per-coin model
   ///
   /// Returns:
   ///   EnsemblePrediction with weighted consensus
-  Future<EnsemblePrediction> predict(List<List<double>> features) async {
+  Future<EnsemblePrediction> predict(List<List<double>> features, {String? symbol}) async {
     if (!_isLoaded) {
       throw Exception('Models not loaded. Call loadModels() first.');
     }
@@ -184,19 +239,34 @@ class EnsemblePredictor {
 
     debugPrint('✅ Input shape validated: ${features.length}x${features[0].length}');
 
+    // Extract coin symbol (BTC, ETH, etc.) from trading pair
+    String? coinSymbol;
+    if (symbol != null) {
+      // Handle formats like 'BTC/USDT', 'BTCEUR', 'BTCUSDT'
+      coinSymbol = symbol.replaceAll('/', '').replaceAll('USDT', '').replaceAll('EUR', '').toUpperCase();
+      // Take first part if still has slash
+      if (coinSymbol.contains('/')) {
+        coinSymbol = coinSymbol.split('/')[0];
+      }
+      debugPrint('🪙 Using per-coin model for: $coinSymbol (from $symbol)');
+    }
+
     // Get predictions from each model
     final transformerProbs = await _predictTransformer(features);
     final lstmProbs = await _predictLstm(features);
+    final perCoinProbs = await _predictPerCoin(features, coinSymbol);
     final rfProbs = await _predictRandomForest(features);
 
     // 🔍 DEBUG: Print raw model outputs
     debugPrint('🔍 RAW MODEL OUTPUTS:');
+    debugPrint('   Per-Coin ($coinSymbol): [${perCoinProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
     debugPrint('   Transformer: [${transformerProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
     debugPrint('   LSTM: [${lstmProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
     debugPrint('   RF: [${rfProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
 
-    // Weighted voting
+    // Weighted voting (now includes per-coin model at 40% weight)
     final ensembleProbs = _weightedVoting(
+      perCoinProbs: perCoinProbs,
       transformerProbs: transformerProbs,
       lstmProbs: lstmProbs,
       rfProbs: rfProbs,
@@ -217,6 +287,7 @@ class EnsemblePredictor {
       confidence: confidence,
       probabilities: ensembleProbs,
       modelContributions: {
+        'perCoin_$coinSymbol': perCoinProbs,
         'transformer': transformerProbs,
         'lstm': lstmProbs,
         'randomForest': rfProbs,
@@ -278,6 +349,102 @@ class EnsemblePredictor {
     } catch (e) {
       debugPrint('⚠️ LSTM inference failed: $e');
       _modelErrors['lstm'] = (_modelErrors['lstm'] ?? 0) + 1;
+      return [0.2, 0.2, 0.2, 0.2, 0.2];
+    }
+  }
+
+  /// Predict using per-coin specialized model
+  ///
+  /// Per-coin models output 3 classes [SELL, HOLD, BUY]
+  /// This method maps them to 5 classes [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
+  Future<List<double>> _predictPerCoin(List<List<double>> features, String? coinSymbol) async {
+    debugPrint('');
+    debugPrint('🪙 === PER-COIN MODEL PREDICTION ===');
+    debugPrint('🪙 Coin Symbol: $coinSymbol');
+
+    // If no coin symbol or model not available, return neutral
+    if (coinSymbol == null || _perCoinModels[coinSymbol] == null) {
+      debugPrint('⚠️ Per-coin model for $coinSymbol not available!');
+      debugPrint('   Reason: ${coinSymbol == null ? "No symbol provided" : "Model not loaded"}');
+      debugPrint('   Using neutral probabilities: [0.2, 0.2, 0.2, 0.2, 0.2]');
+      return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral (5 classes)
+    }
+
+    final model = _perCoinModels[coinSymbol];
+    final startTime = DateTime.now();
+    debugPrint('✅ $coinSymbol model is loaded!');
+    debugPrint('📥 Input shape: [1, ${features.length}, ${features[0].length}]');
+
+    try {
+      // Reshape input: [1, 60, 76]
+      var input = [features];
+
+      // Output buffer: [1, 3] for 3-class models (SELL, HOLD, BUY)
+      var output = List.generate(1, (_) => List.filled(3, 0.0));
+
+      debugPrint('🔄 Running inference on $coinSymbol model...');
+
+      // Run inference
+      model!.run(input, output);
+
+      // Track latency
+      final latency = DateTime.now().difference(startTime).inMilliseconds;
+      _modelLatency['perCoin_$coinSymbol'] = latency.toDouble();
+
+      debugPrint('⏱️  Inference time: ${latency}ms');
+
+      // Convert 3-class [SELL, HOLD, BUY] to 5-class [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
+      final sell = output[0][0];
+      final hold = output[0][1];
+      final buy = output[0][2];
+
+      debugPrint('📊 Raw 3-class output:');
+      debugPrint('   SELL: ${(sell * 100).toStringAsFixed(2)}%');
+      debugPrint('   HOLD: ${(hold * 100).toStringAsFixed(2)}%');
+      debugPrint('   BUY:  ${(buy * 100).toStringAsFixed(2)}%');
+
+      // Map 3-class to 5-class:
+      // - High SELL probability (>0.6) -> split between STRONG_SELL and SELL
+      // - Low-medium SELL (<0.6) -> mostly SELL
+      // - HOLD stays as HOLD
+      // - High BUY probability (>0.6) -> split between BUY and STRONG_BUY
+      // - Low-medium BUY (<0.6) -> mostly BUY
+      double strongSell, normalSell, normalBuy, strongBuy;
+
+      if (sell > 0.6) {
+        strongSell = sell * 0.5;
+        normalSell = sell * 0.5;
+        debugPrint('🔴 High SELL probability -> splitting to STRONG_SELL + SELL');
+      } else {
+        strongSell = sell * 0.2;
+        normalSell = sell * 0.8;
+        debugPrint('🟠 Normal SELL probability -> mostly SELL');
+      }
+
+      if (buy > 0.6) {
+        strongBuy = buy * 0.5;
+        normalBuy = buy * 0.5;
+        debugPrint('🟢 High BUY probability -> splitting to BUY + STRONG_BUY');
+      } else {
+        strongBuy = buy * 0.2;
+        normalBuy = buy * 0.8;
+        debugPrint('🟡 Normal BUY probability -> mostly BUY');
+      }
+
+      final result = [strongSell, normalSell, hold, normalBuy, strongBuy];
+
+      debugPrint('📊 Mapped to 5-class output:');
+      debugPrint('   STRONG_SELL: ${(strongSell * 100).toStringAsFixed(2)}%');
+      debugPrint('   SELL:        ${(normalSell * 100).toStringAsFixed(2)}%');
+      debugPrint('   HOLD:        ${(hold * 100).toStringAsFixed(2)}%');
+      debugPrint('   BUY:         ${(normalBuy * 100).toStringAsFixed(2)}%');
+      debugPrint('   STRONG_BUY:  ${(strongBuy * 100).toStringAsFixed(2)}%');
+
+      return result;
+    } catch (e) {
+      debugPrint('❌ Per-coin ($coinSymbol) inference FAILED!');
+      debugPrint('   Error: $e');
+      _modelErrors['perCoin_$coinSymbol'] = (_modelErrors['perCoin_$coinSymbol'] ?? 0) + 1;
       return [0.2, 0.2, 0.2, 0.2, 0.2];
     }
   }
@@ -360,25 +527,59 @@ class EnsemblePredictor {
 
   /// Weighted voting ensemble
   ///
-  /// Combines model predictions using configured weights
+  /// Combines model predictions using configured weights:
+  /// - Per-coin model: 40% (highest weight, specialized for each coin)
+  /// - Transformer: 30% (general crypto patterns)
+  /// - LSTM: 30% (sequential dependencies)
+  /// - Random Forest: 0% (disabled when per-coin model available)
   List<double> _weightedVoting({
+    required List<double> perCoinProbs,
     required List<double> transformerProbs,
     required List<double> lstmProbs,
     required List<double> rfProbs,
   }) {
+    debugPrint('');
+    debugPrint('⚖️  === WEIGHTED VOTING ENSEMBLE ===');
+    debugPrint('⚖️  Model Weights:');
+    debugPrint('   Per-Coin:    ${(_perCoinWeight * 100).toStringAsFixed(0)}%');
+    debugPrint('   Transformer: ${(_transformerWeight * 100).toStringAsFixed(0)}%');
+    debugPrint('   LSTM:        ${(_lstmWeight * 100).toStringAsFixed(0)}%');
+    debugPrint('   Random Forest: ${(_randomForestWeight * 100).toStringAsFixed(0)}%');
+    debugPrint('');
+
     final ensembleProbs = List<double>.filled(5, 0.0); // 5 classes
+    final labels = ['STRONG_SELL', 'SELL', 'HOLD', 'BUY', 'STRONG_BUY'];
+
+    debugPrint('⚖️  Calculating weighted ensemble for each class:');
 
     for (int i = 0; i < 5; i++) {
-      ensembleProbs[i] = _transformerWeight * transformerProbs[i] +
-          _lstmWeight * lstmProbs[i] +
-          _randomForestWeight * rfProbs[i];
+      final perCoinContrib = _perCoinWeight * perCoinProbs[i];
+      final transformerContrib = _transformerWeight * transformerProbs[i];
+      final lstmContrib = _lstmWeight * lstmProbs[i];
+      final rfContrib = _randomForestWeight * rfProbs[i];
+
+      ensembleProbs[i] = perCoinContrib + transformerContrib + lstmContrib + rfContrib;
+
+      debugPrint('   ${labels[i].padRight(12)}:');
+      debugPrint('      Per-Coin:    ${(perCoinContrib * 100).toStringAsFixed(2)}% (${(perCoinProbs[i] * 100).toStringAsFixed(1)}% × 40%)');
+      debugPrint('      Transformer: ${(transformerContrib * 100).toStringAsFixed(2)}% (${(transformerProbs[i] * 100).toStringAsFixed(1)}% × 30%)');
+      debugPrint('      LSTM:        ${(lstmContrib * 100).toStringAsFixed(2)}% (${(lstmProbs[i] * 100).toStringAsFixed(1)}% × 30%)');
+      debugPrint('      RF:          ${(rfContrib * 100).toStringAsFixed(2)}% (${(rfProbs[i] * 100).toStringAsFixed(1)}% × 0%)');
+      debugPrint('      → Total:     ${(ensembleProbs[i] * 100).toStringAsFixed(2)}%');
     }
 
     // Normalize (should already sum to ~1.0, but ensure it)
     final sum = ensembleProbs.reduce((a, b) => a + b);
+    debugPrint('');
+    debugPrint('⚖️  Sum before normalization: ${(sum * 100).toStringAsFixed(2)}%');
+
     if (sum > 0) {
       for (int i = 0; i < 5; i++) {
         ensembleProbs[i] /= sum;
+      }
+      debugPrint('⚖️  Normalized ensemble probabilities:');
+      for (int i = 0; i < 5; i++) {
+        debugPrint('   ${labels[i].padRight(12)}: ${(ensembleProbs[i] * 100).toStringAsFixed(2)}%');
       }
     }
 
@@ -419,6 +620,12 @@ class EnsemblePredictor {
     _lstmModel?.close();
     _randomForestModel?.close();
     _legacyTcnModel?.close();
+
+    // Dispose per-coin models
+    for (var entry in _perCoinModels.entries) {
+      entry.value?.close();
+    }
+
     debugPrint('🧹 Ensemble models disposed');
     debugPrint(performanceSummary);
   }

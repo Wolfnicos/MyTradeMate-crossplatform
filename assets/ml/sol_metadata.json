@@ -1,8 +1,0 @@
-{
-  "coin": "SOL",
-  "train_accuracy": 0.6653225806451613,
-  "test_accuracy": 0.46774193548387094,
-  "model_type": "Single TF GRU",
-  "timeframe": "1h",
-  "date": "2025-10-18T14:11:14.981426"
-}

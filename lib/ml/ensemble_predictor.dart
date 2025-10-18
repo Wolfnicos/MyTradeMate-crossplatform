@@ -1,16 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 /// Ensemble Predictor for MyTradeMate
 ///
-/// Combines 2 AI model types with weighted voting:
-/// - Per-coin models (40% weight): Specialized 27MB models trained on each cryptocurrency
-/// - Single TF GRU general models (60% weight): Lightweight 73KB models trained on 1H data across all coins
-///
-/// This ensemble approach reduces overfitting and improves generalization
-/// by combining specialized per-coin knowledge with general crypto patterns.
+/// Uses per-coin specialized AI models trained on each cryptocurrency
+/// - Per-coin models: Specialized 27MB models trained individually for BTC, ETH, BNB, SOL, WLFI, TRUMP
 ///
 /// Input: 60 timesteps × 76 features (25 candle patterns + 51 technical indicators)
 /// Output: 5-class probabilities [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
@@ -35,36 +29,14 @@ class EnsemblePredictor {
     'TRUMP': null,
   };
 
-  // Single TF GRU general model interpreters (trained on 1H data, 73KB each)
-  final Map<String, Interpreter?> _singleTfGruModels = {
-    'BTC': null,
-    'ETH': null,
-    'BNB': null,
-    'SOL': null,
-    'WLFI': null,
-    'TRUMP': null,
-  };
-
-  // Scalers for Single TF GRU models (StandardScaler parameters)
-  final Map<String, Map<String, dynamic>?> _singleTfGruScalers = {
-    'BTC': null,
-    'ETH': null,
-    'BNB': null,
-    'SOL': null,
-    'WLFI': null,
-    'TRUMP': null,
-  };
-
   // Legacy fallback models (deprecated, kept for backward compatibility)
   Interpreter? _transformerModel;
   Interpreter? _lstmModel;
   Interpreter? _legacyTcnModel;
 
-  // Model weights (sum to 1.0)
-  // Per-coin models: 40% (specialized knowledge for each coin)
-  // Single TF GRU general: 60% (general patterns across all coins at 1H timeframe)
-  static const double _perCoinWeight = 0.40;
-  static const double _singleTfGruWeight = 0.60;
+  // Model weights
+  // Per-coin models: 100% (specialized knowledge for each coin)
+  static const double _perCoinWeight = 1.0;
 
   // Model load status
   bool _isLoaded = false;
@@ -90,7 +62,7 @@ class EnsemblePredictor {
 
   /// Load all ensemble models
   ///
-  /// Loads per-coin specialized models and Single TF GRU general models.
+  /// Loads per-coin specialized models.
   /// Falls back gracefully if some models are missing.
   Future<void> loadModels() async {
     debugPrint('🤖 Loading ensemble models...');
@@ -124,17 +96,9 @@ class EnsemblePredictor {
       debugPrint('⚠️ Failed to load per-coin models: $e');
     }
 
-    try {
-      // Load Single TF GRU general models (1H timeframe, 73KB each)
-      await _loadSingleTfGruModels();
-    } catch (e) {
-      debugPrint('⚠️ Failed to load Single TF GRU models: $e');
-    }
-
     // Check if at least one model type loaded
     final perCoinLoaded = _perCoinModels.values.any((model) => model != null);
-    final singleTfGruLoaded = _singleTfGruModels.values.any((model) => model != null);
-    _isLoaded = perCoinLoaded || singleTfGruLoaded || _modelStatus.values.any((status) => status);
+    _isLoaded = perCoinLoaded || _modelStatus.values.any((status) => status);
 
     if (!_isLoaded) {
       throw Exception('❌ No models loaded! Ensure TFLite models exist in assets/models/ and assets/ml/');
@@ -156,14 +120,9 @@ class EnsemblePredictor {
     debugPrint('✅ ========================================');
     debugPrint('✅ Ensemble models loaded summary:');
     debugPrint('✅ ========================================');
-    debugPrint('   Per-Coin Models (40% weight):');
+    debugPrint('   Per-Coin Models (100% weight):');
     _perCoinModels.forEach((coin, model) {
       debugPrint('      $coin: ${model != null ? "✅ LOADED (27MB specialized)" : "❌ NOT LOADED"}');
-    });
-    debugPrint('');
-    debugPrint('   Single TF GRU Models (60% weight):');
-    _singleTfGruModels.forEach((coin, model) {
-      debugPrint('      $coin: ${model != null ? "✅ LOADED (73KB 1H general)" : "❌ NOT LOADED"}');
     });
     debugPrint('✅ ========================================');
     if (_useLegacyFallback) {
@@ -264,70 +223,14 @@ class EnsemblePredictor {
     debugPrint('');
   }
 
-  /// Load Single TF GRU general models (trained on 1H data, 73KB each)
-  Future<void> _loadSingleTfGruModels() async {
-    debugPrint('');
-    debugPrint('🧠 ========================================');
-    debugPrint('🧠 Loading Single TF GRU general models (1H timeframe)');
-    debugPrint('🧠 Location: assets/ml/');
-    debugPrint('🧠 ========================================');
-
-    for (var entry in _singleTfGruModels.keys) {
-      try {
-        final coinLower = entry.toLowerCase();
-        final modelPath = 'assets/ml/${coinLower}_model.tflite';
-        final scalerPath = 'assets/ml/${coinLower}_scaler.json';
-        debugPrint('');
-        debugPrint('🧠 [$entry] Attempting to load: $modelPath');
-
-        _singleTfGruModels[entry] = await Interpreter.fromAsset(modelPath);
-
-        // Load scaler parameters
-        try {
-          final scalerJson = await rootBundle.loadString(scalerPath);
-          _singleTfGruScalers[entry] = json.decode(scalerJson) as Map<String, dynamic>;
-          final nFeatures = _singleTfGruScalers[entry]!['n_features'] as int;
-          debugPrint('   ✅ $entry Single TF GRU loaded successfully!');
-          debugPrint('   📊 Model: Single TF GRU (quantized)');
-          debugPrint('   📏 Size: ~73KB (optimized for mobile)');
-          debugPrint('   ⏰ Timeframe: 1H');
-          debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
-          debugPrint('   🎯 Test Accuracy: ~44-48%');
-          debugPrint('   🔧 Scaler: StandardScaler with $nFeatures features loaded');
-        } catch (scalerError) {
-          debugPrint('   ⚠️  Model loaded but scaler failed: $scalerError');
-          debugPrint('   ⚠️  Model will be disabled without scaler');
-          _singleTfGruModels[entry] = null;
-          _singleTfGruScalers[entry] = null;
-        }
-      } catch (e) {
-        debugPrint('');
-        debugPrint('   ❌ $entry Single TF GRU NOT FOUND!');
-        debugPrint('   ⚠️  Error: $e');
-        _singleTfGruModels[entry] = null;
-        _singleTfGruScalers[entry] = null;
-      }
-    }
-
-    debugPrint('');
-    debugPrint('🧠 ========================================');
-    debugPrint('🧠 Single TF GRU models loading summary:');
-    debugPrint('🧠 ========================================');
-    _singleTfGruModels.forEach((coin, model) {
-      debugPrint('   $coin: ${model != null ? "✅ LOADED (Single TF GRU 1H 73KB)" : "❌ NOT LOADED"}');
-    });
-    debugPrint('🧠 ========================================');
-    debugPrint('');
-  }
-
-  /// Predict using ensemble voting
+  /// Predict using per-coin specialized model
   ///
   /// Args:
   ///   features: [60, 76] feature matrix (60 timesteps × 76 features)
   ///   symbol: Trading pair symbol (e.g., 'BTC/USDT', 'BTCEUR') to select per-coin model
   ///
   /// Returns:
-  ///   EnsemblePrediction with weighted consensus
+  ///   EnsemblePrediction with per-coin model probabilities (100% weight)
   Future<EnsemblePrediction> predict(List<List<double>> features, {String? symbol}) async {
     if (!_isLoaded) {
       throw Exception('Models not loaded. Call loadModels() first.');
@@ -352,9 +255,8 @@ class EnsemblePredictor {
       debugPrint('🪙 Using per-coin model for: $coinSymbol (from $symbol)');
     }
 
-    // Get predictions from each model
+    // Get predictions from per-coin model (100% weight)
     final perCoinProbs = await _predictPerCoin(features, coinSymbol);
-    final singleTfGruProbs = await _predictSingleTfGru(features, coinSymbol);
     // Legacy models commented out
     // final transformerProbs = await _predictTransformer(features);
     // final lstmProbs = await _predictLstm(features);
@@ -363,24 +265,19 @@ class EnsemblePredictor {
     // 🔍 DEBUG: Print raw model outputs
     debugPrint('🔍 RAW MODEL OUTPUTS:');
     debugPrint('   Per-Coin ($coinSymbol): [${perCoinProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
-    debugPrint('   Single TF GRU ($coinSymbol): [${singleTfGruProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
     debugPrint('   RF: [${rfProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
 
-    // Weighted voting (40% per-coin + 60% Single TF GRU)
-    final ensembleProbs = _weightedVoting(
-      perCoinProbs: perCoinProbs,
-      singleTfGruProbs: singleTfGruProbs,
-      rfProbs: rfProbs,
-    );
+    // Use Per-Coin model directly (100% weight)
+    final ensembleProbs = perCoinProbs;
 
-    // 🔍 DEBUG: Print weighted ensemble result
-    debugPrint('🔍 ENSEMBLE RESULT: [${ensembleProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+    // 🔍 DEBUG: Print final result
+    debugPrint('🔍 FINAL RESULT: [${ensembleProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
 
     // Get final prediction
     final maxIndex = ensembleProbs.indexOf(ensembleProbs.reduce((a, b) => a > b ? a : b));
     final confidence = ensembleProbs[maxIndex];
 
-    debugPrint('🔍 FINAL: ${_classLabels[maxIndex]} (${(confidence * 100).toStringAsFixed(1)}%)');
+    debugPrint('🔍 PREDICTION: ${_classLabels[maxIndex]} (${(confidence * 100).toStringAsFixed(1)}%)');
 
     return EnsemblePrediction(
       label: _classLabels[maxIndex],
@@ -389,7 +286,6 @@ class EnsemblePredictor {
       probabilities: ensembleProbs,
       modelContributions: {
         'perCoin_$coinSymbol': perCoinProbs,
-        'singleTfGru_$coinSymbol': singleTfGruProbs,
         'randomForest': rfProbs,
       },
     );
@@ -568,81 +464,6 @@ class EnsemblePredictor {
     }
   }
 
-  /// Predict using Single TF GRU general model for the given coin
-  ///
-  /// NOTE: Single TF GRU models are DISABLED because scalers cannot be loaded
-  /// from .pkl files (Python-specific format). Models return 100% HOLD without
-  /// proper feature normalization. To fix, the user needs to re-export scalers
-  /// to JSON format from the training script.
-  Future<List<double>> _predictSingleTfGru(List<List<double>> features, String? coinSymbol) async {
-    if (coinSymbol == null) {
-      debugPrint('   ⚠️  Single TF GRU: No coin symbol provided, returning HOLD');
-      return [0.0, 0.0, 1.0, 0.0, 0.0];
-    }
-
-    final coin = _extractCoinSymbol(coinSymbol);
-    final model = _singleTfGruModels[coin];
-    final scaler = _singleTfGruScalers[coin];
-
-    if (model == null || scaler == null) {
-      debugPrint('   ⚠️  Single TF GRU ($coin): Model or scaler not loaded, returning HOLD');
-      return [0.0, 0.0, 1.0, 0.0, 0.0];
-    }
-
-    debugPrint('   🧠 Single TF GRU ($coin): Running inference...');
-    debugPrint('      Input shape (raw): [1, ${features.length}, ${features[0].length}]');
-
-    // Apply StandardScaler normalization using loaded scaler parameters
-    final mean = (scaler['mean'] as List).cast<double>();
-    final scale = (scaler['scale'] as List).cast<double>();
-
-    var normalizedFeatures = List.generate(features.length, (i) {
-      return List.generate(features[i].length, (j) {
-        return (features[i][j] - mean[j]) / scale[j];
-      });
-    });
-
-    debugPrint('      Applied StandardScaler normalization (76 features)');
-
-    var input = List.generate(1, (_) => normalizedFeatures);
-    var output = List.generate(1, (_) => List.filled(3, 0.0));
-
-    try {
-      model.run(input, output);
-      debugPrint('      RAW 3-class output: [SELL: ${(output[0][0] * 100).toStringAsFixed(2)}%, HOLD: ${(output[0][1] * 100).toStringAsFixed(2)}%, BUY: ${(output[0][2] * 100).toStringAsFixed(2)}%]');
-    } catch (e) {
-      debugPrint('   ❌ Single TF GRU ($coin): Inference error: $e');
-      return [0.0, 0.0, 1.0, 0.0, 0.0];
-    }
-
-    final sell = output[0][0];
-    final hold = output[0][1];
-    final buy = output[0][2];
-
-    double strongSell, normalSell, strongBuy, normalBuy;
-
-    if (sell > 0.6) {
-      strongSell = sell * 0.5;
-      normalSell = sell * 0.5;
-    } else {
-      strongSell = sell * 0.2;
-      normalSell = sell * 0.8;
-    }
-
-    if (buy > 0.6) {
-      strongBuy = buy * 0.5;
-      normalBuy = buy * 0.5;
-    } else {
-      strongBuy = buy * 0.2;
-      normalBuy = buy * 0.8;
-    }
-
-    final result = [strongSell, normalSell, hold, normalBuy, strongBuy];
-    debugPrint('      Converted to 5-class: [${result.map((p) => (p * 100).toStringAsFixed(2)).join(', ')}]');
-
-    return result;
-  }
-
   /// Predict using Random Forest (fallback rule-based)
   ///
   /// Uses technical indicators from the 76-feature vector
@@ -719,57 +540,6 @@ class EnsemblePredictor {
     return [strongSellProb, sellProb, holdProb, buyProb, strongBuyProb];
   }
 
-  /// Weighted voting ensemble
-  ///
-  /// Combines model predictions using configured weights:
-  /// - Per-coin model: 40% (specialized knowledge for each coin)
-  /// - Single TF GRU general: 60% (general patterns across all coins at 1H timeframe)
-  List<double> _weightedVoting({
-    required List<double> perCoinProbs,
-    required List<double> singleTfGruProbs,
-    required List<double> rfProbs,
-  }) {
-    debugPrint('');
-    debugPrint('⚖️  === WEIGHTED VOTING ENSEMBLE ===');
-    debugPrint('⚖️  Model Weights:');
-    debugPrint('   Per-Coin (40%):        Specialized 27MB models from assets/models/');
-    debugPrint('   Single TF GRU (60%):   General 73KB models (1H) from assets/ml/');
-    debugPrint('');
-
-    final ensembleProbs = List<double>.filled(5, 0.0); // 5 classes
-    final labels = ['STRONG_SELL', 'SELL', 'HOLD', 'BUY', 'STRONG_BUY'];
-
-    debugPrint('⚖️  Calculating weighted ensemble for each class:');
-
-    for (int i = 0; i < 5; i++) {
-      final perCoinContrib = _perCoinWeight * perCoinProbs[i];
-      final singleTfGruContrib = _singleTfGruWeight * singleTfGruProbs[i];
-
-      ensembleProbs[i] = perCoinContrib + singleTfGruContrib;
-
-      debugPrint('   ${labels[i].padRight(12)}:');
-      debugPrint('      Per-Coin:      ${(perCoinContrib * 100).toStringAsFixed(2)}% (${(perCoinProbs[i] * 100).toStringAsFixed(1)}% × 40%)');
-      debugPrint('      Single TF GRU: ${(singleTfGruContrib * 100).toStringAsFixed(2)}% (${(singleTfGruProbs[i] * 100).toStringAsFixed(1)}% × 60%)');
-      debugPrint('      → Total:       ${(ensembleProbs[i] * 100).toStringAsFixed(2)}%');
-    }
-
-    // Normalize (should already sum to ~1.0, but ensure it)
-    final sum = ensembleProbs.reduce((a, b) => a + b);
-    debugPrint('');
-    debugPrint('⚖️  Sum before normalization: ${(sum * 100).toStringAsFixed(2)}%');
-
-    if (sum > 0) {
-      for (int i = 0; i < 5; i++) {
-        ensembleProbs[i] /= sum;
-      }
-      debugPrint('⚖️  Normalized ensemble probabilities:');
-      for (int i = 0; i < 5; i++) {
-        debugPrint('   ${labels[i].padRight(12)}: ${(ensembleProbs[i] * 100).toStringAsFixed(2)}%');
-      }
-    }
-
-    return ensembleProbs;
-  }
 
   /// Check if models are loaded
   bool get isLoaded => _isLoaded;
@@ -808,11 +578,6 @@ class EnsemblePredictor {
 
     // Dispose per-coin models
     for (var entry in _perCoinModels.entries) {
-      entry.value?.close();
-    }
-
-    // Dispose Single TF GRU models
-    for (var entry in _singleTfGruModels.entries) {
       entry.value?.close();
     }
 

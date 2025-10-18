@@ -1,8 +1,0 @@
-{
-  "coin": "TRUMP",
-  "train_accuracy": 0.6048387096774194,
-  "test_accuracy": 0.44086021505376344,
-  "model_type": "Single TF GRU",
-  "timeframe": "1h",
-  "date": "2025-10-18T14:13:20.622241"
-}

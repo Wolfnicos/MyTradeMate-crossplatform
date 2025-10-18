@@ -1,8 +1,0 @@
-{
-  "coin": "BTC",
-  "train_accuracy": 0.40591397849462363,
-  "test_accuracy": 0.478494623655914,
-  "model_type": "Single TF GRU",
-  "timeframe": "1h",
-  "date": "2025-10-18T14:08:06.235204"
-}

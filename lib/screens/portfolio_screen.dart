@@ -177,8 +177,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         children: [
           // Premium Icon with Gradient Background
           Container(
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -196,17 +196,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
             child: const Icon(
               Icons.history_rounded,
-              size: 48,
+              size: 40,
               color: AppTheme.primary,
             ),
           ),
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing16),
 
           // Title
           Text(
             'Transaction History',
             style: AppTheme.headingLarge.copyWith(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,

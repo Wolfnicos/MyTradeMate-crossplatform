@@ -3,13 +3,12 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 
 /// Ensemble Predictor for MyTradeMate
 ///
-/// Combines 3 AI models with weighted voting:
-/// - Transformer (50% weight): Best for complex temporal patterns (40.77% accuracy)
-/// - LSTM (30% weight): Strong at sequential dependencies
-/// - Random Forest (20% weight): Interpretable baseline
+/// Combines 2 AI model types with weighted voting:
+/// - Per-coin models (40% weight): Specialized 27MB models trained on each cryptocurrency
+/// - Single TF GRU general models (60% weight): Lightweight 73KB models trained on 1H data across all coins
 ///
 /// This ensemble approach reduces overfitting and improves generalization
-/// by leveraging strengths of different model architectures.
+/// by combining specialized per-coin knowledge with general crypto patterns.
 ///
 /// Input: 60 timesteps × 76 features (25 candle patterns + 51 technical indicators)
 /// Output: 5-class probabilities [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
@@ -19,17 +18,12 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 /// final predictor = EnsemblePredictor();
 /// await predictor.loadModels();
 ///
-/// final prediction = await predictor.predict(featureMatrix);
+/// final prediction = await predictor.predict(featureMatrix, symbol: 'BTC/USDT');
 /// print(prediction.label); // "BUY"
 /// print(prediction.confidence); // 0.78
 /// ```
 class EnsemblePredictor {
-  // TFLite interpreters
-  Interpreter? _transformerModel;
-  Interpreter? _lstmModel;
-  Interpreter? _randomForestModel; // Note: RF will use fallback if not TFLite
-
-  // Per-coin model interpreters (specialized for each cryptocurrency)
+  // Per-coin model interpreters (specialized for each cryptocurrency, 27MB each)
   final Map<String, Interpreter?> _perCoinModels = {
     'BTC': null,
     'ETH': null,
@@ -39,16 +33,26 @@ class EnsemblePredictor {
     'TRUMP': null,
   };
 
-  // Legacy fallback models
+  // Single TF GRU general model interpreters (trained on 1H data, 73KB each)
+  final Map<String, Interpreter?> _singleTfGruModels = {
+    'BTC': null,
+    'ETH': null,
+    'BNB': null,
+    'SOL': null,
+    'WLFI': null,
+    'TRUMP': null,
+  };
+
+  // Legacy fallback models (deprecated, kept for backward compatibility)
+  Interpreter? _transformerModel;
+  Interpreter? _lstmModel;
   Interpreter? _legacyTcnModel;
 
   // Model weights (sum to 1.0)
-  // NEW: Per-coin models get highest weight (40%) as they're specialized for each coin
-  // Transformer and LSTM provide general crypto patterns (30% each)
+  // Per-coin models: 40% (specialized knowledge for each coin)
+  // Single TF GRU general: 60% (general patterns across all coins at 1H timeframe)
   static const double _perCoinWeight = 0.40;
-  static const double _transformerWeight = 0.30;
-  static const double _lstmWeight = 0.30;
-  static const double _randomForestWeight = 0.00; // Disabled when per-coin model available
+  static const double _singleTfGruWeight = 0.60;
 
   // Model load status
   bool _isLoaded = false;
@@ -74,24 +78,25 @@ class EnsemblePredictor {
 
   /// Load all ensemble models
   ///
-  /// Attempts to load Transformer, LSTM, and Random Forest TFLite models.
+  /// Loads per-coin specialized models and Single TF GRU general models.
   /// Falls back gracefully if some models are missing.
   Future<void> loadModels() async {
     debugPrint('🤖 Loading ensemble models...');
 
-    try {
-      // Load Transformer
-      await _loadTransformerModel();
-    } catch (e) {
-      debugPrint('⚠️ Failed to load Transformer: $e');
-    }
+    // Legacy models commented out for potential future use
+    // try {
+    //   // Load Transformer
+    //   await _loadTransformerModel();
+    // } catch (e) {
+    //   debugPrint('⚠️ Failed to load Transformer: $e');
+    // }
 
-    try {
-      // Load LSTM
-      await _loadLstmModel();
-    } catch (e) {
-      debugPrint('⚠️ Failed to load LSTM: $e');
-    }
+    // try {
+    //   // Load LSTM
+    //   await _loadLstmModel();
+    // } catch (e) {
+    //   debugPrint('⚠️ Failed to load LSTM: $e');
+    // }
 
     try {
       // Load Random Forest (optional, can use rule-based fallback)
@@ -107,10 +112,20 @@ class EnsemblePredictor {
       debugPrint('⚠️ Failed to load per-coin models: $e');
     }
 
-    _isLoaded = _modelStatus.values.any((status) => status);
+    try {
+      // Load Single TF GRU general models (1H timeframe, 73KB each)
+      await _loadSingleTfGruModels();
+    } catch (e) {
+      debugPrint('⚠️ Failed to load Single TF GRU models: $e');
+    }
+
+    // Check if at least one model type loaded
+    final perCoinLoaded = _perCoinModels.values.any((model) => model != null);
+    final singleTfGruLoaded = _singleTfGruModels.values.any((model) => model != null);
+    _isLoaded = perCoinLoaded || singleTfGruLoaded || _modelStatus.values.any((status) => status);
 
     if (!_isLoaded) {
-      throw Exception('❌ No models loaded! Ensure TFLite models exist in assets/ml/');
+      throw Exception('❌ No models loaded! Ensure TFLite models exist in assets/models/ and assets/ml/');
     }
 
     // Load legacy fallback if new models fail
@@ -125,17 +140,24 @@ class EnsemblePredictor {
       }
     }
 
-    debugPrint('✅ Ensemble models loaded:');
-    debugPrint('   Transformer: ${(_modelStatus['transformer'] ?? false) ? "✅" : "❌"}');
-    debugPrint('   LSTM: ${(_modelStatus['lstm'] ?? false) ? "✅" : "❌"}');
-    debugPrint('   Random Forest: ${(_modelStatus['randomForest'] ?? false) ? "✅" : "❌ (fallback)"}');
-    debugPrint('   Per-Coin Models:');
+    debugPrint('');
+    debugPrint('✅ ========================================');
+    debugPrint('✅ Ensemble models loaded summary:');
+    debugPrint('✅ ========================================');
+    debugPrint('   Per-Coin Models (40% weight):');
     _perCoinModels.forEach((coin, model) {
-      debugPrint('      $coin: ${model != null ? "✅" : "❌"}');
+      debugPrint('      $coin: ${model != null ? "✅ LOADED (27MB specialized)" : "❌ NOT LOADED"}');
     });
+    debugPrint('');
+    debugPrint('   Single TF GRU Models (60% weight):');
+    _singleTfGruModels.forEach((coin, model) {
+      debugPrint('      $coin: ${model != null ? "✅ LOADED (73KB 1H general)" : "❌ NOT LOADED"}');
+    });
+    debugPrint('✅ ========================================');
     if (_useLegacyFallback) {
       debugPrint('   💡 Using Legacy TCN Fallback');
     }
+    debugPrint('');
   }
 
   /// Load Transformer model
@@ -230,6 +252,48 @@ class EnsemblePredictor {
     debugPrint('');
   }
 
+  /// Load Single TF GRU general models (trained on 1H data, 73KB each)
+  Future<void> _loadSingleTfGruModels() async {
+    debugPrint('');
+    debugPrint('🧠 ========================================');
+    debugPrint('🧠 Loading Single TF GRU general models (1H timeframe)');
+    debugPrint('🧠 Location: assets/ml/');
+    debugPrint('🧠 ========================================');
+
+    for (var entry in _singleTfGruModels.keys) {
+      try {
+        final coinLower = entry.toLowerCase();
+        final modelPath = 'assets/ml/${coinLower}_model.tflite';
+        debugPrint('');
+        debugPrint('🧠 [$entry] Attempting to load: $modelPath');
+
+        _singleTfGruModels[entry] = await Interpreter.fromAsset(modelPath);
+
+        debugPrint('   ✅ $entry Single TF GRU loaded successfully!');
+        debugPrint('   📊 Model: Single TF GRU (quantized)');
+        debugPrint('   📏 Size: ~73KB (optimized for mobile)');
+        debugPrint('   ⏰ Timeframe: 1H');
+        debugPrint('   🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)');
+        debugPrint('   🎯 Test Accuracy: ~44-48%');
+      } catch (e) {
+        debugPrint('');
+        debugPrint('   ❌ $entry Single TF GRU NOT FOUND!');
+        debugPrint('   ⚠️  Error: $e');
+        _singleTfGruModels[entry] = null;
+      }
+    }
+
+    debugPrint('');
+    debugPrint('🧠 ========================================');
+    debugPrint('🧠 Single TF GRU models loading summary:');
+    debugPrint('🧠 ========================================');
+    _singleTfGruModels.forEach((coin, model) {
+      debugPrint('   $coin: ${model != null ? "✅ LOADED (Single TF GRU 1H 73KB)" : "❌ NOT LOADED"}');
+    });
+    debugPrint('🧠 ========================================');
+    debugPrint('');
+  }
+
   /// Predict using ensemble voting
   ///
   /// Args:
@@ -263,23 +327,23 @@ class EnsemblePredictor {
     }
 
     // Get predictions from each model
-    final transformerProbs = await _predictTransformer(features);
-    final lstmProbs = await _predictLstm(features);
     final perCoinProbs = await _predictPerCoin(features, coinSymbol);
+    final singleTfGruProbs = await _predictSingleTfGru(features, coinSymbol);
+    // Legacy models commented out
+    // final transformerProbs = await _predictTransformer(features);
+    // final lstmProbs = await _predictLstm(features);
     final rfProbs = await _predictRandomForest(features);
 
     // 🔍 DEBUG: Print raw model outputs
     debugPrint('🔍 RAW MODEL OUTPUTS:');
     debugPrint('   Per-Coin ($coinSymbol): [${perCoinProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
-    debugPrint('   Transformer: [${transformerProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
-    debugPrint('   LSTM: [${lstmProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+    debugPrint('   Single TF GRU ($coinSymbol): [${singleTfGruProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
     debugPrint('   RF: [${rfProbs.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
 
-    // Weighted voting (now includes per-coin model at 40% weight)
+    // Weighted voting (40% per-coin + 60% Single TF GRU)
     final ensembleProbs = _weightedVoting(
       perCoinProbs: perCoinProbs,
-      transformerProbs: transformerProbs,
-      lstmProbs: lstmProbs,
+      singleTfGruProbs: singleTfGruProbs,
       rfProbs: rfProbs,
     );
 
@@ -299,69 +363,80 @@ class EnsemblePredictor {
       probabilities: ensembleProbs,
       modelContributions: {
         'perCoin_$coinSymbol': perCoinProbs,
-        'transformer': transformerProbs,
-        'lstm': lstmProbs,
+        'singleTfGru_$coinSymbol': singleTfGruProbs,
         'randomForest': rfProbs,
       },
     );
   }
 
-  /// Predict using Transformer model
-  Future<List<double>> _predictTransformer(List<List<double>> features) async {
-    if (_transformerModel == null || !_modelStatus['transformer']!) {
-      return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral if model not loaded (5 classes)
+  // Legacy Transformer and LSTM models (commented out for potential future use)
+  // /// Predict using Transformer model
+  // Future<List<double>> _predictTransformer(List<List<double>> features) async {
+  //   if (_transformerModel == null || !_modelStatus['transformer']!) {
+  //     return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral if model not loaded (5 classes)
+  //   }
+
+  //   final startTime = DateTime.now();
+  //   try {
+  //     // Reshape input: [1, 60, 76]
+  //     var input = [features];
+
+  //     // Output buffer: [1, 5] (5 classes: STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY)
+  //     var output = List.generate(1, (_) => List.filled(5, 0.0));
+
+  //     // Run inference
+  //     _transformerModel!.run(input, output);
+
+  //     // Track latency
+  //     final latency = DateTime.now().difference(startTime).inMilliseconds;
+  //     _modelLatency['transformer'] = latency.toDouble();
+
+  //     return List<double>.from(output[0]);
+  //   } catch (e) {
+  //     debugPrint('⚠️ Transformer inference failed: $e');
+  //     _modelErrors['transformer'] = (_modelErrors['transformer'] ?? 0) + 1;
+  //     return [0.2, 0.2, 0.2, 0.2, 0.2];
+  //   }
+  // }
+
+  // /// Predict using LSTM model
+  // Future<List<double>> _predictLstm(List<List<double>> features) async {
+  //   if (_lstmModel == null || !_modelStatus['lstm']!) {
+  //     return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral if model not loaded (5 classes)
+  //   }
+
+  //   final startTime = DateTime.now();
+  //   try {
+  //     // Reshape input: [1, 60, 76]
+  //     var input = [features];
+
+  //     // Output buffer: [1, 5] (5 classes)
+  //     var output = List.generate(1, (_) => List.filled(5, 0.0));
+
+  //     // Run inference
+  //     _lstmModel!.run(input, output);
+
+  //     // Track latency
+  //     final latency = DateTime.now().difference(startTime).inMilliseconds;
+  //     _modelLatency['lstm'] = latency.toDouble();
+
+  //     return List<double>.from(output[0]);
+  //   } catch (e) {
+  //     debugPrint('⚠️ LSTM inference failed: $e');
+  //     _modelErrors['lstm'] = (_modelErrors['lstm'] ?? 0) + 1;
+  //     return [0.2, 0.2, 0.2, 0.2, 0.2];
+  //   }
+  // }
+
+  /// Extract coin symbol from trading pair (BTC from BTC/USDT, BTCUSDT, etc.)
+  String _extractCoinSymbol(String symbol) {
+    // Handle formats like 'BTC/USDT', 'BTCEUR', 'BTCUSDT'
+    String coinSymbol = symbol.replaceAll('/', '').replaceAll('USDT', '').replaceAll('EUR', '').toUpperCase();
+    // Take first part if still has slash
+    if (coinSymbol.contains('/')) {
+      coinSymbol = coinSymbol.split('/')[0];
     }
-
-    final startTime = DateTime.now();
-    try {
-      // Reshape input: [1, 60, 76]
-      var input = [features];
-
-      // Output buffer: [1, 5] (5 classes: STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY)
-      var output = List.generate(1, (_) => List.filled(5, 0.0));
-
-      // Run inference
-      _transformerModel!.run(input, output);
-
-      // Track latency
-      final latency = DateTime.now().difference(startTime).inMilliseconds;
-      _modelLatency['transformer'] = latency.toDouble();
-
-      return List<double>.from(output[0]);
-    } catch (e) {
-      debugPrint('⚠️ Transformer inference failed: $e');
-      _modelErrors['transformer'] = (_modelErrors['transformer'] ?? 0) + 1;
-      return [0.2, 0.2, 0.2, 0.2, 0.2];
-    }
-  }
-
-  /// Predict using LSTM model
-  Future<List<double>> _predictLstm(List<List<double>> features) async {
-    if (_lstmModel == null || !_modelStatus['lstm']!) {
-      return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral if model not loaded (5 classes)
-    }
-
-    final startTime = DateTime.now();
-    try {
-      // Reshape input: [1, 60, 76]
-      var input = [features];
-
-      // Output buffer: [1, 5] (5 classes)
-      var output = List.generate(1, (_) => List.filled(5, 0.0));
-
-      // Run inference
-      _lstmModel!.run(input, output);
-
-      // Track latency
-      final latency = DateTime.now().difference(startTime).inMilliseconds;
-      _modelLatency['lstm'] = latency.toDouble();
-
-      return List<double>.from(output[0]);
-    } catch (e) {
-      debugPrint('⚠️ LSTM inference failed: $e');
-      _modelErrors['lstm'] = (_modelErrors['lstm'] ?? 0) + 1;
-      return [0.2, 0.2, 0.2, 0.2, 0.2];
-    }
+    return coinSymbol;
   }
 
   /// Predict using per-coin specialized model
@@ -374,16 +449,23 @@ class EnsemblePredictor {
     debugPrint('🪙 Coin Symbol: $coinSymbol');
 
     // If no coin symbol or model not available, return neutral
-    if (coinSymbol == null || _perCoinModels[coinSymbol] == null) {
-      debugPrint('⚠️ Per-coin model for $coinSymbol not available!');
-      debugPrint('   Reason: ${coinSymbol == null ? "No symbol provided" : "Model not loaded"}');
-      debugPrint('   Using neutral probabilities: [0.2, 0.2, 0.2, 0.2, 0.2]');
-      return [0.2, 0.2, 0.2, 0.2, 0.2]; // Neutral (5 classes)
+    if (coinSymbol == null) {
+      debugPrint('⚠️ Per-coin model: No coin symbol provided!');
+      debugPrint('   Using neutral probabilities: [0.0, 0.0, 1.0, 0.0, 0.0] (HOLD)');
+      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
     }
 
-    final model = _perCoinModels[coinSymbol];
+    final coin = _extractCoinSymbol(coinSymbol);
+    final model = _perCoinModels[coin];
+
+    if (model == null) {
+      debugPrint('⚠️ Per-coin model for $coin not available!');
+      debugPrint('   Reason: Model not loaded');
+      debugPrint('   Using neutral probabilities: [0.0, 0.0, 1.0, 0.0, 0.0] (HOLD)');
+      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
+    }
     final startTime = DateTime.now();
-    debugPrint('✅ $coinSymbol model is loaded!');
+    debugPrint('✅ $coin model is loaded!');
     debugPrint('📥 Input shape: [1, ${features.length}, ${features[0].length}]');
 
     try {
@@ -393,14 +475,14 @@ class EnsemblePredictor {
       // Output buffer: [1, 3] for 3-class models (SELL, HOLD, BUY)
       var output = List.generate(1, (_) => List.filled(3, 0.0));
 
-      debugPrint('🔄 Running inference on $coinSymbol model...');
+      debugPrint('🔄 Running inference on $coin model...');
 
       // Run inference
-      model!.run(input, output);
+      model.run(input, output);
 
       // Track latency
       final latency = DateTime.now().difference(startTime).inMilliseconds;
-      _modelLatency['perCoin_$coinSymbol'] = latency.toDouble();
+      _modelLatency['perCoin_$coin'] = latency.toDouble();
 
       debugPrint('⏱️  Inference time: ${latency}ms');
 
@@ -453,11 +535,61 @@ class EnsemblePredictor {
 
       return result;
     } catch (e) {
-      debugPrint('❌ Per-coin ($coinSymbol) inference FAILED!');
+      debugPrint('❌ Per-coin ($coin) inference FAILED!');
       debugPrint('   Error: $e');
-      _modelErrors['perCoin_$coinSymbol'] = (_modelErrors['perCoin_$coinSymbol'] ?? 0) + 1;
-      return [0.2, 0.2, 0.2, 0.2, 0.2];
+      _modelErrors['perCoin_$coin'] = (_modelErrors['perCoin_$coin'] ?? 0) + 1;
+      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
     }
+  }
+
+  /// Predict using Single TF GRU general model for the given coin
+  Future<List<double>> _predictSingleTfGru(List<List<double>> features, String? coinSymbol) async {
+    if (coinSymbol == null) {
+      // No coin specified, return neutral
+      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
+    }
+
+    final coin = _extractCoinSymbol(coinSymbol);
+    final model = _singleTfGruModels[coin];
+
+    if (model == null) {
+      // Model not loaded, return neutral
+      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
+    }
+
+    // Prepare input: [1, 60, 76]
+    var input = List.generate(1, (_) => features);
+
+    // Output buffer: [1, 3] for 3-class models (SELL, HOLD, BUY)
+    var output = List.generate(1, (_) => List.filled(3, 0.0));
+
+    model.run(input, output);
+
+    // Convert 3-class [SELL, HOLD, BUY] to 5-class [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
+    final sell = output[0][0];
+    final hold = output[0][1];
+    final buy = output[0][2];
+
+    // Split high probabilities between normal and strong signals
+    double strongSell, normalSell, strongBuy, normalBuy;
+
+    if (sell > 0.6) {
+      strongSell = sell * 0.5;
+      normalSell = sell * 0.5;
+    } else {
+      strongSell = sell * 0.2;
+      normalSell = sell * 0.8;
+    }
+
+    if (buy > 0.6) {
+      strongBuy = buy * 0.5;
+      normalBuy = buy * 0.5;
+    } else {
+      strongBuy = buy * 0.2;
+      normalBuy = buy * 0.8;
+    }
+
+    return [strongSell, normalSell, hold, normalBuy, strongBuy];
   }
 
   /// Predict using Random Forest (fallback rule-based)
@@ -539,23 +671,18 @@ class EnsemblePredictor {
   /// Weighted voting ensemble
   ///
   /// Combines model predictions using configured weights:
-  /// - Per-coin model: 40% (highest weight, specialized for each coin)
-  /// - Transformer: 30% (general crypto patterns)
-  /// - LSTM: 30% (sequential dependencies)
-  /// - Random Forest: 0% (disabled when per-coin model available)
+  /// - Per-coin model: 40% (specialized knowledge for each coin)
+  /// - Single TF GRU general: 60% (general patterns across all coins at 1H timeframe)
   List<double> _weightedVoting({
     required List<double> perCoinProbs,
-    required List<double> transformerProbs,
-    required List<double> lstmProbs,
+    required List<double> singleTfGruProbs,
     required List<double> rfProbs,
   }) {
     debugPrint('');
     debugPrint('⚖️  === WEIGHTED VOTING ENSEMBLE ===');
     debugPrint('⚖️  Model Weights:');
-    debugPrint('   Per-Coin:    ${(_perCoinWeight * 100).toStringAsFixed(0)}%');
-    debugPrint('   Transformer: ${(_transformerWeight * 100).toStringAsFixed(0)}%');
-    debugPrint('   LSTM:        ${(_lstmWeight * 100).toStringAsFixed(0)}%');
-    debugPrint('   Random Forest: ${(_randomForestWeight * 100).toStringAsFixed(0)}%');
+    debugPrint('   Per-Coin (40%):        Specialized 27MB models from assets/models/');
+    debugPrint('   Single TF GRU (60%):   General 73KB models (1H) from assets/ml/');
     debugPrint('');
 
     final ensembleProbs = List<double>.filled(5, 0.0); // 5 classes
@@ -565,18 +692,14 @@ class EnsemblePredictor {
 
     for (int i = 0; i < 5; i++) {
       final perCoinContrib = _perCoinWeight * perCoinProbs[i];
-      final transformerContrib = _transformerWeight * transformerProbs[i];
-      final lstmContrib = _lstmWeight * lstmProbs[i];
-      final rfContrib = _randomForestWeight * rfProbs[i];
+      final singleTfGruContrib = _singleTfGruWeight * singleTfGruProbs[i];
 
-      ensembleProbs[i] = perCoinContrib + transformerContrib + lstmContrib + rfContrib;
+      ensembleProbs[i] = perCoinContrib + singleTfGruContrib;
 
       debugPrint('   ${labels[i].padRight(12)}:');
-      debugPrint('      Per-Coin:    ${(perCoinContrib * 100).toStringAsFixed(2)}% (${(perCoinProbs[i] * 100).toStringAsFixed(1)}% × 40%)');
-      debugPrint('      Transformer: ${(transformerContrib * 100).toStringAsFixed(2)}% (${(transformerProbs[i] * 100).toStringAsFixed(1)}% × 30%)');
-      debugPrint('      LSTM:        ${(lstmContrib * 100).toStringAsFixed(2)}% (${(lstmProbs[i] * 100).toStringAsFixed(1)}% × 30%)');
-      debugPrint('      RF:          ${(rfContrib * 100).toStringAsFixed(2)}% (${(rfProbs[i] * 100).toStringAsFixed(1)}% × 0%)');
-      debugPrint('      → Total:     ${(ensembleProbs[i] * 100).toStringAsFixed(2)}%');
+      debugPrint('      Per-Coin:      ${(perCoinContrib * 100).toStringAsFixed(2)}% (${(perCoinProbs[i] * 100).toStringAsFixed(1)}% × 40%)');
+      debugPrint('      Single TF GRU: ${(singleTfGruContrib * 100).toStringAsFixed(2)}% (${(singleTfGruProbs[i] * 100).toStringAsFixed(1)}% × 60%)');
+      debugPrint('      → Total:       ${(ensembleProbs[i] * 100).toStringAsFixed(2)}%');
     }
 
     // Normalize (should already sum to ~1.0, but ensure it)
@@ -627,13 +750,18 @@ class EnsemblePredictor {
 
   /// Dispose interpreters
   void dispose() {
-    _transformerModel?.close();
-    _lstmModel?.close();
-    _randomForestModel?.close();
+    // Legacy models (commented out but kept for potential future use)
+    // _transformerModel?.close();
+    // _lstmModel?.close();
     _legacyTcnModel?.close();
 
     // Dispose per-coin models
     for (var entry in _perCoinModels.entries) {
+      entry.value?.close();
+    }
+
+    // Dispose Single TF GRU models
+    for (var entry in _singleTfGruModels.entries) {
       entry.value?.close();
     }
 

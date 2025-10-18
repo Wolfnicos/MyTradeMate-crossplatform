@@ -543,48 +543,48 @@ class EnsemblePredictor {
   }
 
   /// Predict using Single TF GRU general model for the given coin
+  ///
+  /// NOTE: Single TF GRU models are DISABLED because scalers cannot be loaded
+  /// from .pkl files (Python-specific format). Models return 100% HOLD without
+  /// proper feature normalization. To fix, the user needs to re-export scalers
+  /// to JSON format from the training script.
   Future<List<double>> _predictSingleTfGru(List<List<double>> features, String? coinSymbol) async {
+    // TEMPORARILY DISABLED - scalers needed for proper normalization
+    debugPrint('   ⚠️  Single TF GRU: DISABLED (scalers not available in Dart format)');
+    return [0.0, 0.0, 1.0, 0.0, 0.0]; // Return HOLD until scalers are fixed
+
+    /* ORIGINAL CODE - REQUIRES SCALER FILES IN JSON FORMAT
     if (coinSymbol == null) {
-      // No coin specified, return neutral
       debugPrint('   ⚠️  Single TF GRU: No coin symbol provided, returning HOLD');
-      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
+      return [0.0, 0.0, 1.0, 0.0, 0.0];
     }
 
     final coin = _extractCoinSymbol(coinSymbol);
     final model = _singleTfGruModels[coin];
 
     if (model == null) {
-      // Model not loaded, return neutral
       debugPrint('   ⚠️  Single TF GRU ($coin): Model not loaded, returning HOLD');
-      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD
+      return [0.0, 0.0, 1.0, 0.0, 0.0];
     }
 
     debugPrint('   🧠 Single TF GRU ($coin): Running inference...');
     debugPrint('      Input shape: [1, ${features.length}, ${features[0].length}]');
 
-    // Prepare input: [1, 60, 76]
     var input = List.generate(1, (_) => features);
-
-    // Output buffer: [1, 3] for 3-class models (SELL, HOLD, BUY)
     var output = List.generate(1, (_) => List.filled(3, 0.0));
 
     try {
       model.run(input, output);
-
-      // Log RAW model output before conversion
       debugPrint('      RAW 3-class output: [SELL: ${(output[0][0] * 100).toStringAsFixed(2)}%, HOLD: ${(output[0][1] * 100).toStringAsFixed(2)}%, BUY: ${(output[0][2] * 100).toStringAsFixed(2)}%]');
-
     } catch (e) {
       debugPrint('   ❌ Single TF GRU ($coin): Inference error: $e');
-      return [0.0, 0.0, 1.0, 0.0, 0.0]; // HOLD on error
+      return [0.0, 0.0, 1.0, 0.0, 0.0];
     }
 
-    // Convert 3-class [SELL, HOLD, BUY] to 5-class [STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY]
     final sell = output[0][0];
     final hold = output[0][1];
     final buy = output[0][2];
 
-    // Split high probabilities between normal and strong signals
     double strongSell, normalSell, strongBuy, normalBuy;
 
     if (sell > 0.6) {
@@ -607,6 +607,7 @@ class EnsemblePredictor {
     debugPrint('      Converted to 5-class: [${result.map((p) => (p * 100).toStringAsFixed(2)).join(', ')}]');
 
     return result;
+    */
   }
 
   /// Predict using Random Forest (fallback rule-based)

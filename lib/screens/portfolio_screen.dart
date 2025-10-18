@@ -171,86 +171,61 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildHistoryTab(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppTheme.spacing20),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Premium Icon with Gradient Background
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primary.withOpacity(0.2),
-                    AppTheme.secondary.withOpacity(0.2),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppTheme.glassBorder,
-                  width: 2,
-                ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Premium Icon with Gradient Background
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primary.withOpacity(0.2),
+                  AppTheme.secondary.withOpacity(0.2),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: const Icon(
-                Icons.history_rounded,
-                size: 56,
-                color: AppTheme.primary,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppTheme.glassBorder,
+                width: 2,
               ),
             ),
-            const SizedBox(height: AppTheme.spacing32),
-
-            // Title
-            Text(
-              'Transaction History',
-              style: AppTheme.headingLarge.copyWith(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
+            child: const Icon(
+              Icons.history_rounded,
+              size: 48,
+              color: AppTheme.primary,
             ),
-            const SizedBox(height: AppTheme.spacing12),
+          ),
+          const SizedBox(height: AppTheme.spacing24),
 
-            // Description
-            Text(
-              'Your trading history will appear here.\nBuy, sell, and transfer records coming soon.',
+          // Title
+          Text(
+            'Transaction History',
+            style: AppTheme.headingLarge.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing8),
+
+          // Description
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing32),
+            child: Text(
+              'Your trading history will appear here',
               style: AppTheme.bodyMedium.copyWith(
                 color: AppTheme.textTertiary,
-                height: 1.6,
+                height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppTheme.spacing32),
-
-            // Info Cards (Compact)
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: AppTheme.spacing8,
-              runSpacing: AppTheme.spacing8,
-              children: [
-                _InfoChip(
-                  icon: Icons.schedule,
-                  label: 'Real-time',
-                  color: AppTheme.primary,
-                ),
-                _InfoChip(
-                  icon: Icons.security,
-                  label: 'Secure',
-                  color: AppTheme.success,
-                ),
-                _InfoChip(
-                  icon: Icons.cloud_sync,
-                  label: 'Synced',
-                  color: AppTheme.secondary,
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -621,56 +596,6 @@ class _HoldingCard extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Premium Info Chip Widget
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacing8,
-        vertical: AppTheme.spacing4,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
-          const SizedBox(width: AppTheme.spacing4),
-          Text(
-            label,
-            style: AppTheme.labelSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-              fontSize: 11,
-            ),
           ),
         ],
       ),

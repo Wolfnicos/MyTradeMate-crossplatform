@@ -126,15 +126,24 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   child: const SizedBox(height: AppTheme.spacing20),
                 ),
 
-                // TabBar - Sticky
+                // TabBar - Sticky (Premium)
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _StickyTabBarDelegate(
-                    const TabBar(
-                      indicatorColor: AppTheme.primary,
+                    TabBar(
+                      indicatorSize: TabBarIndicatorSize.label,
+                      indicator: BoxDecoration(
+                        gradient: AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
                       labelColor: AppTheme.textPrimary,
                       unselectedLabelColor: AppTheme.textSecondary,
-                      tabs: [
+                      labelStyle: AppTheme.labelLarge,
+                      unselectedLabelStyle: AppTheme.labelLarge.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                      dividerColor: Colors.transparent,
+                      tabs: const [
                         Tab(text: 'Holdings'),
                         Tab(text: 'History'),
                       ],
@@ -162,22 +171,86 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildHistoryTab(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.history, size: 64, color: AppTheme.textTertiary),
-          const SizedBox(height: AppTheme.spacing16),
-          Text(
-            'Transaction History',
-            style: AppTheme.headingLarge.copyWith(color: AppTheme.textSecondary),
-          ),
-          const SizedBox(height: AppTheme.spacing8),
-          Text(
-            'Your trading history will appear here',
-            style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacing20),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Premium Icon with Gradient Background
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withOpacity(0.2),
+                    AppTheme.secondary.withOpacity(0.2),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.glassBorder,
+                  width: 2,
+                ),
+              ),
+              child: const Icon(
+                Icons.history_rounded,
+                size: 56,
+                color: AppTheme.primary,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing32),
+
+            // Title
+            Text(
+              'Transaction History',
+              style: AppTheme.headingLarge.copyWith(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.spacing12),
+
+            // Description
+            Text(
+              'Your trading history will appear here.\nBuy, sell, and transfer records coming soon.',
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textTertiary,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.spacing32),
+
+            // Info Cards
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _InfoChip(
+                  icon: Icons.schedule,
+                  label: 'Real-time',
+                  color: AppTheme.primary,
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                _InfoChip(
+                  icon: Icons.security,
+                  label: 'Secure',
+                  color: AppTheme.success,
+                ),
+                const SizedBox(width: AppTheme.spacing12),
+                _InfoChip(
+                  icon: Icons.cloud_sync,
+                  label: 'Synced',
+                  color: AppTheme.secondary,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -410,7 +483,16 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppTheme.background,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.glassBorder,
+            width: 1,
+          ),
+        ),
+      ),
       child: tabBar,
     );
   }
@@ -539,6 +621,55 @@ class _HoldingCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Premium Info Chip Widget
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing12,
+        vertical: AppTheme.spacing8,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: color,
+          ),
+          const SizedBox(width: AppTheme.spacing4),
+          Text(
+            label,
+            style: AppTheme.labelMedium.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),

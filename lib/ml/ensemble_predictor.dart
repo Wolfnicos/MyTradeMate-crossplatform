@@ -327,30 +327,42 @@ class EnsemblePredictor {
         timeframe: tfNorm,
       );
 
-      // Map 3-class to 5-class like per-coin mapping
       final sell = prediction.probabilities['SELL'] ?? 0.0;
       final hold = prediction.probabilities['HOLD'] ?? 0.0;
       final buy = prediction.probabilities['BUY'] ?? 0.0;
 
-      double strongSell, normalSell, normalBuy, strongBuy;
-      if (sell > 0.6) {
-        strongSell = sell * 0.5;
-        normalSell = sell * 0.5;
-      } else {
-        strongSell = sell * 0.2;
-        normalSell = sell * 0.8;
-      }
-      if (buy > 0.6) {
-        strongBuy = buy * 0.5;
-        normalBuy = buy * 0.5;
-      } else {
-        strongBuy = buy * 0.2;
-        normalBuy = buy * 0.8;
-      }
+      // Check if this is a binary model (long-term: 1d/7d) or ternary (short-term: 5m/15m/1h)
+      final isBinary = (tfNorm == '1d' || tfNorm == '7d') && hold < 0.01;
 
-      final result = [strongSell, normalSell, hold, normalBuy, strongBuy];
-      debugPrint('🧠 NEW ML result (5-class): [${result.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
-      return result;
+      if (isBinary) {
+        // Binary model (DOWN/UP) - return as-is for binary predictions
+        // DOWN=probabilities[0], UP=probabilities[1]
+        // For the UI to display correctly, we return the raw binary probabilities
+        debugPrint('🧠 BINARY ML result (2-class): DOWN=${(sell * 100).toStringAsFixed(1)}%, UP=${(buy * 100).toStringAsFixed(1)}%');
+        // Return 2-element list for binary models
+        return [sell, buy];
+      } else {
+        // Ternary model (SELL/HOLD/BUY) - map 3-class to 5-class
+        double strongSell, normalSell, normalBuy, strongBuy;
+        if (sell > 0.6) {
+          strongSell = sell * 0.5;
+          normalSell = sell * 0.5;
+        } else {
+          strongSell = sell * 0.2;
+          normalSell = sell * 0.8;
+        }
+        if (buy > 0.6) {
+          strongBuy = buy * 0.5;
+          normalBuy = buy * 0.5;
+        } else {
+          strongBuy = buy * 0.2;
+          normalBuy = buy * 0.8;
+        }
+
+        final result = [strongSell, normalSell, hold, normalBuy, strongBuy];
+        debugPrint('🧠 TERNARY ML result (5-class): [${result.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+        return result;
+      }
     } catch (e) {
       debugPrint('⚠️ NEW ML prediction unavailable → $e');
       return null;

@@ -521,7 +521,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
           // Confidence Badge
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing20,
+              horizontal: AppTheme.spacing16,
               vertical: AppTheme.spacing12,
             ),
             decoration: BoxDecoration(
@@ -538,13 +538,16 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.analytics, color: Colors.white, size: 20),
+                Icon(Icons.analytics, color: Colors.white, size: 18),
                 const SizedBox(width: AppTheme.spacing8),
-                Text(
-                  '${(confidence * 100).toStringAsFixed(1)}% Confidence',
-                  style: AppTheme.headingLarge.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                Flexible(
+                  child: Text(
+                    '${(confidence * 100).toStringAsFixed(1)}% Confidence',
+                    style: AppTheme.headingMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

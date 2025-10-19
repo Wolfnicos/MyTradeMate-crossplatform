@@ -287,24 +287,43 @@ class CryptoMLService {
       print('⚠️ [1/4] No coin-specific model for $coinKey');
     }
 
-    // 2. Încarcă predicțiile de la TOATE 3 modelele GENERALE (5m, 15m, 1h)
-    const generalTimeframes = ['5m', '15m', '1h'];
-    for (var i = 0; i < generalTimeframes.length; i++) {
-      final tf = generalTimeframes[i];
-      final generalKey = 'general_$tf';
-      if (_interpreters.containsKey(generalKey)) {
+    // 2. Try ONLY the general model for the requested timeframe
+    // For long-term predictions (1d, 7d), use single-model prediction
+    // For short-term (5m, 15m, 1h), could optionally ensemble
+    final generalKey = 'general_$timeframe';
+    if (_interpreters.containsKey(generalKey)) {
+      // ignore: avoid_print
+      print('📊 [2/2] General model: $generalKey');
+      try {
+        final pred = await _getPredictionWithModel(generalKey, priceData);
+        predictions.add(pred);
+      } catch (e) {
         // ignore: avoid_print
-        print('📊 [${i + 2}/4] General model: $generalKey');
-        try {
-          final pred = await _getPredictionWithModel(generalKey, priceData);
-          predictions.add(pred);
-        } catch (e) {
-          // ignore: avoid_print
-          print('   ❌ Error: $e');
+        print('   ❌ Error: $e');
+      }
+    } else {
+      // ignore: avoid_print
+      print('⚠️ [2/2] No general model for $generalKey');
+      // Fallback: try short-term ensemble only if timeframe is not 1d/7d
+      if (timeframe != '1d' && timeframe != '7d') {
+        // ignore: avoid_print
+        print('💡 Falling back to short-term general models (5m, 15m, 1h)');
+        const generalTimeframes = ['5m', '15m', '1h'];
+        for (var i = 0; i < generalTimeframes.length; i++) {
+          final tf = generalTimeframes[i];
+          final fallbackKey = 'general_$tf';
+          if (_interpreters.containsKey(fallbackKey)) {
+            // ignore: avoid_print
+            print('📊 [${i + 3}/5] Fallback general model: $fallbackKey');
+            try {
+              final pred = await _getPredictionWithModel(fallbackKey, priceData);
+              predictions.add(pred);
+            } catch (e) {
+              // ignore: avoid_print
+              print('   ❌ Error: $e');
+            }
+          }
         }
-      } else {
-        // ignore: avoid_print
-        print('⚠️ [${i + 2}/4] No general model for $generalKey');
       }
     }
 

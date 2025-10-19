@@ -304,7 +304,10 @@ class EnsemblePredictor {
       final tf = (timeframe ?? '1h').toLowerCase();
       final tfNorm = (tf == '4h') ? '1h' : (tf == '15m' || tf == '5m' || tf == '1h' ? tf : '1h');
 
-      debugPrint('🧠 Trying NEW ML model: coin=$coinSymbol tf=$tfNorm');
+      debugPrint('🧠 Trying NEW ML model: coin=$coinSymbol tf=$tf -> tfNorm=$tfNorm');
+      if (tf != tfNorm) {
+        debugPrint('   ⚠️ Timeframe mapped: $tf → $tfNorm (closest available model)');
+      }
 
       final prediction = await CryptoMLService().getPrediction(
         coin: coin,

@@ -244,6 +244,9 @@ class CryptoMLService {
     String modelKey,
     List<List<double>> priceData,
   ) async {
+    // ignore: avoid_print
+    print('🔮 Running inference on $modelKey model...');
+
     final interpreter = _interpreters[modelKey]!;
     final scaler = _scalers[modelKey]!;
     final metadata = _metadata[modelKey]!;

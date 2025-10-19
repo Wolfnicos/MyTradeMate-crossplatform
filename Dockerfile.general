@@ -1,0 +1,17 @@
+FROM python:3.10-slim
+
+# Install dependencies
+RUN pip install --no-cache-dir \
+    tensorflow==2.13.0 \
+    numpy \
+    pandas \
+    scikit-learn \
+    ccxt \
+    joblib
+
+WORKDIR /workspace
+
+# Copy training script
+COPY train_general.py /workspace/
+
+CMD ["python", "train_general.py"]

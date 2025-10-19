@@ -1,0 +1,19 @@
+{
+  "type": "GENERAL",
+  "timeframe": "1h",
+  "trained_on": [
+    "BTC",
+    "ETH",
+    "BNB",
+    "SOL",
+    "ADA",
+    "DOGE",
+    "XRP",
+    "MATIC"
+  ],
+  "test_accuracy": 0.492000013589859,
+  "train_samples": 5996,
+  "test_samples": 1500,
+  "model_size_kb": 87.8359375,
+  "date": "2025-10-19T13:25:50.634454"
+}

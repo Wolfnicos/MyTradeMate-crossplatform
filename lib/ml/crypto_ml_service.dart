@@ -35,6 +35,8 @@ class CryptoMLService {
     int successCount = 0;
     int failCount = 0;
 
+    // ignore: avoid_print
+    print('📦 Loading coin-specific models...');
     for (final coin in coins) {
       for (final timeframe in timeframes) {
         final success = await loadModel(coin, timeframe);
@@ -49,15 +51,36 @@ class CryptoMLService {
     // ignore: avoid_print
     print('');
     // ignore: avoid_print
+    print('📦 Loading GENERAL models (work on ANY crypto)...');
+
+    // Încarcă modelele GENERALE (3 modele)
+    int generalSuccess = 0;
+    for (final timeframe in timeframes) {
+      final success = await loadModel('general', timeframe);
+      if (success) {
+        generalSuccess++;
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+
+    // ignore: avoid_print
+    print('');
+    // ignore: avoid_print
     print('✅ ========================================');
     // ignore: avoid_print
     print('✅ CryptoMLService initialization complete');
     // ignore: avoid_print
     print('✅ ========================================');
     // ignore: avoid_print
-    print('   Total models: 18 (6 coins × 3 timeframes)');
+    print('   Total models: 21 (18 coin-specific + 3 general)');
     // ignore: avoid_print
-    print('   ✅ Loaded successfully: $successCount');
+    print('   ✅ Coin-specific loaded: ${successCount - generalSuccess}/18');
+    // ignore: avoid_print
+    print('   ✅ General models loaded: $generalSuccess/3');
+    // ignore: avoid_print
+    print('   ✅ TOTAL loaded: $successCount/21');
     // ignore: avoid_print
     print('   ❌ Failed to load: $failCount');
     // ignore: avoid_print
@@ -146,7 +169,11 @@ class CryptoMLService {
       final coinLower = coin.toLowerCase();
 
       // 1. Încarcă modelul TFLite
-      final modelPath = 'assets/ml/${coinLower}_${timeframe}_model.tflite';
+      // General models: assets/ml/general_5m.tflite (no _model suffix)
+      // Coin-specific models: assets/ml/btc_5m_model.tflite (with _model suffix)
+      final modelPath = coin == 'general'
+          ? 'assets/ml/general_$timeframe.tflite'
+          : 'assets/ml/${coinLower}_${timeframe}_model.tflite';
 
       // ignore: avoid_print
       print('📦 Loading $coin $timeframe from $modelPath');
@@ -179,7 +206,9 @@ class CryptoMLService {
       _interpreters[key] = interpreter;
 
       // 2. Încarcă metadata
-      final metadataPath = 'assets/ml/${coinLower}_${timeframe}_metadata.json';
+      final metadataPath = coin == 'general'
+          ? 'assets/ml/general_${timeframe}_metadata.json'
+          : 'assets/ml/${coinLower}_${timeframe}_metadata.json';
       final metadataString = await rootBundle.loadString(metadataPath);
       final decoded = json.decode(metadataString) as Map<String, dynamic>;
       _metadata[key] = decoded;
@@ -204,23 +233,97 @@ class CryptoMLService {
     }
   }
 
-  /// Obține predicția pentru o monedă
+  /// Obține predicția pentru o monedă (ENSEMBLE de la toate modelele)
   Future<CryptoPrediction> getPrediction({
     required String coin,
     required List<List<double>> priceData,
     String timeframe = '5m',
   }) async {
-    // Folosim coin + timeframe pentru NOILE modele multi-timeframe
-    final key = '${coin.toLowerCase()}_$timeframe';
+    // ignore: avoid_print
+    print('');
+    // ignore: avoid_print
+    print('🎯 ==========================================');
+    // ignore: avoid_print
+    print('🎯 ENSEMBLE PREDICTION for ${coin.toUpperCase()} @ $timeframe');
+    // ignore: avoid_print
+    print('🎯 ==========================================');
 
-    // Verifică dacă avem modelul pentru această monedă și timeframe
-    if (!_interpreters.containsKey(key)) {
+    final predictions = <CryptoPrediction>[];
+
+    // 1. Încarcă predicția de la modelul coin-specific (dacă există)
+    final coinKey = '${coin.toLowerCase()}_$timeframe';
+    if (_interpreters.containsKey(coinKey)) {
       // ignore: avoid_print
-      print('⚠️ No model available for $coin $timeframe, returning neutral HOLD prediction');
+      print('📊 [1/4] Coin-specific model: $coinKey');
+      try {
+        final pred = await _getPredictionWithModel(coinKey, priceData);
+        predictions.add(pred);
+      } catch (e) {
+        // ignore: avoid_print
+        print('   ❌ Error: $e');
+      }
+    } else {
+      // ignore: avoid_print
+      print('⚠️ [1/4] No coin-specific model for $coinKey');
+    }
+
+    // 2. Încarcă predicțiile de la TOATE 3 modelele GENERALE (5m, 15m, 1h)
+    const generalTimeframes = ['5m', '15m', '1h'];
+    for (var i = 0; i < generalTimeframes.length; i++) {
+      final tf = generalTimeframes[i];
+      final generalKey = 'general_$tf';
+      if (_interpreters.containsKey(generalKey)) {
+        // ignore: avoid_print
+        print('📊 [${i + 2}/4] General model: $generalKey');
+        try {
+          final pred = await _getPredictionWithModel(generalKey, priceData);
+          predictions.add(pred);
+        } catch (e) {
+          // ignore: avoid_print
+          print('   ❌ Error: $e');
+        }
+      } else {
+        // ignore: avoid_print
+        print('⚠️ [${i + 2}/4] No general model for $generalKey');
+      }
+    }
+
+    // 3. Dacă nu avem nicio predicție, returnează HOLD neutru
+    if (predictions.isEmpty) {
+      // ignore: avoid_print
+      print('⚠️ No models available, returning neutral HOLD');
+      // ignore: avoid_print
+      print('🎯 ==========================================');
+      // ignore: avoid_print
+      print('');
       return _getNeutralPrediction();
     }
 
-    return _getPredictionWithModel(key, priceData);
+    // 4. Combină predicțiile folosind ENSEMBLE VOTING
+    final ensemble = getEnsemblePrediction(predictions);
+
+    // ignore: avoid_print
+    print('');
+    // ignore: avoid_print
+    print('✅ ENSEMBLE RESULT:');
+    // ignore: avoid_print
+    print('   🎯 Action: ${ensemble.action}');
+    // ignore: avoid_print
+    print('   💪 Confidence: ${(ensemble.confidence * 100).toStringAsFixed(1)}%');
+    // ignore: avoid_print
+    print('   📊 Models voted: ${predictions.length}');
+    // ignore: avoid_print
+    print('   📈 SELL: ${(ensemble.probabilities["SELL"]! * 100).toStringAsFixed(1)}%');
+    // ignore: avoid_print
+    print('   ⏸️  HOLD: ${(ensemble.probabilities["HOLD"]! * 100).toStringAsFixed(1)}%');
+    // ignore: avoid_print
+    print('   📉 BUY:  ${(ensemble.probabilities["BUY"]! * 100).toStringAsFixed(1)}%');
+    // ignore: avoid_print
+    print('🎯 ==========================================');
+    // ignore: avoid_print
+    print('');
+
+    return ensemble;
   }
 
   /// Returnează o predicție neutră HOLD când modelele nu sunt disponibile

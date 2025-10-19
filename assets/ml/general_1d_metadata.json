@@ -1,0 +1,32 @@
+{
+  "type": "GENERAL_TREND",
+  "prediction_horizon": "1 day(s)",
+  "timeframe": "1d",
+  "trained_on": [
+    "BTC",
+    "ETH",
+    "BNB",
+    "SOL",
+    "ADA",
+    "XRP",
+    "MATIC",
+    "DOT",
+    "AVAX",
+    "LINK"
+  ],
+  "test_accuracy": 0.6674259901046753,
+  "confusion_matrix": [
+    [
+      308,
+      122
+    ],
+    [
+      170,
+      278
+    ]
+  ],
+  "train_samples": 3512,
+  "test_samples": 878,
+  "model_size_kb": 50.4140625,
+  "date": "2025-10-19T13:57:44.316774"
+}

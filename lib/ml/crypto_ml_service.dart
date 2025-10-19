@@ -53,12 +53,30 @@ class CryptoMLService {
     // ignore: avoid_print
     print('📦 Loading GENERAL models (work on ANY crypto)...');
 
-    // Încarcă modelele GENERALE (3 modele)
+    // Încarcă modelele GENERALE pentru TRADING (3 modele: 5m, 15m, 1h)
     int generalSuccess = 0;
     for (final timeframe in timeframes) {
       final success = await loadModel('general', timeframe);
       if (success) {
         generalSuccess++;
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+
+    // Încarcă modelele GENERALE pentru LONG-TERM TREND (2 modele: 1d, 7d)
+    // ignore: avoid_print
+    print('');
+    // ignore: avoid_print
+    print('📦 Loading LONG-TERM TREND models (1d, 7d)...');
+
+    int longTermSuccess = 0;
+    const longTermTimeframes = ['1d', '7d'];
+    for (final timeframe in longTermTimeframes) {
+      final success = await loadModel('general', timeframe);
+      if (success) {
+        longTermSuccess++;
         successCount++;
       } else {
         failCount++;
@@ -74,13 +92,15 @@ class CryptoMLService {
     // ignore: avoid_print
     print('✅ ========================================');
     // ignore: avoid_print
-    print('   Total models: 21 (18 coin-specific + 3 general)');
+    print('   Total models: 23 (18 coin-specific + 5 general)');
     // ignore: avoid_print
-    print('   ✅ Coin-specific loaded: ${successCount - generalSuccess}/18');
+    print('   ✅ Coin-specific loaded: ${successCount - generalSuccess - longTermSuccess}/18');
     // ignore: avoid_print
-    print('   ✅ General models loaded: $generalSuccess/3');
+    print('   ✅ General trading (5m/15m/1h): $generalSuccess/3');
     // ignore: avoid_print
-    print('   ✅ TOTAL loaded: $successCount/21');
+    print('   ✅ Long-term trend (1d/7d): $longTermSuccess/2');
+    // ignore: avoid_print
+    print('   ✅ TOTAL loaded: $successCount/23');
     // ignore: avoid_print
     print('   ❌ Failed to load: $failCount');
     // ignore: avoid_print

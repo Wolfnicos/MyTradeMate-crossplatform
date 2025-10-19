@@ -30,3 +30,11 @@ DerivedData/
 coverage/
 # Other
 .sentryclirc
+
+# ML Training Data (too large for GitHub)
+python_training/
+data/
+output/
+*.npz
+*.npy
+scripts/

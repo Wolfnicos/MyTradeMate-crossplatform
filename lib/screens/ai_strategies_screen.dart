@@ -214,8 +214,9 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               _buildPredictionCard(),
               const SizedBox(height: AppTheme.spacing16),
 
-              // Model Contributions
-              if (_lastPrediction != null) _buildModelContributions(),
+              // Model Contributions (only for short-term trading signals, not long-term trends)
+              if (_lastPrediction != null && _interval != '1d' && _interval != '1w')
+                _buildModelContributions(),
             ]),
           ),
         ),

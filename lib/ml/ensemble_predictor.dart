@@ -302,7 +302,19 @@ class EnsemblePredictor {
       final coin = (coinSymbol ?? 'general').toLowerCase();
       // Normalize timeframe to available ones in assets/ml
       final tf = (timeframe ?? '1h').toLowerCase();
-      final tfNorm = (tf == '4h') ? '1h' : (tf == '15m' || tf == '5m' || tf == '1h' ? tf : '1h');
+      // Map timeframes: 1w -> 7d, 4h -> 1h, keep 15m/5m/1h/1d/7d as-is
+      String tfNorm;
+      if (tf == '1w' || tf == '7d') {
+        tfNorm = '7d';  // Weekly uses 7-day model
+      } else if (tf == '1d') {
+        tfNorm = '1d';  // Daily uses 1-day model
+      } else if (tf == '4h') {
+        tfNorm = '1h';  // 4h uses 1h model
+      } else if (tf == '15m' || tf == '5m' || tf == '1h') {
+        tfNorm = tf;    // Short-term uses exact timeframe
+      } else {
+        tfNorm = '1h';  // Default fallback
+      }
 
       debugPrint('🧠 Trying NEW ML model: coin=$coinSymbol tf=$tf -> tfNorm=$tfNorm');
       if (tf != tfNorm) {

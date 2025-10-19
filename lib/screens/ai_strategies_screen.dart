@@ -266,10 +266,13 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               const SizedBox(width: AppTheme.spacing12),
               Wrap(
                 spacing: AppTheme.spacing8,
+                runSpacing: AppTheme.spacing8,
                 children: [
                   {'label': '15m', 'value': '15m'},
                   {'label': '1H', 'value': '1h'},
                   {'label': '4H', 'value': '4h'},
+                  {'label': '1D', 'value': '1d'},
+                  {'label': '1W', 'value': '1w'},
                 ].map((item) {
                   final bool selected = _interval == item['value'];
                   return GestureDetector(

@@ -438,6 +438,16 @@ class BinanceService {
         baseData = await fetchCustomKlines(symbol, '4h', limit: 260);
         lowData = await fetchCustomKlines(symbol, '1h', limit: 260 * 4);
         highData = await fetchCustomKlines(symbol, '1d', limit: 260 ~/ 6 + 10);
+      } else if (interval == '1d') {
+        // Base: 1d (daily), Low: 4h, High: 1w
+        baseData = await fetchCustomKlines(symbol, '1d', limit: 260);
+        lowData = await fetchCustomKlines(symbol, '4h', limit: 260 * 6);
+        highData = await fetchCustomKlines(symbol, '1w', limit: 260 ~/ 7 + 10);
+      } else if (interval == '1w') {
+        // Base: 1w (weekly), Low: 1d, High: 1M
+        baseData = await fetchCustomKlines(symbol, '1w', limit: 260);
+        lowData = await fetchCustomKlines(symbol, '1d', limit: 260 * 7);
+        highData = await fetchCustomKlines(symbol, '1M', limit: 260 ~/ 4 + 10);
       } else {
         // Default: Base: 1h, Low: 15m, High: 4h
         baseData = await fetchCustomKlines(symbol, '1h', limit: 260);

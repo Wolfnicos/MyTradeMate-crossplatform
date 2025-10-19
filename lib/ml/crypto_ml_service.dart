@@ -407,7 +407,28 @@ class CryptoMLService {
     final maxIndex = _argmax(probabilities);
     final confidence = probabilities[maxIndex];
 
-    final action = <String>['SELL', 'HOLD', 'BUY'][maxIndex];
+    // Handle binary (2-class) vs ternary (3-class) classification
+    String action;
+    Map<String, double> probMap;
+
+    if (numClasses == 2) {
+      // Binary: DOWN (0) vs UP (1) -> map to SELL vs BUY
+      action = maxIndex == 0 ? 'SELL' : 'BUY';
+      probMap = {
+        'SELL': probabilities[0],  // DOWN
+        'HOLD': 0.0,               // No HOLD in binary
+        'BUY': probabilities[1],   // UP
+      };
+    } else {
+      // Ternary: SELL, HOLD, BUY
+      action = <String>['SELL', 'HOLD', 'BUY'][maxIndex];
+      probMap = {
+        'SELL': probabilities[0],
+        'HOLD': probabilities[1],
+        'BUY': probabilities[2],
+      };
+    }
+
     final signalStrength = _calculateSignalStrength(probabilities);
     final accuracy = (metadata['test_accuracy'] as num?)?.toDouble() ?? 0.0;
 
@@ -419,11 +440,7 @@ class CryptoMLService {
     return CryptoPrediction(
       action: action,
       confidence: confidence,
-      probabilities: {
-        'SELL': probabilities[0],
-        'HOLD': probabilities[1],
-        'BUY': probabilities[2],
-      },
+      probabilities: probMap,
       signalStrength: signalStrength,
       modelAccuracy: accuracy,
       timestamp: DateTime.now(),
@@ -458,9 +475,11 @@ class CryptoMLService {
 
   /// Calculează puterea semnalului (0-100)
   double _calculateSignalStrength(List<double> probabilities) {
+    if (probabilities.length < 2) return 0.0;
+
     final sorted = probabilities.toList()..sort();
-    final maxVal = sorted[2];
-    final secondMax = sorted[1];
+    final maxVal = sorted.last;
+    final secondMax = sorted[sorted.length - 2];
     final diff = maxVal - secondMax;
     return (diff * 100).clamp(0, 100);
   }

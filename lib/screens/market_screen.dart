@@ -246,10 +246,13 @@ class _MarketScreenState extends State<MarketScreen> {
                       // Interval Selector
                       Wrap(
                         spacing: AppTheme.spacing8,
+                        runSpacing: AppTheme.spacing8,
                         children: [
                           _buildIntervalChip('15m', '15m'),
                           _buildIntervalChip('1H', '1h'),
                           _buildIntervalChip('4H', '4h'),
+                          _buildIntervalChip('1D', '1d'),
+                          _buildIntervalChip('1W', '1w'),
                         ],
                       ),
                     ],

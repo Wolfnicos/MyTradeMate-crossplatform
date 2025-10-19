@@ -28,5 +28,6 @@
   "train_samples": 3512,
   "test_samples": 878,
   "model_size_kb": 50.4140625,
-  "date": "2025-10-19T13:57:44.316774"
+  "date": "2025-10-19T13:57:44.316774",
+  "num_classes": 2
 }

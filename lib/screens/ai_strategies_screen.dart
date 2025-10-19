@@ -125,7 +125,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       final features = await BinanceService().getFeaturesForModel(_selectedSymbol, interval: _interval);
       debugPrint('ℹ️ AI: features ${features.length}x${features.isNotEmpty ? features.first.length : 0}');
 
-      final prediction = await globalEnsemblePredictor.predict(features, symbol: _selectedSymbol);
+      final prediction = await globalEnsemblePredictor.predict(features, symbol: _selectedSymbol, timeframe: _interval);
       debugPrint('🚀 ENSEMBLE: ${prediction.label} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
 
       if (mounted) {

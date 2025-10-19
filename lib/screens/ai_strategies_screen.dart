@@ -378,7 +378,14 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       );
     }
 
-    // Show prediction
+    // Check if this is a long-term prediction (1D/1W)
+    final isLongTerm = _interval == '1d' || _interval == '1w';
+
+    if (isLongTerm) {
+      return _buildLongTermPrediction();
+    }
+
+    // Short-term trading signal (15m/1h/4h) - BUY/HOLD/SELL
     final prediction = _lastPrediction!;
     final isBuy = prediction.label.contains('BUY');
     final isSell = prediction.label.contains('SELL');
@@ -437,6 +444,209 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,
               foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Premium UI for long-term trend predictions (1D/1W) - Binary UP/DOWN only
+  Widget _buildLongTermPrediction() {
+    final prediction = _lastPrediction!;
+
+    // Binary model: probabilities[0] = DOWN, probabilities[1] = UP
+    final downProb = prediction.probabilities.isNotEmpty ? prediction.probabilities[0] : 0.0;
+    final upProb = prediction.probabilities.length > 1 ? prediction.probabilities[1] : 0.0;
+
+    final isUp = upProb > downProb;
+    final confidence = isUp ? upProb : downProb;
+    final trendColor = isUp ? AppTheme.buyGreen : AppTheme.sellRed;
+    final trendGradient = isUp ? AppTheme.buyGradient : AppTheme.sellGradient;
+
+    return GlassCard(
+      child: Column(
+        children: [
+          // Title
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.show_chart, color: AppTheme.textSecondary, size: 20),
+              const SizedBox(width: AppTheme.spacing8),
+              Text(
+                'Long-term Trend',
+                style: AppTheme.headingMedium.copyWith(color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppTheme.spacing24),
+
+          // Large Arrow Icon with premium design
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              gradient: trendGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: trendColor.withOpacity(0.3),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Icon(
+              isUp ? Icons.north : Icons.south,
+              color: Colors.white,
+              size: 64,
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing24),
+
+          // Trend Label
+          Text(
+            isUp ? 'UPTREND' : 'DOWNTREND',
+            style: AppTheme.displayLarge.copyWith(
+              color: trendColor,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing12),
+
+          // Confidence Badge
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing20,
+              vertical: AppTheme.spacing12,
+            ),
+            decoration: BoxDecoration(
+              gradient: trendGradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              boxShadow: [
+                BoxShadow(
+                  color: trendColor.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.analytics, color: Colors.white, size: 20),
+                const SizedBox(width: AppTheme.spacing8),
+                Text(
+                  '${(confidence * 100).toStringAsFixed(1)}% Confidence',
+                  style: AppTheme.headingLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing20),
+
+          // Probabilities
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            decoration: BoxDecoration(
+              color: AppTheme.glassWhite,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              border: Border.all(color: AppTheme.glassBorder),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    Icon(Icons.south, color: AppTheme.sellRed, size: 24),
+                    const SizedBox(height: AppTheme.spacing4),
+                    Text(
+                      'DOWN',
+                      style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+                    ),
+                    Text(
+                      '${(downProb * 100).toStringAsFixed(1)}%',
+                      style: AppTheme.headingMedium.copyWith(
+                        color: AppTheme.sellRed,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  width: 1,
+                  height: 60,
+                  color: AppTheme.glassBorder,
+                ),
+                Column(
+                  children: [
+                    Icon(Icons.north, color: AppTheme.buyGreen, size: 24),
+                    const SizedBox(height: AppTheme.spacing4),
+                    Text(
+                      'UP',
+                      style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+                    ),
+                    Text(
+                      '${(upProb * 100).toStringAsFixed(1)}%',
+                      style: AppTheme.headingMedium.copyWith(
+                        color: AppTheme.buyGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing20),
+
+          // Timeframe Info
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing12,
+              vertical: AppTheme.spacing8,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              border: Border.all(color: AppTheme.glassBorder),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.schedule, color: AppTheme.textTertiary, size: 16),
+                const SizedBox(width: AppTheme.spacing8),
+                Text(
+                  _interval == '1d' ? '1-Day Forecast' : '1-Week Forecast',
+                  style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing16),
+
+          // Refresh Button
+          ElevatedButton.icon(
+            onPressed: _runInference,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh Prediction'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing20,
+                vertical: AppTheme.spacing12,
+              ),
             ),
           ),
         ],

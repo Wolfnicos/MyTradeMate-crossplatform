@@ -67,7 +67,19 @@ class _MarketScreenState extends State<MarketScreen> {
       _chartError = '';
     });
     try {
-      final List<Candle> klines = await _binance.fetchCustomKlines(_selectedSymbol, _interval, limit: 60);
+      // Use different limits based on timeframe to avoid too much historical data
+      int limit;
+      if (_interval == '1w') {
+        limit = 20;  // 20 weeks = ~5 months
+      } else if (_interval == '1d') {
+        limit = 30;  // 30 days = 1 month
+      } else if (_interval == '4h') {
+        limit = 42;  // 42 x 4h = 7 days
+      } else {
+        limit = 60;  // 15m/1h: 60 candles
+      }
+
+      final List<Candle> klines = await _binance.fetchCustomKlines(_selectedSymbol, _interval, limit: limit);
       final List<CandleData> data = <CandleData>[];
       for (int i = 0; i < klines.length; i++) {
         final Candle c = klines[i];

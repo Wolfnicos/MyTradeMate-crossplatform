@@ -230,81 +230,82 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
         children: [
           Text('Trading Pair', style: AppTheme.headingMedium),
           const SizedBox(height: AppTheme.spacing12),
-          Row(
+
+          // Trading Pair Dropdown
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              border: Border.all(color: AppTheme.glassBorder),
+            ),
+            child: DropdownButton<String>(
+              value: _selectedSymbol,
+              isExpanded: true,
+              underline: const SizedBox(),
+              dropdownColor: AppTheme.surface,
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+              items: _buildPairs().map((e) => DropdownMenuItem(
+                value: e,
+                child: Text(
+                  e,
+                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              )).toList(),
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() => _selectedSymbol = v);
+                _runInference();
+              },
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing12),
+
+          // Timeframe Selector
+          Text('Timeframe', style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary)),
+          const SizedBox(height: AppTheme.spacing8),
+          Wrap(
+            spacing: AppTheme.spacing8,
+            runSpacing: AppTheme.spacing8,
             children: [
-              Expanded(
+              {'label': '15m', 'value': '15m'},
+              {'label': '1H', 'value': '1h'},
+              {'label': '4H', 'value': '4h'},
+              {'label': '1D', 'value': '1d'},
+              {'label': '1W', 'value': '1w'},
+            ].map((item) {
+              final bool selected = _interval == item['value'];
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _interval = item['value'] as String);
+                  _runInference();
+                },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                    border: Border.all(color: AppTheme.glassBorder),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing12,
+                    vertical: AppTheme.spacing8,
                   ),
-                  child: DropdownButton<String>(
-                    value: _selectedSymbol,
-                    isExpanded: true,
-                    underline: const SizedBox(),
-                    dropdownColor: AppTheme.surface,
-                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-                    items: _buildPairs().map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        e,
-                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    )).toList(),
-                    onChanged: (v) {
-                      if (v == null) return;
-                      setState(() => _selectedSymbol = v);
-                      _runInference();
-                    },
+                  decoration: BoxDecoration(
+                    gradient: selected ? AppTheme.primaryGradient : null,
+                    color: selected ? null : AppTheme.glassWhite,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    border: Border.all(
+                      color: selected ? Colors.transparent : AppTheme.glassBorder,
+                    ),
+                  ),
+                  child: Text(
+                    item['label'] as String,
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: selected ? Colors.white : AppTheme.textSecondary,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppTheme.spacing12),
-              Wrap(
-                spacing: AppTheme.spacing8,
-                runSpacing: AppTheme.spacing8,
-                children: [
-                  {'label': '15m', 'value': '15m'},
-                  {'label': '1H', 'value': '1h'},
-                  {'label': '4H', 'value': '4h'},
-                  {'label': '1D', 'value': '1d'},
-                  {'label': '1W', 'value': '1w'},
-                ].map((item) {
-                  final bool selected = _interval == item['value'];
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _interval = item['value'] as String);
-                      _runInference();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing12,
-                        vertical: AppTheme.spacing8,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: selected ? AppTheme.primaryGradient : null,
-                        color: selected ? null : AppTheme.glassWhite,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                        border: Border.all(
-                          color: selected ? Colors.transparent : AppTheme.glassBorder,
-                        ),
-                      ),
-                      child: Text(
-                        item['label'] as String,
-                        style: AppTheme.bodyMedium.copyWith(
-                          color: selected ? Colors.white : AppTheme.textSecondary,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
+              );
+            }).toList(),
           ),
         ],
       ),

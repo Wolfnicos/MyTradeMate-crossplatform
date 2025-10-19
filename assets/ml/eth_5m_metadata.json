@@ -1,0 +1,13 @@
+{
+  "coin": "ETH",
+  "timeframe": "5m",
+  "num_features": 76,
+  "sequence_length": 60,
+  "num_classes": 3,
+  "test_accuracy": 0.7393617033958435,
+  "train_samples": 752,
+  "test_samples": 188,
+  "model_size_mb": 0.19351959228515625,
+  "date": "2025-10-19T02:00:40.078203",
+  "compatible": "iOS/Android"
+}

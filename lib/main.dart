@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'ml/tflite_predictor.dart';
 import 'ml/ml_service.dart';
 import 'ml/ensemble_predictor.dart';
+import 'ml/crypto_ml_service.dart';
 import 'providers/theme_provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/market_screen.dart';
@@ -35,6 +36,17 @@ Future<void> main() async {
     debugPrint('⚠️ Ensemble predictor failed to load: $e');
     debugPrint('   Falling back to legacy TCN model');
   }
+
+  // Initialize multi-coin Crypto ML service with new models in assets/ml/
+  debugPrint('🔄 MAIN: About to initialize CryptoMLService...');
+  try {
+    await CryptoMLService().initialize();
+    debugPrint('✅ MAIN: CryptoMLService.initialize() completed successfully');
+  } catch (e, stackTrace) {
+    debugPrint('⚠️ MAIN: CryptoMLService initialization FAILED with error: $e');
+    debugPrint('   Stack trace: $stackTrace');
+  }
+  debugPrint('🔄 MAIN: CryptoMLService initialization block finished');
 
   await AchievementService().load();
 

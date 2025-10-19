@@ -1,0 +1,13 @@
+{
+  "coin": "TRUMP",
+  "timeframe": "1h",
+  "num_features": 76,
+  "sequence_length": 60,
+  "num_classes": 3,
+  "test_accuracy": 0.4202127754688263,
+  "train_samples": 752,
+  "test_samples": 188,
+  "model_size_mb": 0.19362640380859375,
+  "date": "2025-10-19T02:02:07.580301",
+  "compatible": "iOS/Android"
+}

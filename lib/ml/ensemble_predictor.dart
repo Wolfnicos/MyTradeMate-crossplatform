@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'crypto_ml_service.dart';
 
 /// Ensemble Predictor for MyTradeMate
 ///
@@ -231,7 +232,7 @@ class EnsemblePredictor {
   ///
   /// Returns:
   ///   EnsemblePrediction with per-coin model probabilities (100% weight)
-  Future<EnsemblePrediction> predict(List<List<double>> features, {String? symbol}) async {
+  Future<EnsemblePrediction> predict(List<List<double>> features, {String? symbol, String? timeframe}) async {
     if (!_isLoaded) {
       throw Exception('Models not loaded. Call loadModels() first.');
     }
@@ -255,8 +256,11 @@ class EnsemblePredictor {
       debugPrint('🪙 Using per-coin model for: $coinSymbol (from $symbol)');
     }
 
-    // Get predictions from per-coin model (100% weight)
-    final perCoinProbs = await _predictPerCoin(features, coinSymbol);
+    // Try NEW assets/ml models first via CryptoMLService (3-class -> map to 5-class)
+    final fromNewModels = await _predictNewModel(features, coinSymbol, timeframe);
+
+    // If new models not available, fall back to per-coin specialized models
+    final perCoinProbs = fromNewModels ?? await _predictPerCoin(features, coinSymbol);
     // Legacy models commented out
     // final transformerProbs = await _predictTransformer(features);
     // final lstmProbs = await _predictLstm(features);
@@ -285,10 +289,57 @@ class EnsemblePredictor {
       confidence: confidence,
       probabilities: ensembleProbs,
       modelContributions: {
-        'perCoin_$coinSymbol': perCoinProbs,
+        fromNewModels != null ? 'newModels_${coinSymbol ?? "GEN"}' : 'perCoin_$coinSymbol': perCoinProbs,
         'randomForest': rfProbs,
       },
     );
+  }
+
+  /// Try prediction using the new multi-coin/timeframe models (assets/ml)
+  /// Returns 5-class probabilities if successful; otherwise null to signal fallback
+  Future<List<double>?> _predictNewModel(List<List<double>> features, String? coinSymbol, String? timeframe) async {
+    try {
+      final coin = (coinSymbol ?? 'general').toLowerCase();
+      // Normalize timeframe to available ones in assets/ml
+      final tf = (timeframe ?? '1h').toLowerCase();
+      final tfNorm = (tf == '4h') ? '1h' : (tf == '15m' || tf == '5m' || tf == '1h' ? tf : '1h');
+
+      debugPrint('🧠 Trying NEW ML model: coin=$coinSymbol tf=$tfNorm');
+
+      final prediction = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: features,
+        timeframe: tfNorm,
+      );
+
+      // Map 3-class to 5-class like per-coin mapping
+      final sell = prediction.probabilities['SELL'] ?? 0.0;
+      final hold = prediction.probabilities['HOLD'] ?? 0.0;
+      final buy = prediction.probabilities['BUY'] ?? 0.0;
+
+      double strongSell, normalSell, normalBuy, strongBuy;
+      if (sell > 0.6) {
+        strongSell = sell * 0.5;
+        normalSell = sell * 0.5;
+      } else {
+        strongSell = sell * 0.2;
+        normalSell = sell * 0.8;
+      }
+      if (buy > 0.6) {
+        strongBuy = buy * 0.5;
+        normalBuy = buy * 0.5;
+      } else {
+        strongBuy = buy * 0.2;
+        normalBuy = buy * 0.8;
+      }
+
+      final result = [strongSell, normalSell, hold, normalBuy, strongBuy];
+      debugPrint('🧠 NEW ML result (5-class): [${result.map((p) => (p * 100).toStringAsFixed(1)).join(', ')}]');
+      return result;
+    } catch (e) {
+      debugPrint('⚠️ NEW ML prediction unavailable → $e');
+      return null;
+    }
   }
 
   // Legacy Transformer and LSTM models (commented out for potential future use)

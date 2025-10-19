@@ -1,0 +1,13 @@
+{
+  "coin": "SOL",
+  "timeframe": "5m",
+  "num_features": 76,
+  "sequence_length": 60,
+  "num_classes": 3,
+  "test_accuracy": 0.728723406791687,
+  "train_samples": 752,
+  "test_samples": 188,
+  "model_size_mb": 0.19354248046875,
+  "date": "2025-10-19T02:01:31.695395",
+  "compatible": "iOS/Android"
+}

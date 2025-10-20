@@ -173,18 +173,13 @@ class EnsembleExample {
       quote = m.group(1);
       base = upper.substring(0, m.start);
     }
-    final List<String> list = <String>[
+    return <String>[
       if (quote != null) '$base$quote' else upper,
       '${base}USDT',
       '${base}EUR',
       '${base}USDC',
       '${base}USD',
     ];
-    if (base == 'TRUMP') {
-      // Binance lists 1000TRUMP instead of TRUMP
-      list.insert(0, '1000TRUMPUSDT');
-    }
-    return list;
   }
 
   /// Map timeframe to Binance interval format

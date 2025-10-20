@@ -39,9 +39,11 @@ class EnsembleExample {
 
       // STEP 1: Fetch OHLCV data from Binance for ATR calculation
       print('📊 Fetching OHLCV data from Binance...');
-      final candleObjects = await _binanceService.fetchKlines(
-        symbol,
-        interval: _mapTimeframeToInterval(timeframe),
+      // Try multiple quote variants so examples work regardless of local quote settings
+      final candidates = _buildSymbolCandidates(symbol);
+      final candleObjects = await _binanceService.fetchKlinesWithFallback(
+        candidates,
+        _mapTimeframeToInterval(timeframe),
         limit: 100, // Get 100 candles for ATR calculation (need 14+)
       );
 
@@ -158,6 +160,26 @@ class EnsembleExample {
         'risk': 'unknown',
       };
     }
+  }
+
+  /// Build candidate symbols: keep original + fallback to common quotes
+  List<String> _buildSymbolCandidates(String symbol) {
+    final upper = symbol.toUpperCase();
+    final re = RegExp(r'(USDT|USDC|EUR|USD)$');
+    String base = upper;
+    String? quote;
+    final m = re.firstMatch(upper);
+    if (m != null) {
+      quote = m.group(1);
+      base = upper.substring(0, m.start);
+    }
+    return <String>[
+      if (quote != null) '$base$quote' else upper,
+      '$baseUSDT',
+      '$baseEUR',
+      '$baseUSDC',
+      '$baseUSD',
+    ];
   }
 
   /// Map timeframe to Binance interval format

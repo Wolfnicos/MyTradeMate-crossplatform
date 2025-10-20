@@ -1,11 +1,14 @@
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'dart:convert';
+import 'dart:math' show log;
+import 'package:mytrademate/services/binance_service.dart';
 
 /// Service pentru predicții ML crypto
 class CryptoMLService {
   static final CryptoMLService _instance = CryptoMLService._internal();
   factory CryptoMLService() => _instance;
+  static CryptoMLService get instance => _instance;
   CryptoMLService._internal();
 
   // Cache pentru interpretere
@@ -16,6 +19,12 @@ class CryptoMLService {
 
   // Metadata pentru modele
   final Map<String, Map<String, dynamic>> _metadata = {};
+
+  // PHASE 3: Binance service for volume percentile
+  final BinanceService _binanceService = BinanceService();
+
+  // PHASE 3: Model registry with trained_date
+  Map<String, dynamic>? _modelRegistry;
 
   /// Inițializează serviciul și încarcă modelele
   Future<void> initialize() async {
@@ -53,34 +62,28 @@ class CryptoMLService {
     // ignore: avoid_print
     print('📦 Loading GENERAL models (work on ANY crypto)...');
 
-    // Încarcă modelele GENERALE pentru TRADING (3 modele: 5m, 15m, 1h)
+    // Load general_5m and general_1d (FIXED with correct features)
     int generalSuccess = 0;
-    for (final timeframe in timeframes) {
-      final success = await loadModel('general', timeframe);
-      if (success) {
+    int generalFail = 0;
+
+    for (final tf in ['5m', '1d']) {
+      final loaded = await loadModel('general', tf);
+      if (loaded) {
         generalSuccess++;
-        successCount++;
       } else {
-        failCount++;
+        generalFail++;
       }
     }
 
-    // Încarcă modelele GENERALE pentru LONG-TERM TREND (2 modele: 1d, 7d)
-    // ignore: avoid_print
-    print('');
-    // ignore: avoid_print
-    print('📦 Loading LONG-TERM TREND models (1d, 7d)...');
-
-    int longTermSuccess = 0;
-    const longTermTimeframes = ['1d', '7d'];
-    for (final timeframe in longTermTimeframes) {
-      final success = await loadModel('general', timeframe);
-      if (success) {
-        longTermSuccess++;
-        successCount++;
-      } else {
-        failCount++;
-      }
+    // PHASE 3: Load model registry with trained_date
+    try {
+      final registryJson = await rootBundle.loadString('assets/models/model_registry.json');
+      _modelRegistry = json.decode(registryJson) as Map<String, dynamic>;
+      // ignore: avoid_print
+      print('✅ Model registry loaded (Phase 3)');
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️  Failed to load model registry: $e');
     }
 
     // ignore: avoid_print
@@ -92,17 +95,15 @@ class CryptoMLService {
     // ignore: avoid_print
     print('✅ ========================================');
     // ignore: avoid_print
-    print('   Total models: 23 (18 coin-specific + 5 general)');
+    print('   Total models available: ${18 + generalSuccess}');
     // ignore: avoid_print
-    print('   ✅ Coin-specific loaded: ${successCount - generalSuccess - longTermSuccess}/18');
+    print('   ✅ Coin-specific loaded: $successCount/18');
     // ignore: avoid_print
-    print('   ✅ General trading (5m/15m/1h): $generalSuccess/3');
+    print('   ✅ General models loaded: $generalSuccess/2 (5m, 1d)');
     // ignore: avoid_print
-    print('   ✅ Long-term trend (1d/7d): $longTermSuccess/2');
+    print('   ✅ TOTAL loaded: ${successCount + generalSuccess}/${18 + 2}');
     // ignore: avoid_print
-    print('   ✅ TOTAL loaded: $successCount/23');
-    // ignore: avoid_print
-    print('   ❌ Failed to load: $failCount');
+    print('   ❌ Failed to load: ${failCount + generalFail}');
     // ignore: avoid_print
     print('✅ ========================================');
     // ignore: avoid_print
@@ -233,14 +234,30 @@ class CryptoMLService {
       final decoded = json.decode(metadataString) as Map<String, dynamic>;
       _metadata[key] = decoded;
 
-      // 3. Scaler - folosim default (modelele sunt deja normalizate corespunzător)
-      // NOTĂ: Scaler-ul e în .pkl (Python pickle), nu .json, deci nu îl putem citi direct
-      // Datele de antrenare au fost normalizate, așa că folosim identity scaler
+      // 3. Încarcă scaler din JSON (FIX: nu mai folosim identity scaler!)
       final expectedLen = (_metadata[key]?['num_features'] as num?)?.toInt() ?? 76;
-      _scalers[key] = {
-        'mean': List<double>.filled(expectedLen, 0.0),
-        'std': List<double>.filled(expectedLen, 1.0),
-      };
+      final scalerPath = _metadata[key]?['scaler_path'] as String? ??
+          (coin == 'general'
+              ? 'general_${timeframe}_scaler.json'
+              : '${coinLower}_${timeframe}_scaler.json');
+
+      try {
+        final scalerString = await rootBundle.loadString('assets/ml/$scalerPath');
+        final scalerData = json.decode(scalerString) as Map<String, dynamic>;
+        _scalers[key] = {
+          'mean': (scalerData['mean'] as List).cast<double>(),
+          'std': (scalerData['std'] as List).cast<double>(),
+        };
+        // ignore: avoid_print
+        print('   📊 Loaded scaler: ${_scalers[key]!['mean']!.length} features (mean[0]=${_scalers[key]!['mean']![0].toStringAsFixed(4)}, std[0]=${_scalers[key]!['std']![0].toStringAsFixed(4)})');
+      } catch (e) {
+        // ignore: avoid_print
+        print('   ⚠️  Could not load scaler from $scalerPath, using identity: $e');
+        _scalers[key] = {
+          'mean': List<double>.filled(expectedLen, 0.0),
+          'std': List<double>.filled(expectedLen, 1.0),
+        };
+      }
 
       final acc = (decoded['test_accuracy'] as num?)?.toDouble() ?? 0.0;
       // ignore: avoid_print
@@ -253,82 +270,115 @@ class CryptoMLService {
     }
   }
 
-  /// Obține predicția pentru o monedă (ENSEMBLE de la toate modelele)
+  /// Obține predicția pentru o monedă (MULTI-TIMEFRAME WEIGHTED ENSEMBLE)
   Future<CryptoPrediction> getPrediction({
     required String coin,
     required List<List<double>> priceData,
     String timeframe = '5m',
+    bool silent = false,
   }) async {
     // ignore: avoid_print
     print('');
-    // ignore: avoid_print
-    print('🎯 ==========================================');
-    // ignore: avoid_print
-    print('🎯 ENSEMBLE PREDICTION for ${coin.toUpperCase()} @ $timeframe');
-    // ignore: avoid_print
-    print('🎯 ==========================================');
-
-    final predictions = <CryptoPrediction>[];
-
-    // 1. Încarcă predicția de la modelul coin-specific (dacă există)
-    final coinKey = '${coin.toLowerCase()}_$timeframe';
-    if (_interpreters.containsKey(coinKey)) {
+    if (!silent) {
       // ignore: avoid_print
-      print('📊 [1/4] Coin-specific model: $coinKey');
-      try {
-        final pred = await _getPredictionWithModel(coinKey, priceData);
-        predictions.add(pred);
-      } catch (e) {
-        // ignore: avoid_print
-        print('   ❌ Error: $e');
-      }
-    } else {
+      print('🎯 ==========================================');
       // ignore: avoid_print
-      print('⚠️ [1/4] No coin-specific model for $coinKey');
+      print('🎯 MULTI-TIMEFRAME ENSEMBLE for ${coin.toUpperCase()} @ $timeframe');
+      // ignore: avoid_print
+      print('🎯 ==========================================');
     }
 
-    // 2. Try ONLY the general model for the requested timeframe
-    // For long-term predictions (1d, 7d), use single-model prediction
-    // For short-term (5m, 15m, 1h), could optionally ensemble
-    final generalKey = 'general_$timeframe';
-    if (_interpreters.containsKey(generalKey)) {
-      // ignore: avoid_print
-      print('📊 [2/2] General model: $generalKey');
-      try {
-        final pred = await _getPredictionWithModel(generalKey, priceData);
-        predictions.add(pred);
-      } catch (e) {
+    final weightedPredictions = <_WeightedPrediction>[];
+
+    // PHASE 3: Fetch volume percentile for Phase 3 logging
+    double volumePercentile = 0.5; // Default to median
+    try {
+      final symbol = '${coin.toUpperCase()}EUR';
+      volumePercentile = await _binanceService.getVolumePercentile(symbol);
+      if (!silent) {
         // ignore: avoid_print
-        print('   ❌ Error: $e');
+        print('📊 Phase 3: Volume percentile for $symbol: ${(volumePercentile * 100).toStringAsFixed(1)}%');
       }
-    } else {
-      // ignore: avoid_print
-      print('⚠️ [2/2] No general model for $generalKey');
-      // Fallback: try short-term ensemble only if timeframe is not 1d/7d
-      if (timeframe != '1d' && timeframe != '7d') {
+    } catch (e) {
+      if (!silent) {
         // ignore: avoid_print
-        print('💡 Falling back to short-term general models (5m, 15m, 1h)');
-        const generalTimeframes = ['5m', '15m', '1h'];
-        for (var i = 0; i < generalTimeframes.length; i++) {
-          final tf = generalTimeframes[i];
-          final fallbackKey = 'general_$tf';
-          if (_interpreters.containsKey(fallbackKey)) {
+        print('⚠️  Phase 3: Failed to fetch volume percentile, using default 0.5: $e');
+      }
+    }
+
+    // STEP 1: Load ALL coin-specific models across ALL timeframes
+    final allTimeframes = ['5m', '15m', '1h', '4h', '1d'];
+    if (!silent) {
+      // ignore: avoid_print
+      print('📊 Loading ALL ${coin.toUpperCase()} models across timeframes...');
+    }
+
+    for (final tf in allTimeframes) {
+      final coinKey = '${coin.toLowerCase()}_$tf';
+      if (_interpreters.containsKey(coinKey)) {
+        try {
+          final pred = await _getPredictionWithModel(
+            coinKey,
+            priceData,
+            coin: coin,
+            timeframe: tf,
+          );
+          final weight = _calculateTimeframeWeight(timeframe, tf);
+          weightedPredictions.add(_WeightedPrediction(pred, weight, coinKey));
+          if (!silent) {
             // ignore: avoid_print
-            print('📊 [${i + 3}/5] Fallback general model: $fallbackKey');
-            try {
-              final pred = await _getPredictionWithModel(fallbackKey, priceData);
-              predictions.add(pred);
-            } catch (e) {
-              // ignore: avoid_print
-              print('   ❌ Error: $e');
-            }
+            print('   ✅ $coinKey loaded (weight: ${weight.toStringAsFixed(3)})');
+            // PHASE 3: Show what new weights would be with Phase 3 enhancements
+            final trainedDate = _getTrainedDate(coinKey);
+            // ignore: avoid_print
+            print('   🔮 Phase 3 preview: volumePercentile=${(volumePercentile * 100).toStringAsFixed(0)}%, trainedDate=$trainedDate');
           }
+        } catch (e) {
+          // ignore: avoid_print
+          print('   ❌ Error loading $coinKey: $e');
         }
       }
     }
 
-    // 3. Dacă nu avem nicio predicție, returnează HOLD neutru
-    if (predictions.isEmpty) {
+    // STEP 2: Load ALL general models
+    if (!silent) {
+      // ignore: avoid_print
+      print('📊 Loading GENERAL models...');
+    }
+
+    for (final tf in ['5m', '1d']) {
+      final generalKey = 'general_$tf';
+      if (_interpreters.containsKey(generalKey)) {
+        try {
+          final pred = await _getPredictionWithModel(
+            generalKey,
+            priceData,
+            coin: coin,
+            timeframe: timeframe, // Use requested timeframe for confidence
+          );
+          // General models have lower weight (0.15-0.20)
+          final weight = _calculateTimeframeWeight(timeframe, tf) * 0.6; // Reduce by 40%
+          weightedPredictions.add(_WeightedPrediction(pred, weight, generalKey));
+          if (!silent) {
+            // ignore: avoid_print
+            print('   ✅ $generalKey loaded (weight: ${weight.toStringAsFixed(3)})');
+            // PHASE 3: Show what new weights would be with Phase 3 enhancements
+            final trainedDate = _getTrainedDate(generalKey);
+            final isOld = trainedDate != null && DateTime.now().difference(DateTime.parse(trainedDate)).inDays > 90;
+            final volumeBoost = volumePercentile > 0.5 ? '+5% volume boost' : 'no volume boost';
+            final agePenalty = isOld ? '-10% age penalty' : 'no age penalty';
+            // ignore: avoid_print
+            print('   🔮 Phase 3 preview: $volumeBoost, $agePenalty (trained: $trainedDate)');
+          }
+        } catch (e) {
+          // ignore: avoid_print
+          print('   ❌ Error loading $generalKey: $e');
+        }
+      }
+    }
+
+    // STEP 3: Return neutral if no models available
+    if (weightedPredictions.isEmpty) {
       // ignore: avoid_print
       print('⚠️ No models available, returning neutral HOLD');
       // ignore: avoid_print
@@ -338,29 +388,31 @@ class CryptoMLService {
       return _getNeutralPrediction();
     }
 
-    // 4. Combină predicțiile folosind ENSEMBLE VOTING
-    final ensemble = getEnsemblePrediction(predictions);
+    // STEP 4: Combine using WEIGHTED ENSEMBLE
+    final ensemble = getWeightedEnsemblePrediction(weightedPredictions);
 
     // ignore: avoid_print
     print('');
-    // ignore: avoid_print
-    print('✅ ENSEMBLE RESULT:');
-    // ignore: avoid_print
-    print('   🎯 Action: ${ensemble.action}');
-    // ignore: avoid_print
-    print('   💪 Confidence: ${(ensemble.confidence * 100).toStringAsFixed(1)}%');
-    // ignore: avoid_print
-    print('   📊 Models voted: ${predictions.length}');
-    // ignore: avoid_print
-    print('   📈 SELL: ${(ensemble.probabilities["SELL"]! * 100).toStringAsFixed(1)}%');
-    // ignore: avoid_print
-    print('   ⏸️  HOLD: ${(ensemble.probabilities["HOLD"]! * 100).toStringAsFixed(1)}%');
-    // ignore: avoid_print
-    print('   📉 BUY:  ${(ensemble.probabilities["BUY"]! * 100).toStringAsFixed(1)}%');
-    // ignore: avoid_print
-    print('🎯 ==========================================');
-    // ignore: avoid_print
-    print('');
+    if (!silent) {
+      // ignore: avoid_print
+      print('✅ WEIGHTED ENSEMBLE RESULT:');
+      // ignore: avoid_print
+      print('   🎯 Action: ${ensemble.action}');
+      // ignore: avoid_print
+      print('   💪 Confidence: ${(ensemble.confidence * 100).toStringAsFixed(1)}%');
+      // ignore: avoid_print
+      print('   📊 Models used: ${weightedPredictions.length}');
+      // ignore: avoid_print
+      print('   📈 SELL: ${(ensemble.probabilities["SELL"]! * 100).toStringAsFixed(1)}%');
+      // ignore: avoid_print
+      print('   ⏸️  HOLD: ${(ensemble.probabilities["HOLD"]! * 100).toStringAsFixed(1)}%');
+      // ignore: avoid_print
+      print('   📉 BUY:  ${(ensemble.probabilities["BUY"]! * 100).toStringAsFixed(1)}%');
+      // ignore: avoid_print
+      print('🎯 ==========================================');
+      // ignore: avoid_print
+      print('');
+    }
 
     return ensemble;
   }
@@ -385,9 +437,16 @@ class CryptoMLService {
   Future<CryptoPrediction> _getPredictionWithModel(
     String modelKey,
     List<List<double>> priceData,
+    {
+      bool silent = false,
+      String? coin,
+      String? timeframe,
+    }
   ) async {
-    // ignore: avoid_print
-    print('🔮 Running inference on $modelKey model...');
+    if (!silent) {
+      // ignore: avoid_print
+      print('🔮 Running inference on $modelKey model...');
+    }
 
     final interpreter = _interpreters[modelKey]!;
     final scaler = _scalers[modelKey]!;
@@ -417,14 +476,33 @@ class CryptoMLService {
       (_) => List<double>.filled(numClasses, 0.0),
     );
 
-    // ignore: avoid_print
-    print('🔮 Running inference on $modelKey model...');
+    if (!silent) {
+      // ignore: avoid_print
+      print('🔮 Running inference on $modelKey model...');
+    }
 
     interpreter.run(input, output);
 
     final probabilities = output[0];
     final maxIndex = _argmax(probabilities);
-    final confidence = probabilities[maxIndex];
+
+    // Extract coin and timeframe from modelKey if not provided
+    // modelKey format: "btc_5m" or "general_1d"
+    final extractedCoin = coin ?? modelKey.split('_').first;
+    final extractedTimeframe = timeframe ?? modelKey.split('_').last;
+
+    // Calculate calibrated confidence based on:
+    // 1. Model accuracy (different per timeframe/coin)
+    // 2. Prediction certainty (entropy of probabilities)
+    // 3. Timeframe adjustment (longer timeframe = less confidence)
+    final rawConfidence = probabilities[maxIndex];
+    final confidence = _calculateCalibratedConfidence(
+      rawConfidence: rawConfidence,
+      probabilities: probabilities,
+      modelAccuracy: (metadata['test_accuracy'] as num?)?.toDouble() ?? 0.5,
+      timeframe: extractedTimeframe,
+      coin: extractedCoin,
+    );
 
     // Handle binary (2-class) vs ternary (3-class) classification
     String action;
@@ -451,10 +529,12 @@ class CryptoMLService {
     final signalStrength = _calculateSignalStrength(probabilities);
     final accuracy = (metadata['test_accuracy'] as num?)?.toDouble() ?? 0.0;
 
-    // ignore: avoid_print
-    print('   📊 Result: $action (${(confidence * 100).toStringAsFixed(1)}%)');
-    print('   💪 Signal strength: ${signalStrength.toStringAsFixed(1)}');
-    print('   🎯 Model accuracy: ${(accuracy * 100).toStringAsFixed(1)}%');
+    if (!silent) {
+      // ignore: avoid_print
+      print('   📊 Result: $action (${(confidence * 100).toStringAsFixed(1)}%)');
+      print('   💪 Signal strength: ${signalStrength.toStringAsFixed(1)}');
+      print('   🎯 Model accuracy: ${(accuracy * 100).toStringAsFixed(1)}%');
+    }
 
     return CryptoPrediction(
       action: action,
@@ -473,6 +553,14 @@ class CryptoMLService {
   ) {
     final mean = (scaler['mean'] as List).cast<double>();
     final std = (scaler['std'] as List).cast<double>();
+
+    // DEBUG: Print first 3 scaler values to verify they're loaded correctly
+    // ignore: avoid_print
+    print('   🔍 SCALER DEBUG: mean[0]=${mean[0].toStringAsFixed(4)}, std[0]=${std[0].toStringAsFixed(4)}');
+    // ignore: avoid_print
+    print('   🔍 SCALER DEBUG: mean[1]=${mean[1].toStringAsFixed(4)}, std[1]=${std[1].toStringAsFixed(4)}');
+    // ignore: avoid_print
+    print('   🔍 SCALER DEBUG: Is identity? mean[0]==0: ${mean[0] == 0.0}, std[0]==1: ${std[0] == 1.0}');
 
     return data
         .map((row) => List<double>.generate(row.length, (i) => (row[i] - mean[i]) / (std[i] + 1e-8)))
@@ -501,6 +589,67 @@ class CryptoMLService {
     final secondMax = sorted[sorted.length - 2];
     final diff = maxVal - secondMax;
     return (diff * 100).clamp(0, 100);
+  }
+
+  /// Calculate calibrated confidence - varies by timeframe, coin, and model accuracy
+  double _calculateCalibratedConfidence({
+    required double rawConfidence,
+    required List<double> probabilities,
+    required double modelAccuracy,
+    required String timeframe,
+    required String coin,
+  }) {
+    // 1. Start with raw model confidence
+    double calibrated = rawConfidence;
+
+    // 2. Adjust by model accuracy (models with higher accuracy get confidence boost)
+    // Example: 60% accuracy model → 1.2x boost, 40% accuracy → 0.8x penalty
+    final accuracyMultiplier = 0.5 + (modelAccuracy * 1.0);
+    calibrated *= accuracyMultiplier;
+
+    // 3. Calculate entropy (how certain is the model?)
+    // Low entropy (e.g., [0.9, 0.05, 0.05]) = high certainty → boost confidence
+    // High entropy (e.g., [0.4, 0.3, 0.3]) = low certainty → reduce confidence
+    double entropy = 0.0;
+    for (final p in probabilities) {
+      if (p > 0.0001) {
+        final clampedP = p.clamp(0.0001, 1.0);
+        entropy += -(p * log(clampedP) / 2.302585); // log base 10
+      }
+    }
+    final maxEntropy = 1.0; // Max entropy for 3 classes
+    final certainty = 1.0 - (entropy / maxEntropy).clamp(0, 1);
+    calibrated *= (0.7 + certainty * 0.3); // Apply certainty boost (0.7x - 1.0x)
+
+    // 4. Timeframe adjustment (longer timeframe = less confidence)
+    final timeframeMultipliers = {
+      '5m': 1.0,    // Short term = highest confidence
+      '15m': 0.95,  // Slight reduction
+      '1h': 0.9,    // Medium term
+      '4h': 0.85,   // Longer term
+      '1d': 0.75,   // Daily = much less confident
+    };
+    final tfMultiplier = timeframeMultipliers[timeframe] ?? 0.9;
+    calibrated *= tfMultiplier;
+
+    // 5. Coin-specific adjustment (some coins are more predictable)
+    // BTC/ETH are generally more predictable than small caps
+    final coinMultipliers = {
+      'btc': 1.05,
+      'eth': 1.03,
+      'bnb': 1.0,
+      'sol': 0.98,
+      'trump': 0.90,  // High volatility meme coin
+      'wlfi': 0.90,   // High volatility small cap
+      'general': 0.95, // General model is less confident than coin-specific
+    };
+    final coinMultiplier = coinMultipliers[coin.toLowerCase()] ?? 0.95;
+    calibrated *= coinMultiplier;
+
+    // 6. Final clamp to realistic range (30% - 95%)
+    // We never want to show 100% confidence (overconfident)
+    // We never want to show <30% confidence (too weak to show)
+    return calibrated.clamp(0.30, 0.95);
   }
 
   /// Obține predicții pentru toate monedele
@@ -541,7 +690,92 @@ class CryptoMLService {
   /// Verifică dacă serviciul are cel puțin un model încărcat
   bool get hasAnyModels => _interpreters.isNotEmpty;
 
-  /// Strategia de ensemble - combină multiple predicții
+  /// Calculate timeframe distance weight using exponential decay
+  /// Closer timeframes get higher weights
+  double _calculateTimeframeWeight(String requestedTf, String modelTf) {
+    // Map timeframes to minutes for distance calculation
+    final tfToMinutes = {
+      '5m': 5,
+      '15m': 15,
+      '1h': 60,
+      '4h': 240,
+      '1d': 1440,
+    };
+
+    final requestedMinutes = tfToMinutes[requestedTf] ?? 60;
+    final modelMinutes = tfToMinutes[modelTf] ?? 60;
+
+    // Exact match gets highest weight (0.35)
+    if (requestedTf == modelTf) {
+      return 0.35;
+    }
+
+    // Calculate distance in log space (to handle large differences)
+    final distance = (requestedMinutes / modelMinutes).abs();
+    final logDistance = (distance > 1.0 ? distance : 1.0 / distance);
+
+    // Exponential decay: weight = 0.15 * exp(-0.5 * log(distance))
+    // Examples:
+    // - 1h requested, 15m model: distance=4, weight ≈ 0.11
+    // - 1h requested, 4h model: distance=4, weight ≈ 0.11
+    // - 1h requested, 1d model: distance=24, weight ≈ 0.05
+    final weight = 0.15 * (1.0 / (logDistance + 0.5));
+
+    return weight.clamp(0.05, 0.35);
+  }
+
+  /// WEIGHTED ENSEMBLE - combines predictions with timeframe-based weights
+  CryptoPrediction getWeightedEnsemblePrediction(List<_WeightedPrediction> weightedPredictions) {
+    if (weightedPredictions.isEmpty) {
+      throw Exception('No predictions to ensemble');
+    }
+
+    // Normalize weights to sum to 1.0
+    final totalWeight = weightedPredictions.fold<double>(0.0, (sum, wp) => sum + wp.weight);
+    final normalizedWeights = weightedPredictions.map((wp) => wp.weight / totalWeight).toList();
+
+    // Calculate weighted average of probabilities
+    final avgProb = <String, double>{'SELL': 0.0, 'HOLD': 0.0, 'BUY': 0.0};
+    for (var i = 0; i < weightedPredictions.length; i++) {
+      final wp = weightedPredictions[i];
+      final weight = normalizedWeights[i];
+      avgProb['SELL'] = avgProb['SELL']! + (wp.prediction.probabilities['SELL']! * weight);
+      avgProb['HOLD'] = avgProb['HOLD']! + (wp.prediction.probabilities['HOLD']! * weight);
+      avgProb['BUY'] = avgProb['BUY']! + (wp.prediction.probabilities['BUY']! * weight);
+    }
+
+    // Find action with highest weighted probability
+    var finalAction = 'HOLD';
+    var maxProb = 0.0;
+    avgProb.forEach((action, prob) {
+      if (prob > maxProb) {
+        maxProb = prob;
+        finalAction = action;
+      }
+    });
+
+    // Weighted average confidence and signal strength
+    var avgConfidence = 0.0;
+    var avgSignalStrength = 0.0;
+    for (var i = 0; i < weightedPredictions.length; i++) {
+      final wp = weightedPredictions[i];
+      final weight = normalizedWeights[i];
+      avgConfidence += wp.prediction.confidence * weight;
+      avgSignalStrength += wp.prediction.signalStrength * weight;
+    }
+
+    return CryptoPrediction(
+      action: finalAction,
+      confidence: maxProb,
+      probabilities: avgProb,
+      signalStrength: avgSignalStrength,
+      modelAccuracy: avgConfidence,
+      timestamp: DateTime.now(),
+      isEnsemble: true,
+    );
+  }
+
+  /// Strategia de ensemble - combină multiple predicții (LEGACY - folosim weighted ensemble acum)
   CryptoPrediction getEnsemblePrediction(List<CryptoPrediction> predictions) {
     if (predictions.isEmpty) {
       throw Exception('No predictions to ensemble');
@@ -577,6 +811,27 @@ class CryptoMLService {
       timestamp: DateTime.now(),
       isEnsemble: true,
     );
+  }
+
+  /// PHASE 3: Get trained_date from model registry for recency calculations
+  String? _getTrainedDate(String modelKey) {
+    if (_modelRegistry == null) return null;
+
+    try {
+      final models = _modelRegistry!['models'] as List?;
+      if (models == null) return null;
+
+      for (final model in models) {
+        if (model is Map<String, dynamic> && model['id'] == modelKey) {
+          return model['trained_date'] as String?;
+        }
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️  Error reading trained_date for ' + modelKey + ': ' + e.toString());
+    }
+
+    return null;
   }
 
   /// Cleanup - eliberează resursele
@@ -636,6 +891,15 @@ class CryptoPrediction {
   String toString() {
     return '$actionEmoji $action (${(confidence * 100).toStringAsFixed(1)}%) - $signalDescription signal';
   }
+}
+
+/// Helper class for weighted predictions
+class _WeightedPrediction {
+  final CryptoPrediction prediction;
+  final double weight;
+  final String modelKey;
+
+  _WeightedPrediction(this.prediction, this.weight, this.modelKey);
 }
 
 /// Exemplu de utilizare (doar pentru test rapid)

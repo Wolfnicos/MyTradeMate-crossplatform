@@ -12,7 +12,6 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: CustomScrollView(
@@ -35,7 +34,9 @@ class DashboardScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Dashboard',
-                          style: AppTheme.displayLarge,
+                          style: AppTheme.displayLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onBackground,
+                          ),
                         ),
                         const SizedBox(width: AppTheme.spacing12),
                         AIIndicator(
@@ -49,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
                     Text(
                       'Welcome back to MyTradeMate',
                       style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.75),
                       ),
                     ),
                   ],

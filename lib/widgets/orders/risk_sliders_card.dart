@@ -30,7 +30,7 @@ class _RiskSlidersCardState extends State<RiskSlidersCard> {
             min: 1,
             max: 50,
             divisions: 49,
-            label: _position.toStringAsFixed(0) + '%',
+            label: '${_position.toStringAsFixed(0)}%',
             onChanged: (v) {
               setState(() => _position = v);
               widget.onChanged?.call(_position, _stop);
@@ -50,7 +50,7 @@ class _RiskSlidersCardState extends State<RiskSlidersCard> {
             min: 1,
             max: 20,
             divisions: 19,
-            label: _stop.toStringAsFixed(0) + '%',
+            label: '${_stop.toStringAsFixed(0)}%',
             onChanged: (v) {
               setState(() => _stop = v);
               widget.onChanged?.call(_position, _stop);

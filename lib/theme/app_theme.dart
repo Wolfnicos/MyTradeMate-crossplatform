@@ -78,6 +78,15 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
+  // Premium gold (for PRO badges) - tuned for Light & Dark
+  static const Color premiumGoldStart = Color(0xFFFFD54F);
+  static const Color premiumGoldEnd = Color(0xFFFFA000);
+  static const LinearGradient premiumGoldGradient = LinearGradient(
+    colors: [premiumGoldStart, premiumGoldEnd],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   static const LinearGradient glassGradient = LinearGradient(
     colors: [Color(0x1AFFFFFF), Color(0x0AFFFFFF)],
     begin: Alignment.topLeft,
@@ -140,7 +149,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 1.2,
     letterSpacing: -0.5,
-    color: textPrimary,
   );
 
   static const TextStyle displayMedium = TextStyle(
@@ -148,7 +156,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 1.3,
     letterSpacing: -0.3,
-    color: textPrimary,
   );
 
   // Headings
@@ -157,7 +164,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.3,
     letterSpacing: -0.3,
-    color: textPrimary,
   );
 
   static const TextStyle headingMedium = TextStyle(
@@ -165,7 +171,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.4,
     letterSpacing: -0.2,
-    color: textPrimary,
   );
 
   static const TextStyle headingSmall = TextStyle(
@@ -173,7 +178,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.4,
     letterSpacing: -0.1,
-    color: textPrimary,
   );
 
   // Body
@@ -182,7 +186,6 @@ class AppTheme {
     fontWeight: FontWeight.w400,
     height: 1.5,
     letterSpacing: 0,
-    color: textPrimary,
   );
 
   static const TextStyle bodyMedium = TextStyle(
@@ -190,7 +193,6 @@ class AppTheme {
     fontWeight: FontWeight.w400,
     height: 1.5,
     letterSpacing: 0,
-    color: textSecondary,
   );
 
   static const TextStyle bodySmall = TextStyle(
@@ -198,7 +200,6 @@ class AppTheme {
     fontWeight: FontWeight.w400,
     height: 1.5,
     letterSpacing: 0,
-    color: textTertiary,
   );
 
   // Labels
@@ -207,7 +208,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.4,
     letterSpacing: 0.1,
-    color: textPrimary,
   );
 
   static const TextStyle labelMedium = TextStyle(
@@ -215,7 +215,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.4,
     letterSpacing: 0.1,
-    color: textSecondary,
   );
 
   static const TextStyle labelSmall = TextStyle(
@@ -223,7 +222,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.4,
     letterSpacing: 0.5,
-    color: textTertiary,
   );
 
   // Mono (for prices)
@@ -233,7 +231,6 @@ class AppTheme {
     height: 1.2,
     letterSpacing: -0.5,
     fontFeatures: [FontFeature.tabularFigures()],
-    color: textPrimary,
   );
 
   static const TextStyle monoMedium = TextStyle(
@@ -242,7 +239,6 @@ class AppTheme {
     height: 1.4,
     letterSpacing: 0,
     fontFeatures: [FontFeature.tabularFigures()],
-    color: textPrimary,
   );
 
   // ============ ANIMATION DURATIONS ============
@@ -252,6 +248,82 @@ class AppTheme {
   static const Duration animationSlow = Duration(milliseconds: 500);
 
   // ============ THEME DATA ============
+
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: Colors.grey[50],
+
+      colorScheme: ColorScheme.light(
+        primary: primary,
+        secondary: secondary,
+        surface: Colors.white,
+        error: error,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Colors.grey[900]!,
+        onError: Colors.white,
+      ),
+
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey[50],
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: headingMedium.copyWith(color: Colors.grey[900]),
+        iconTheme: const IconThemeData(color: Colors.black87),
+        surfaceTintColor: Colors.transparent,
+      ),
+
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusLG),
+        ),
+        surfaceTintColor: Colors.transparent,
+      ),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: spacing24, vertical: spacing16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusMD),
+          ),
+          textStyle: labelLarge,
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: spacing16, vertical: spacing12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusSM),
+          ),
+          textStyle: labelLarge,
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMD),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMD),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMD),
+          borderSide: const BorderSide(color: primary, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: spacing16, vertical: spacing16),
+      ),
+    );
+  }
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -263,12 +335,10 @@ class AppTheme {
         primary: primary,
         secondary: secondary,
         surface: surface,
-        background: background,
         error: error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: Colors.white,
       ),
 

@@ -39,13 +39,13 @@ class EnsembleExample {
 
       // STEP 1: Fetch OHLCV data from Binance for ATR calculation
       print('📊 Fetching OHLCV data from Binance...');
-      final candles = await _binanceService.getKlines(
-        symbol: symbol,
+      final candleObjects = await _binanceService.fetchKlines(
+        symbol,
         interval: _mapTimeframeToInterval(timeframe),
         limit: 100, // Get 100 candles for ATR calculation (need 14+)
       );
 
-      if (candles.isEmpty) {
+      if (candleObjects.isEmpty) {
         return {
           'action': 'ERROR',
           'confidence': 0.0,
@@ -54,7 +54,18 @@ class EnsembleExample {
         };
       }
 
-      print('✅ Fetched ${candles.length} candles');
+      print('✅ Fetched ${candleObjects.length} candles');
+
+      // Convert Candle objects to List<List<double>> format for ATR calculation
+      // Format: [timestamp, open, high, low, close, volume]
+      final candles = candleObjects.map((c) => [
+        c.openTime.millisecondsSinceEpoch.toDouble(),
+        c.open,
+        c.high,
+        c.low,
+        c.close,
+        c.volume,
+      ]).toList();
 
       // STEP 2: Calculate ATR (Average True Range) for volatility
       print('📈 Calculating ATR (volatility indicator)...');
@@ -70,7 +81,7 @@ class EnsembleExample {
       final prediction = await _mlService.getPrediction(
         coin: coin,
         timeframe: timeframe,
-        // Price data will be fetched internally by CryptoMLService
+        priceData: candles, // Pass the candle data we just fetched
       );
 
       print('✅ Raw prediction: ${prediction.action} '
@@ -101,13 +112,16 @@ class EnsembleExample {
       final riskLevel = _calculateRiskLevel(atr, prediction.confidence);
 
       // STEP 6: Generate detailed explanation
+      // Note: models_used count depends on ensemble implementation
+      // For now, we estimate based on isEnsemble flag
+      final modelsUsed = prediction.isEnsemble ? 3 : 1;
       final explanation = _generateExplanation(
         coin: coin,
         timeframe: timeframe,
         action: finalAction,
         confidence: prediction.confidence,
         atr: atr,
-        modelsUsed: prediction.metadata?['models_used'] ?? 0,
+        modelsUsed: modelsUsed,
       );
 
       // STEP 7: Build JSON response
@@ -119,7 +133,7 @@ class EnsembleExample {
         'explanation': explanation,
         'risk': riskLevel,
         'atr': double.parse((atr * 100).toStringAsFixed(2)),
-        'models_used': prediction.metadata?['models_used'] ?? 0,
+        'models_used': modelsUsed,
         'timestamp': DateTime.now().toIso8601String(),
         // Phase 2: Threshold filtering metadata
         'threshold_filter': {
@@ -212,15 +226,15 @@ class EnsembleExample {
 
   /// Run both examples and compare
   Future<void> runBothExamples() async {
-    print('\n' + '=' * 80);
+    print('\n${'=' * 80}');
     print('ENHANCED ENSEMBLE STRATEGY - EXAMPLE USAGE');
     print('=' * 80);
 
     final trumpResult = await getPredictionTRUMP();
-    print('\n' + '-' * 80);
+    print('\n${'-' * 80}');
     final adaResult = await getPredictionADA();
 
-    print('\n' + '=' * 80);
+    print('\n${'=' * 80}');
     print('COMPARISON:');
     print('=' * 80);
     print('TRUMP: ${trumpResult['action']} (${trumpResult['confidence']}), '
@@ -232,7 +246,7 @@ class EnsembleExample {
 
 /// Example usage in a Flutter widget
 class EnsembleExampleScreen extends StatefulWidget {
-  const EnsembleExampleScreen({Key? key}) : super(key: key);
+  const EnsembleExampleScreen({super.key});
 
   @override
   State<EnsembleExampleScreen> createState() => _EnsembleExampleScreenState();

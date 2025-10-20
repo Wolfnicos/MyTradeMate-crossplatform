@@ -121,8 +121,8 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
       debugPrint('🚀 AI Strategies: fetching CryptoML prediction for $coin @$_interval');
 
-      // Fetch price data (60x76 features) from Binance
-      final priceData = await BinanceService().getFeaturesForModel(_selectedSymbol, interval: _interval);
+      // Fetch price data (60x76 features) from Binance with symbol fallback (USD -> USDT/EUR/USDC)
+      final priceData = await BinanceService().getFeaturesForModelWithFallback(_selectedSymbol, interval: _interval);
 
       // Use CryptoMLService multi-timeframe weighted ensemble
       final prediction = await CryptoMLService().getPrediction(
@@ -172,7 +172,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
@@ -188,7 +187,12 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('AI Prediction', style: AppTheme.displayLarge),
+                  Text(
+                    'AI Prediction',
+                    style: AppTheme.displayLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+                  ),
                   Icon(
                     Icons.check_circle,
                     color: AppTheme.success,
@@ -209,6 +213,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
   // ========== PREDICTIONS TAB ==========
   Widget _buildPredictionsTab() {
+    final colors = Theme.of(context).colorScheme;
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
@@ -217,7 +222,14 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // Risk Disclaimer
-              const RiskDisclaimer(),
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surfaceVariant.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                  border: Border.all(color: colors.outlineVariant.withOpacity(0.5)),
+                ),
+                child: const RiskDisclaimer(),
+              ),
               const SizedBox(height: AppTheme.spacing16),
 
               // Symbol & Interval Selector

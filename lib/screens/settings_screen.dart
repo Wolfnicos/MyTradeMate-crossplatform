@@ -65,6 +65,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     // Load API credentials
     await _binanceService.loadCredentials();
+    setState(() {
+      _apiKeyController.text = _binanceService.apiKey ?? '';
+      _apiSecretController.text = _binanceService.apiSecret ?? '';
+    });
   }
 
   Future<void> _toggleBiometric(bool value) async {
@@ -108,8 +112,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await _binanceService.saveCredentials(apiKey, apiSecret);
       _showSnackBar('Credentials saved successfully', isError: false);
-      _apiKeyController.clear();
-      _apiSecretController.clear();
+      // Keep them in the fields so they persist visually
+      setState(() {});
     } catch (e) {
       _showSnackBar('Error saving credentials: $e', isError: true);
     }
@@ -178,7 +182,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         elevation: 0,
@@ -205,7 +208,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     value: _biometricEnabled,
                     onChanged: _toggleBiometric,
-                    activeColor: AppTheme.primary,
+                    activeThumbColor: AppTheme.primary,
                     secondary: Container(
                       padding: const EdgeInsets.all(AppTheme.spacing8),
                       decoration: BoxDecoration(
@@ -398,14 +401,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             vertical: AppTheme.spacing4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.warning.withOpacity(0.2),
+                                            gradient: AppTheme.premiumGoldGradient,
                                             borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.12),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
                                           ),
                                           child: Text(
                                             'PRO',
                                             style: AppTheme.labelSmall.copyWith(
-                                              color: AppTheme.warning,
-                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
                                             ),
                                           ),
                                         ),
@@ -468,16 +478,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           decoration: BoxDecoration(
                             gradient: isSelected ? AppTheme.primaryGradient : null,
-                            color: isSelected ? null : AppTheme.glassWhite,
+                            color: isSelected ? null : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7),
                             borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                             border: Border.all(
-                              color: isSelected ? Colors.transparent : AppTheme.glassBorder,
+                              color: isSelected ? Colors.transparent : Theme.of(context).colorScheme.outlineVariant.withOpacity(0.6),
                             ),
                           ),
                           child: Text(
                             q,
                             style: AppTheme.bodyMedium.copyWith(
-                              color: isSelected ? Colors.white : AppTheme.textPrimary,
+                              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -521,6 +531,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         borderSide: const BorderSide(color: AppTheme.primary, width: 2),
                       ),
                       prefixIcon: const Icon(Icons.vpn_key, color: AppTheme.primary),
+                      suffixIcon: _binanceService.hasCredentials
+                          ? Tooltip(
+                              message: 'Loaded from secure storage',
+                              child: const Icon(Icons.verified, color: AppTheme.success),
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: AppTheme.spacing16),
@@ -651,14 +667,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             children: [
                               Icon(
                                 theme['icon'] as IconData,
-                                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                                 size: 20,
                               ),
                               const SizedBox(width: AppTheme.spacing8),
                               Text(
                                 theme['label'] as String,
                                 style: AppTheme.bodyMedium.copyWith(
-                                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                  color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

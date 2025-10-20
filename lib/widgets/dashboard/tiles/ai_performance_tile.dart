@@ -71,13 +71,13 @@ class _AiPerformanceTileState extends State<AiPerformanceTile> {
   List<String> _candidatesFor(String base, String quote) {
     switch (quote) {
       case 'EUR':
-        return <String>[base + 'EUR', base + 'USDT', base + 'USDC'];
+        return <String>['${base}EUR', '${base}USDT', '${base}USDC'];
       case 'USDC':
-        return <String>[base + 'USDC', base + 'USDT'];
+        return <String>['${base}USDC', '${base}USDT'];
       case 'USD':
       case 'USDT':
       default:
-        return <String>[base + 'USDT', base + 'USDC'];
+        return <String>['${base}USDT', '${base}USDC'];
     }
   }
 
@@ -91,7 +91,7 @@ class _AiPerformanceTileState extends State<AiPerformanceTile> {
         children: [
           Row(
             children: [
-              Expanded(child: Text('AI Performance — ' + AppSettingsService().quoteCurrency.toUpperCase(), style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
+              Expanded(child: Text('AI Performance — ${AppSettingsService().quoteCurrency.toUpperCase()}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
               IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh))
             ],
           ),
@@ -143,7 +143,7 @@ class _AiPerformanceTileState extends State<AiPerformanceTile> {
           if (probs != null && probs.length == 3)
             SizedBox(
               width: 90,
-              child: Text('S ' + (probs[0] * 100).toStringAsFixed(0) + '%  H ' + (probs[1] * 100).toStringAsFixed(0) + '%  B ' + (probs[2] * 100).toStringAsFixed(0) + '%',
+              child: Text('S ${(probs[0] * 100).toStringAsFixed(0)}%  H ${(probs[1] * 100).toStringAsFixed(0)}%  B ${(probs[2] * 100).toStringAsFixed(0)}%',
                   textAlign: TextAlign.right, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey)),
             ),
         ],

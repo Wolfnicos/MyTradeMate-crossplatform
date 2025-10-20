@@ -79,7 +79,17 @@ class _MarketScreenState extends State<MarketScreen> {
         limit = 60;  // 15m/1h: 60 candles
       }
 
-      final List<Candle> klines = await _binance.fetchCustomKlines(_selectedSymbol, _interval, limit: limit);
+      // Find the symbol list for fallback (try multiple quote currencies)
+      final List<String> symbolListForFallback = _symbols.firstWhere(
+        (list) => list.first == _selectedSymbol,
+        orElse: () => [_selectedSymbol], // Fallback to just the symbol itself
+      );
+
+      final List<Candle> klines = await _binance.fetchKlinesWithFallback(
+        symbolListForFallback,
+        _interval,
+        limit: limit,
+      );
       final List<CandleData> data = <CandleData>[];
       for (int i = 0; i < klines.length; i++) {
         final Candle c = klines[i];
@@ -122,7 +132,6 @@ class _MarketScreenState extends State<MarketScreen> {
     final prefix = AppSettingsService.currencyPrefix(quote);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: CustomScrollView(
@@ -142,7 +151,9 @@ class _MarketScreenState extends State<MarketScreen> {
                   children: [
                     Text(
                       'Market',
-                      style: AppTheme.displayLarge,
+                      style: AppTheme.displayLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
                     ),
                     IconButton(
                       icon: Icon(
@@ -167,10 +178,17 @@ class _MarketScreenState extends State<MarketScreen> {
                 height: 125,
                 child: _loadingTickers
                     ? const Center(child: CircularProgressIndicator())
-                    : ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
-                        children: _buildTickerCards(quote, prefix),
+                    : Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
+                        ),
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing20),
+                          children: _buildTickerCards(quote, prefix),
+                        ),
                       ),
               ),
             ),
@@ -484,11 +502,12 @@ class CandlestickChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     if (data.isEmpty) {
       return Center(
         child: Text(
           'No data available',
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
+          style: AppTheme.bodyMedium.copyWith(color: colors.onSurface.withOpacity(0.7)),
         ),
       );
     }
@@ -560,7 +579,7 @@ class CandlestickChart extends StatelessWidget {
                   child: Text(
                     '\$${value.toStringAsFixed(decimals)}',
                     style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.textTertiary,
+                      color: colors.onSurface.withOpacity(0.6),
                       fontSize: 9,
                     ),
                     textAlign: TextAlign.right,
@@ -579,7 +598,7 @@ class CandlestickChart extends StatelessWidget {
                   return Text(
                     value.toInt().toString(),
                     style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.textTertiary,
+                      color: colors.onSurface.withOpacity(0.6),
                     ),
                   );
                 }
@@ -588,17 +607,7 @@ class CandlestickChart extends StatelessWidget {
             ),
           ),
         ),
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: 500,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: AppTheme.glassBorder,
-              strokeWidth: 0.5,
-            );
-          },
-        ),
+        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
         barGroups: data.asMap().entries.map((entry) {
           final candle = entry.value;
@@ -611,23 +620,23 @@ class CandlestickChart extends StatelessWidget {
               BarChartRodData(
                 fromY: candle.low,
                 toY: candle.high,
-                width: 2.2,
-                color: color,
+                width: 2.4,
+                color: color.withOpacity(0.9),
                 rodStackItems: [
                   BarChartRodStackItem(
                     candle.low,
                     candle.open < candle.close ? candle.open : candle.close,
-                    color.withOpacity(0.35),
+                    color.withOpacity(0.4),
                   ),
                   BarChartRodStackItem(
                     candle.open < candle.close ? candle.open : candle.close,
                     candle.open > candle.close ? candle.open : candle.close,
-                    color,
+                    color.withOpacity(0.95),
                   ),
                   BarChartRodStackItem(
                     candle.open > candle.close ? candle.open : candle.close,
                     candle.high,
-                    color.withOpacity(0.35),
+                    color.withOpacity(0.4),
                   ),
                 ],
               ),

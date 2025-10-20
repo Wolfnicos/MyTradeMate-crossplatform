@@ -82,9 +82,9 @@ class MLService {
         if (inputShape.length >= 3) {
           numFeatures = inputShape[2];
         }
-        debugPrint('✅ MLService: TFLite model loaded. Input shape=' + inputShape.toString() + ', numFeatures=' + numFeatures.toString());
+        debugPrint('✅ MLService: TFLite model loaded. Input shape=$inputShape, numFeatures=$numFeatures');
       } catch (_) {
-        debugPrint('⚠️ MLService: Could not read input tensor shape; using numFeatures=' + numFeatures.toString());
+        debugPrint('⚠️ MLService: Could not read input tensor shape; using numFeatures=$numFeatures');
       }
     } catch (e) {
       isInitialized = false;
@@ -105,7 +105,7 @@ class MLService {
     final TradingSignal signal = _applyPolicy(calibrated, symbol: symbol);
     if (symbol != null) {
       final _Thresh tt = _getThresholds(symbol);
-      debugPrint('ℹ️ ML thresholds for ' + symbol + ' → buy=' + tt.buy.toStringAsFixed(3) + ', sell=' + tt.sell.toStringAsFixed(3) + ', conf=' + tt.confidence.toStringAsFixed(3));
+      debugPrint('ℹ️ ML thresholds for $symbol → buy=${tt.buy.toStringAsFixed(3)}, sell=${tt.sell.toStringAsFixed(3)}, conf=${tt.confidence.toStringAsFixed(3)}');
     }
 
     return {
@@ -125,13 +125,13 @@ class MLService {
       final List<double> row = rawInput[i];
       if (!useScaling) {
         if (row.length != numFeatures) {
-          throw Exception('Each row must have ' + numFeatures.toString() + ' features.');
+          throw Exception('Each row must have $numFeatures features.');
         }
         return List<double>.from(row);
       }
       // Scaling path
       if (row.length != numFeatures) {
-        throw Exception('Each row must have ' + numFeatures.toString() + ' features for scaling.');
+        throw Exception('Each row must have $numFeatures features for scaling.');
       }
       return List<double>.generate(numFeatures, (int j) => (row[j] - scalerMean[j]) / scalerScale[j]);
     }, growable: false);
@@ -141,9 +141,9 @@ class MLService {
     final List<List<double>> outputTensor = <List<double>>[List<double>.filled(3, 0.0)];
 
     try {
-      debugPrint('▶️ MLService.run: first row(3)=' + (scaledInput.isNotEmpty ? scaledInput.first.take(3).toList().toString() : '[]'));
+      debugPrint('▶️ MLService.run: first row(3)=${scaledInput.isNotEmpty ? scaledInput.first.take(3).toList().toString() : '[]'}');
       _interpreter.run(inputTensor, outputTensor);
-      debugPrint('◀️ MLService.run: raw out=' + outputTensor[0].toString());
+      debugPrint('◀️ MLService.run: raw out=${outputTensor[0]}');
       return outputTensor[0];
     } catch (e) {
       debugPrint('❌ MLService: Inference error → $e');
@@ -152,12 +152,12 @@ class MLService {
   }
 
   List<double> _applyTemperature(List<double> probs, double temp) {
-    debugPrint('ℹ️ Temperature in=' + probs.toString() + ', T=' + temp.toString());
+    debugPrint('ℹ️ Temperature in=$probs, T=$temp');
     final List<double> scaled = probs.map((double p) => pow(p, 1.0 / temp).toDouble()).toList(growable: false);
     final double sum = scaled.fold(0.0, (double a, double b) => a + b);
     if (sum < 1e-9) return const [0.333, 0.333, 0.333];
     final out = scaled.map((double p) => p / sum).toList(growable: false);
-    debugPrint('ℹ️ Temperature out=' + out.toString());
+    debugPrint('ℹ️ Temperature out=$out');
     return out;
   }
 

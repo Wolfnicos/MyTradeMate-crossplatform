@@ -63,7 +63,7 @@ class EnsembleWeightsV2 {
     final atrPercent = (atr / currentPrice) * 100;
 
     print('📊 ATR calculated: ${atrPercent.toStringAsFixed(2)}% '
-        '(${trueRanges.length} candles, last ${period} periods)');
+        '(${trueRanges.length} candles, last $period periods)');
 
     return atrPercent / 100; // Return as decimal (e.g., 0.05 = 5%)
   }

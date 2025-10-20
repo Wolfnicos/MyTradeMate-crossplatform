@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:crypto/crypto.dart';
-import 'dart:convert' show utf8;
 
 import '../models/candle.dart';
 // import '../services/technical_indicator_calculator.dart';
@@ -45,6 +44,10 @@ class BinanceService {
 
   String? _apiKey;
   String? _apiSecret;
+
+  String? get apiKey => _apiKey;
+  String? get apiSecret => _apiSecret;
+  bool get hasCredentials => (_apiKey != null && _apiKey!.isNotEmpty && _apiSecret != null && _apiSecret!.isNotEmpty);
 
   /// Load API credentials from secure storage
   Future<void> loadCredentials() async {
@@ -187,11 +190,11 @@ class BinanceService {
     }
 
     // Build query string for signature
-    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final String signature = _generateSignature(queryString);
 
     final uri = Uri.https(_baseHost, '/api/v3/order');
-    final String body = queryString + '&signature=' + signature;
+    final String body = '$queryString&signature=$signature';
     final res = await http.post(
       uri,
       headers: <String, String>{
@@ -218,7 +221,7 @@ class BinanceService {
     };
     if (symbol != null && symbol.isNotEmpty) params['symbol'] = symbol;
 
-    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final String signature = _generateSignature(queryString);
 
     final uri = Uri.https(_baseHost, '/api/v3/openOrders', {
@@ -256,7 +259,7 @@ class BinanceService {
     if (orderId != null) params['orderId'] = orderId.toString();
     if (origClientOrderId != null && origClientOrderId.isNotEmpty) params['origClientOrderId'] = origClientOrderId;
 
-    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final String signature = _generateSignature(queryString);
 
     final uri = Uri.https(_baseHost, '/api/v3/order', {
@@ -300,11 +303,11 @@ class BinanceService {
       params['stopLimitTimeInForce'] = stopLimitTimeInForce;
     }
 
-    final String queryString = params.entries.map((e) => e.key + '=' + e.value).join('&');
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final String signature = _generateSignature(queryString);
 
     final uri = Uri.https(_baseHost, '/api/v3/order/oco');
-    final String body = queryString + '&signature=' + signature;
+    final String body = '$queryString&signature=$signature';
     final res = await http.post(
       uri,
       headers: <String, String>{
@@ -484,7 +487,54 @@ class BinanceService {
         return await fetchTicker24h(s);
       } catch (_) {}
     }
-    throw Exception('No working symbol among: ' + symbols.join(', '));
+    throw Exception('No working symbol among: ${symbols.join(', ')}');
+  }
+
+  /// Try multiple symbols until one works for klines/candles (useful for handling USD/USDT/EUR pairs)
+  Future<List<Candle>> fetchKlinesWithFallback(List<String> symbols, String interval, {int limit = 60}) async {
+    for (final String s in symbols) {
+      try {
+        return await fetchKlines(s, interval: interval, limit: limit);
+      } catch (_) {
+        // Try next symbol in list
+      }
+    }
+    throw Exception('No working symbol among: ${symbols.join(', ')} for interval $interval');
+  }
+
+  /// Build ML features with symbol fallback (e.g., BTCUSD -> try BTCUSDT/BTCEUR/BTCUSDC)
+  Future<List<List<double>>> getFeaturesForModelWithFallback(String symbol, {String interval = '1h'}) async {
+    final String upper = symbol.toUpperCase();
+    final RegExp suffix = RegExp(r'(USDT|USDC|EUR|USD)$');
+    String base = upper;
+    String? quote;
+    final match = suffix.firstMatch(upper);
+    if (match != null) {
+      quote = match.group(1);
+      base = upper.substring(0, match.start);
+    }
+
+    final List<String> candidates = <String>[
+      if (quote != null) '$base$quote',
+      '${base}USDT',
+      '${base}EUR',
+      '${base}USDC',
+    ];
+
+    String resolved = candidates.first;
+    for (final s in candidates) {
+      try {
+        // Probe minimal klines request to verify symbol validity
+        await fetchKlines(s, interval: interval, limit: 1);
+        resolved = s;
+        break;
+      } catch (_) {
+        // try next candidate
+      }
+    }
+
+    // Delegate to the standard builder which fetches sufficient history (1000 candles)
+    return getFeaturesForModel(resolved, interval: interval);
   }
 
   static Candle _parseKlineArray(List<dynamic> arr) {
@@ -570,17 +620,17 @@ class BinanceService {
       }
 
       if (baseData.length < 120) {
-        debugPrint('❌ BinanceService: insufficient_data for ' + symbol + ' @' + interval + ' need=120 got=' + baseData.length.toString());
+        debugPrint('❌ BinanceService: insufficient_data for $symbol @$interval need=120 got=${baseData.length}');
         return FeatureResult.error('insufficient_data', need: 120, got: baseData.length);
       }
 
-      debugPrint('🔧 BinanceService: Building 76 features from ' + baseData.length.toString() + ' candles');
+      debugPrint('🔧 BinanceService: Building 76 features from ${baseData.length} candles');
       final fullBuilder = FullFeatureBuilder();
       final features = fullBuilder.buildFeatures(candles: baseData);
-      debugPrint('✅ BinanceService: Full features ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0') + ' [@' + interval + ']');
+      debugPrint('✅ BinanceService: Full features ${features.length}x${features.isNotEmpty ? features.first.length.toString() : '0'} [@$interval]');
       return FeatureResult.ok(features);
     } catch (e) {
-      debugPrint('❌ BinanceService: feature build error → ' + e.toString());
+      debugPrint('❌ BinanceService: feature build error → $e');
       return FeatureResult.error('error');
     }
   }

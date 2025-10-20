@@ -159,7 +159,7 @@ class RSIMLHybridStrategy extends HybridStrategy {
   Future<StrategySignal> analyze(MarketData data) async {
     final rsi = data.rsi;
     final priceAboveSMA = data.price > data.sma20;
-    debugPrint('[RSI/ML Hybrid] rsi=' + rsi.toStringAsFixed(2) + ', sma20=' + data.sma20.toStringAsFixed(2) + ', price=' + data.price.toStringAsFixed(2));
+    debugPrint('[RSI/ML Hybrid] rsi=${rsi.toStringAsFixed(2)}, sma20=${data.sma20.toStringAsFixed(2)}, price=${data.price.toStringAsFixed(2)}');
 
     // Get AI prediction from CryptoML multi-timeframe ensemble
     SignalType? aiSignal;
@@ -287,7 +287,7 @@ class MomentumScalperStrategy extends HybridStrategy {
         ? ((data.price - data.priceHistory[data.priceHistory.length - 2]) /
            data.priceHistory[data.priceHistory.length - 2]) * 100
         : 0.0;
-    debugPrint('[Momentum Scalper] macd=' + macd.toStringAsFixed(4) + ', priceChange%=' + priceChange.toStringAsFixed(2));
+    debugPrint('[Momentum Scalper] macd=${macd.toStringAsFixed(4)}, priceChange%=${priceChange.toStringAsFixed(2)}');
 
     // Get AI prediction from CryptoML
     SignalType? aiSignal;
@@ -380,7 +380,7 @@ class DynamicGridBotStrategy extends HybridStrategy {
   Future<StrategySignal> analyze(MarketData data) async {
     final currentPrice = data.price;
     final volatility = _calculateVolatility(data.priceHistory);
-    debugPrint('[Dynamic Grid] price=' + currentPrice.toStringAsFixed(2) + ', vol=' + volatility.toStringAsFixed(4) + ', gridSize(before)=' + gridSize.toStringAsFixed(2));
+    debugPrint('[Dynamic Grid] price=${currentPrice.toStringAsFixed(2)}, vol=${volatility.toStringAsFixed(4)}, gridSize(before)=${gridSize.toStringAsFixed(2)}');
 
     // Adjust grid size based on volatility
     gridSize = max(0.3, min(1.0, volatility * 10));
@@ -455,7 +455,7 @@ class BreakoutStrategy extends HybridStrategy {
     final recent = data.priceHistory.sublist(data.priceHistory.length - lookback);
     final high = recent.reduce((a, b) => a > b ? a : b);
     final low = recent.reduce((a, b) => a < b ? a : b);
-    debugPrint('[Breakout] price=' + data.price.toStringAsFixed(2) + ', high(' + lookback.toString() + ')=' + high.toStringAsFixed(2) + ', low=' + low.toStringAsFixed(2));
+    debugPrint('[Breakout] price=${data.price.toStringAsFixed(2)}, high($lookback)=${high.toStringAsFixed(2)}, low=${low.toStringAsFixed(2)}');
 
     // Get AI prediction from CryptoML
     SignalType? aiSignal;
@@ -558,7 +558,7 @@ class MeanReversionStrategy extends HybridStrategy {
     final sd = sqrt(variance);
     final upper = mean + stdDev * sd;
     final lower = mean - stdDev * sd;
-    debugPrint('[Mean Reversion] price=' + data.price.toStringAsFixed(2) + ', mean=' + mean.toStringAsFixed(2) + ', sd=' + sd.toStringAsFixed(2) + ', upper=' + upper.toStringAsFixed(2) + ', lower=' + lower.toStringAsFixed(2));
+    debugPrint('[Mean Reversion] price=${data.price.toStringAsFixed(2)}, mean=${mean.toStringAsFixed(2)}, sd=${sd.toStringAsFixed(2)}, upper=${upper.toStringAsFixed(2)}, lower=${lower.toStringAsFixed(2)}');
 
     // Get AI prediction from CryptoML
     SignalType? aiSignal;
@@ -665,7 +665,7 @@ class HybridStrategiesService {
 
   List<HybridStrategy> get strategies => _strategies;
 
-  String _keyFor(HybridStrategy s) => 'strategy_params_' + s.name.replaceAll(RegExp(r'\s+'), '_').toLowerCase();
+  String _keyFor(HybridStrategy s) => 'strategy_params_${s.name.replaceAll(RegExp(r'\s+'), '_').toLowerCase()}';
 
   Future<void> _loadSavedParameters() async {
     final prefs = await SharedPreferences.getInstance();

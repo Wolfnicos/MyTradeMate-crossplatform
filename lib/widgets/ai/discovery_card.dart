@@ -56,8 +56,8 @@ class DiscoveryCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             alignment: WrapAlignment.spaceBetween,
             children: [
-              _MetricTile(label: 'Return (7D est.)', value: (totalReturn >= 0 ? '+' : '') + totalReturn.toStringAsFixed(1) + '%', isGain: totalReturn >= 0),
-              _MetricTile(label: 'Win rate', value: (winRate * 100).toStringAsFixed(0) + '%', isGain: true),
+              _MetricTile(label: 'Return (7D est.)', value: '${totalReturn >= 0 ? '+' : ''}${totalReturn.toStringAsFixed(1)}%', isGain: totalReturn >= 0),
+              _MetricTile(label: 'Win rate', value: '${(winRate * 100).toStringAsFixed(0)}%', isGain: true),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -93,7 +93,7 @@ class DiscoveryCard extends StatelessWidget {
               children: [
                 Text(strategy.name, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('Version ' + strategy.version, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
+                Text('Version ${strategy.version}', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.muted)),
                 const SizedBox(height: 16),
                 _RiskGauge(value: risk, compact: false),
                 const SizedBox(height: 16),
@@ -265,11 +265,11 @@ class _DetailsMetrics extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: _MetricTile(label: 'Total return', value: (totalReturn >= 0 ? '+' : '') + totalReturn.toStringAsFixed(1) + '%', isGain: totalReturn >= 0)),
+            Expanded(child: _MetricTile(label: 'Total return', value: '${totalReturn >= 0 ? '+' : ''}${totalReturn.toStringAsFixed(1)}%', isGain: totalReturn >= 0)),
             const SizedBox(width: 16),
             Expanded(child: _MetricTile(label: 'Trades', value: trades.toString(), isGain: true)),
             const SizedBox(width: 16),
-            Expanded(child: _MetricTile(label: 'Win rate', value: (winRate * 100).toStringAsFixed(0) + '%', isGain: true)),
+            Expanded(child: _MetricTile(label: 'Win rate', value: '${(winRate * 100).toStringAsFixed(0)}%', isGain: true)),
           ],
         ),
       ],

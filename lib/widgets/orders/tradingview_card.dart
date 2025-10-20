@@ -49,8 +49,8 @@ class _TradingViewCardState extends State<TradingViewCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final String tvSym = 'BINANCE:' + widget.symbol.toUpperCase();
-    final String url = 'https://www.tradingview.com/chart/?symbol=' + tvSym;
+    final String tvSym = 'BINANCE:${widget.symbol.toUpperCase()}';
+    final String url = 'https://www.tradingview.com/chart/?symbol=$tvSym';
 
     return GlassCard(
       padding: const EdgeInsets.all(16),

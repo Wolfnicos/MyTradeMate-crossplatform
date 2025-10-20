@@ -74,7 +74,7 @@ class _TopMoversTileState extends State<TopMoversTile> {
         children: [
           Row(
             children: [
-              Expanded(child: Text('Top Movers (24h) — ' + AppSettingsService().quoteCurrency.toUpperCase(), style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
+              Expanded(child: Text('Top Movers (24h) — ${AppSettingsService().quoteCurrency.toUpperCase()}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
               IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh))
             ],
           ),
@@ -99,7 +99,7 @@ class _TopMoversTileState extends State<TopMoversTile> {
             CircleAvatar(radius: 14, backgroundColor: Colors.grey.shade300, child: Text(s.substring(0, 1))),
             const SizedBox(width: 12),
             Expanded(child: Text(_formatPair(s), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
-            Text((isGain ? '+' : '') + chg.toStringAsFixed(2) + '%', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+            Text('${isGain ? '+' : ''}${chg.toStringAsFixed(2)}%', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           ],
         ),
       ));
@@ -117,13 +117,13 @@ class _TopMoversTileState extends State<TopMoversTile> {
   List<String> _candidatesFor(String base, String quote) {
     switch (quote) {
       case 'EUR':
-        return <String>[base + 'EUR', base + 'USDT', base + 'USDC'];
+        return <String>['${base}EUR', '${base}USDT', '${base}USDC'];
       case 'USDC':
-        return <String>[base + 'USDC', base + 'USDT'];
+        return <String>['${base}USDC', '${base}USDT'];
       case 'USD':
       case 'USDT':
       default:
-        return <String>[base + 'USDT', base + 'USDC'];
+        return <String>['${base}USDT', '${base}USDC'];
     }
   }
 }

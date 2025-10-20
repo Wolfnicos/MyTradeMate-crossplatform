@@ -37,7 +37,7 @@ class AiStrategyCarousel extends StatelessWidget {
                       children: [
                         Icon(s.totalReturn >= 0 ? Icons.arrow_upward : Icons.arrow_downward, size: 14, color: s.totalReturn >= 0 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.error),
                         const SizedBox(width: 6),
-                        Expanded(child: Text((s.totalReturn >= 0 ? '+' : '') + s.totalReturn.toStringAsFixed(1) + '%', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold))),
+                        Expanded(child: Text('${s.totalReturn >= 0 ? '+' : ''}${s.totalReturn.toStringAsFixed(1)}%', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold))),
                         Icon(Icons.chevron_right, size: 16, color: AppColors.muted),
                       ],
                     )

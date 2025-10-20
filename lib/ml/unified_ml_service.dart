@@ -30,10 +30,10 @@ class UnifiedMLService {
     try {
       _registry = await ModelRegistryV1.loadFromAssets();
       _initialized = true;
-      debugPrint('✅ UnifiedMLService initialized with registry schema=' + (_registry?.schema ?? '')); 
+      debugPrint('✅ UnifiedMLService initialized with registry schema=${_registry?.schema ?? ''}'); 
     } catch (e) {
       _initialized = false;
-      debugPrint('❌ UnifiedMLService: failed to load registry → ' + e.toString());
+      debugPrint('❌ UnifiedMLService: failed to load registry → $e');
     }
   }
 
@@ -73,7 +73,7 @@ class UnifiedMLService {
     final String runtimeHash = _computeRuntimeFeatureHash();
     if ((reg.featureHash).isNotEmpty && runtimeHash != reg.featureHash) {
       final String tfNormEarly = reg.normalizeTimeframe(timeframe);
-      debugPrint('❌ UnifiedML: data_quality=BAD — feature hash mismatch. runtime=' + runtimeHash + ' expected=' + reg.featureHash);
+      debugPrint('❌ UnifiedML: data_quality=BAD — feature hash mismatch. runtime=$runtimeHash expected=${reg.featureHash}');
       _logTelemetry(
         coin: _extractBase(symbol),
         tf: tfNormEarly,
@@ -104,7 +104,7 @@ class UnifiedMLService {
       features = await BinanceService().getFeaturesForModel(symbol, interval: timeframe);
     } catch (e) {
       final String tfNormEarly = reg.normalizeTimeframe(timeframe);
-      debugPrint('❌ UnifiedML: insufficient_data — failed to build features (e.g., SMA200 needs >=260 candles). error=' + e.toString());
+      debugPrint('❌ UnifiedML: insufficient_data — failed to build features (e.g., SMA200 needs >=260 candles). error=$e');
       _logTelemetry(
         coin: _extractBase(symbol),
         tf: tfNormEarly,
@@ -141,7 +141,7 @@ class UnifiedMLService {
       // If no per-coin models, try general-only for tf
       final general = reg.selectModels(coinUpper: '*', timeframe: tfNorm);
       if (general.isEmpty) {
-        debugPrint('⚠️ UnifiedML: model unavailable for coin=' + coin + ' tf=' + tfNorm + ' → using registry fallback HOLD');
+        debugPrint('⚠️ UnifiedML: model unavailable for coin=$coin tf=$tfNorm → using registry fallback HOLD');
         _logTelemetry(
           coin: coin,
           tf: tfNorm,
@@ -192,7 +192,7 @@ class UnifiedMLService {
         usedWeights.add(m.w);
         usedTemps.add(m.temp);
       } catch (e) {
-        debugPrint('⚠️ UnifiedMLService: model ' + m.id + ' failed → ' + e.toString());
+        debugPrint('⚠️ UnifiedMLService: model ${m.id} failed → $e');
       }
     }
 
@@ -316,15 +316,15 @@ class UnifiedMLService {
     required bool featureHashOk,
     required String reason,
   }) {
-    final String weightsStr = weights.isEmpty ? '[]' : '[' + weights.map((w) => w.toStringAsFixed(2)).join(', ') + ']';
-    final String tempsStr = temps.isEmpty ? '[]' : '[' + temps.map((t) => t.toStringAsFixed(2)).join(', ') + ']';
-    final String pStr = '[' + pFinal.map((p) => p.toStringAsFixed(4)).join(', ') + ']';
+    final String weightsStr = weights.isEmpty ? '[]' : '[${weights.map((w) => w.toStringAsFixed(2)).join(', ')}]';
+    final String tempsStr = temps.isEmpty ? '[]' : '[${temps.map((t) => t.toStringAsFixed(2)).join(', ')}]';
+    final String pStr = '[${pFinal.map((p) => p.toStringAsFixed(4)).join(', ')}]';
     final String dq = featureHashOk ? 'OK' : 'BAD';
     debugPrint('');
-    debugPrint('🎯 ENSEMBLE PREDICTION ' + coin + ' @ ' + tf.toUpperCase());
-    debugPrint('models_used=' + ids.toString() + ', weights=' + weightsStr + ', temps=' + tempsStr + ', labels=["SELL","HOLD","BUY"]');
-    debugPrint('P_final=' + pStr + ', action=' + action + ', confidence=' + confidence.toStringAsFixed(4) + ', confThresh=' + confThresh.toStringAsFixed(2));
-    debugPrint('data_quality=' + dq + (reason.isNotEmpty ? ', reason=' + reason : ''));
+    debugPrint('🎯 ENSEMBLE PREDICTION $coin @ ${tf.toUpperCase()}');
+    debugPrint('models_used=$ids, weights=$weightsStr, temps=$tempsStr, labels=["SELL","HOLD","BUY"]');
+    debugPrint('P_final=$pStr, action=$action, confidence=${confidence.toStringAsFixed(4)}, confThresh=${confThresh.toStringAsFixed(2)}');
+    debugPrint('data_quality=$dq${reason.isNotEmpty ? ', reason=$reason' : ''}');
   }
 
   Future<Map<String, double>> _predictWithCryptoService({required String modelId, required String coin, required String timeframe, required List<List<double>> features}) async {

@@ -27,7 +27,7 @@ class PortfolioDonutChart extends StatelessWidget {
         showTitle: false,
         badgeWidget: _Dot(color: s.color),
         badgePositionPercentageOffset: 1.25,
-        title: pct >= 8 ? (pct.toStringAsFixed(0) + '%') : '',
+        title: pct >= 8 ? ('${pct.toStringAsFixed(0)}%') : '',
         titleStyle: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
       );
     }).toList(growable: false);
@@ -62,7 +62,7 @@ class PortfolioDonutChart extends StatelessWidget {
               children: [
                 _Dot(color: s.color),
                 const SizedBox(width: 6),
-                Text(s.label + ' ' + pct.toStringAsFixed(0) + '%', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text('${s.label} ${pct.toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
               ],
             );
           }).toList(growable: false),

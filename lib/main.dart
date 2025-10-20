@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'ml/tflite_predictor.dart';
@@ -76,14 +77,23 @@ class MyTradeMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthService>(
-      builder: (context, authService, _) {
+    return Consumer2<AuthService, ThemeProvider>(
+      builder: (context, authService, themeProvider, _) {
         return MaterialApp(
           title: 'MyTradeMate',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme, // Using premium dark theme for all modes
+          theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.dark, // Force dark mode for premium look
+          themeMode: themeProvider.currentThemeMode,
+          // Force English UI across platforms
+          locale: const Locale('en', 'US'),
+          supportedLocales: const [Locale('en', 'US')],
+          localizationsDelegates: [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          localeResolutionCallback: (locale, supportedLocales) => const Locale('en', 'US'),
           home: authService.isAuthenticated ? const HomePage() : const WelcomeScreen(),
           routes: {
             '/home': (context) => const HomePage(),

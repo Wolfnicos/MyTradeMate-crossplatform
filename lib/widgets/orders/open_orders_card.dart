@@ -90,7 +90,7 @@ class _OpenOrdersCardState extends State<OpenOrdersCard> {
                         _refresh();
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cancel error: ' + e.toString())));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cancel error: $e')));
                         }
                       }
                     },

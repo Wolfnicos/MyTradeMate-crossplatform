@@ -36,7 +36,7 @@ class _ApiConnectionWizardState extends State<ApiConnectionWizard> {
         _step = ok ? 2 : 1;
       });
     } catch (e) {
-      setState(() { _testing = false; _status = 'Error: ' + e.toString(); _step = 1; });
+      setState(() { _testing = false; _status = 'Error: $e'; _step = 1; });
     }
   }
 

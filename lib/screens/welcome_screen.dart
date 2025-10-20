@@ -25,7 +25,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: PageView(
           controller: _pageController,
@@ -51,6 +50,8 @@ class _IntroPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
@@ -96,9 +97,10 @@ class _IntroPage extends StatelessWidget {
 
           // Subtitle
           Text(
-            'Your AI-Powered Crypto Trading Assistant',
-            style: AppTheme.headingLarge.copyWith(
-              color: AppTheme.textSecondary,
+            'Your premium AI-powered crypto trading assistant',
+            style: (textTheme.titleLarge ?? AppTheme.headingLarge).copyWith(
+              color: colors.onBackground.withOpacity(0.75),
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -147,6 +149,8 @@ class _FeaturePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       children: [
         Container(
@@ -163,11 +167,11 @@ class _FeaturePill extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppTheme.headingSmall),
+              Text(title, style: (textTheme.titleMedium ?? AppTheme.headingSmall).copyWith(color: colors.onBackground)),
               const SizedBox(height: AppTheme.spacing4),
               Text(
                 description,
-                style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                style: (textTheme.bodySmall ?? AppTheme.bodySmall).copyWith(color: colors.onBackground.withOpacity(0.6)),
               ),
             ],
           ),
@@ -292,14 +296,21 @@ class _FeatureTiersPage extends StatelessWidget {
                         vertical: AppTheme.spacing4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.warning.withOpacity(0.2),
+                        gradient: AppTheme.premiumGoldGradient,
                         borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         'PRO',
                         style: AppTheme.labelSmall.copyWith(
-                          color: AppTheme.warning,
-                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
@@ -385,11 +396,13 @@ class _AuthPageState extends State<_AuthPage> {
   bool _isLoading = false;
   bool _canUseBiometrics = false;
   List<BiometricType> _availableBiometrics = [];
+  bool _showPassword = false;
 
   @override
   void initState() {
     super.initState();
     _checkBiometrics();
+    _prefillFromStorage();
   }
 
   @override
@@ -406,6 +419,19 @@ class _AuthPageState extends State<_AuthPage> {
     setState(() {
       _canUseBiometrics = canUse;
       _availableBiometrics = available;
+    });
+    // If biometrics enabled, auto-attempt quick login
+    if (authService.biometricsEnabled && canUse && mounted) {
+      await _signInWithBiometrics();
+    }
+  }
+
+  Future<void> _prefillFromStorage() async {
+    final authService = context.read<AuthService>();
+    await authService.load();
+    if (!mounted) return;
+    setState(() {
+      _emailController.text = authService.userEmail ?? '';
     });
   }
 
@@ -554,20 +580,26 @@ class _AuthPageState extends State<_AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Get Started',
-            style: AppTheme.displayLarge.copyWith(fontSize: 32),
+            'Sign in to continue',
+              style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(
+                fontSize: 28,
+                color: colors.onBackground,
+                fontWeight: FontWeight.w800,
+              ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
-            'Sign in or create an account',
-            style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
+            'Use email or quick biometric login. You can enable trading later in Settings.',
+            style: (textTheme.bodyMedium ?? AppTheme.bodyLarge).copyWith(color: colors.onBackground.withOpacity(0.7)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppTheme.spacing32),
@@ -577,15 +609,16 @@ class _AuthPageState extends State<_AuthPage> {
             child: TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(
-                color: Colors.white,
+              autofillHints: const [AutofillHints.username, AutofillHints.email],
+              style: TextStyle(
+                color: colors.onSurface,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                hintStyle: const TextStyle(color: AppTheme.textTertiary, fontSize: 14),
+                labelStyle: TextStyle(color: colors.onSurface.withOpacity(0.7), fontSize: 14),
+                hintStyle: TextStyle(color: colors.onSurface.withOpacity(0.5), fontSize: 14),
                 prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primary),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
@@ -599,17 +632,22 @@ class _AuthPageState extends State<_AuthPage> {
           GlassCard(
             child: TextField(
               controller: _passwordController,
-              obscureText: true,
-              style: const TextStyle(
-                color: Colors.white,
+              obscureText: !_showPassword,
+              autofillHints: const [AutofillHints.password],
+              style: TextStyle(
+                color: colors.onSurface,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                hintStyle: const TextStyle(color: AppTheme.textTertiary, fontSize: 14),
+                labelStyle: TextStyle(color: colors.onSurface.withOpacity(0.7), fontSize: 14),
+                hintStyle: TextStyle(color: colors.onSurface.withOpacity(0.5), fontSize: 14),
                 prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primary),
+                suffixIcon: IconButton(
+                  onPressed: () => setState(() => _showPassword = !_showPassword),
+                  icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: colors.onSurface.withOpacity(0.7)),
+                ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
@@ -659,6 +697,25 @@ class _AuthPageState extends State<_AuthPage> {
             ),
           ),
 
+          const SizedBox(height: AppTheme.spacing12),
+
+          // Guest Mode
+          TextButton(
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    setState(() => _isLoading = true);
+                    await context.read<AuthService>().signInAsGuest();
+                    if (!mounted) return;
+                    setState(() => _isLoading = false);
+                    Navigator.of(context).pushReplacementNamed('/home');
+                  },
+            child: Text(
+              'Continue as guest',
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.textSecondary),
+            ),
+          ),
+
           // Biometric Login (if available)
           if (_canUseBiometrics) ...[
             const SizedBox(height: AppTheme.spacing24),
@@ -683,7 +740,7 @@ class _AuthPageState extends State<_AuthPage> {
                       ? Icons.face
                       : Icons.fingerprint,
                 ),
-                label: Text('Sign in with $_biometricLabel'),
+                label: Text('Quick login with $_biometricLabel'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.secondary,
                   side: const BorderSide(color: AppTheme.secondary, width: 2),

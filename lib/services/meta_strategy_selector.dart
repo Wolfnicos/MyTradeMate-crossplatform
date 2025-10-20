@@ -164,7 +164,7 @@ class MetaStrategySelector {
   StrategyConsensus aggregateSignals(List<StrategySignal> signals) {
     if (signals.isEmpty) {
       return StrategyConsensus(
-        finalSignal: SignalType.hold,
+        finalSignal: SignalType.HOLD,
         confidence: 0.0,
         reason: 'No active strategies',
         agreementLevel: 0.0,
@@ -188,9 +188,9 @@ class MetaStrategySelector {
 
       totalWeight += confidence;
 
-      if (signal.type == SignalType.buy) {
+      if (signal.type == SignalType.BUY) {
         buyScore += confidence;
-      } else if (signal.type == SignalType.sell) {
+      } else if (signal.type == SignalType.SELL) {
         sellScore += confidence;
       }
       // Ignore HOLD signals
@@ -198,7 +198,7 @@ class MetaStrategySelector {
 
     if (totalWeight == 0) {
       return StrategyConsensus(
-        finalSignal: SignalType.hold,
+        finalSignal: SignalType.HOLD,
         confidence: 0.0,
         reason: 'All signals are HOLD',
         agreementLevel: 1.0,
@@ -221,15 +221,15 @@ class MetaStrategySelector {
     String reason;
 
     if (buyScore > confidenceThreshold && (buyScore - sellScore) > dominanceThreshold) {
-      finalSignal = SignalType.buy;
+      finalSignal = SignalType.BUY;
       finalConfidence = buyScore;
       reason = '${(buyScore * 100).toStringAsFixed(0)}% weighted BUY consensus';
     } else if (sellScore > confidenceThreshold && (sellScore - buyScore) > dominanceThreshold) {
-      finalSignal = SignalType.sell;
+      finalSignal = SignalType.SELL;
       finalConfidence = sellScore;
       reason = '${(sellScore * 100).toStringAsFixed(0)}% weighted SELL consensus';
     } else {
-      finalSignal = SignalType.hold;
+      finalSignal = SignalType.HOLD;
       finalConfidence = 1.0 - agreementLevel; // Low agreement = low confidence
       reason = 'Signals too close (BUY: ${(buyScore * 100).toStringAsFixed(0)}%, SELL: ${(sellScore * 100).toStringAsFixed(0)}%)';
     }

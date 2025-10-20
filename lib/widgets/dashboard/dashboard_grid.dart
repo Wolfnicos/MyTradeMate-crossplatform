@@ -74,7 +74,7 @@ class _DashboardGridState extends State<DashboardGrid> {
   Widget build(BuildContext context) {
     final children = _tileOrder
         .map((id) => SizedBox(
-              key: ValueKey('tile_' + id),
+              key: ValueKey('tile_$id'),
               width: _tileWidthFor(context),
               child: _buildTile(id),
             ))

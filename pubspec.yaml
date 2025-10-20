@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
   # UI & Icons
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
@@ -62,7 +65,7 @@ dependencies:
   crypto: ^3.0.6
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   url_launcher: ^6.3.1
 
 dev_dependencies:

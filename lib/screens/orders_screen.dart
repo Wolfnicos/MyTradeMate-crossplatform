@@ -9,10 +9,8 @@ import 'dart:async';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../services/app_settings_service.dart';
-import '../widgets/orders/ai_strategy_carousel.dart';
 import '../widgets/orders/achievement_toast.dart';
 import '../widgets/orders/open_orders_card.dart';
-import '../widgets/orders/collapsible_protection_banner.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -33,10 +31,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   final TextEditingController _priceCtrl = TextEditingController();
   final TextEditingController _totalCtrl = TextEditingController();
   bool _updatingFields = false;
-  String _aiInterval = '1h';
-  bool _ocoEnabled = false;
-  double _stopLossPct = 3.0;
-  double _takeProfitPct = 6.0;
+  final String _aiInterval = '1h';
+  final bool _ocoEnabled = false;
+  final double _stopLossPct = 3.0;
+  final double _takeProfitPct = 6.0;
   StreamSubscription<List<StrategySignal>>? _hybridSub;
   Timer? _aiTimer;
 
@@ -124,6 +122,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         }
       }
       filtered.sort((a, b) => (a['base'] ?? '').compareTo(b['base'] ?? ''));
+      if (!mounted) return;
       setState(() {
         _pairs = filtered;
         _loadingPairs = false;
@@ -133,6 +132,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loadingPairs = false);
     }
   }
@@ -162,9 +162,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final activeColor = isBuy ? AppTheme.buyGreen : AppTheme.sellRed;
+    final bool tradingEnabled = AppSettingsService().isTradingEnabled;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -180,7 +180,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                     AppTheme.spacing20,
                     AppTheme.spacing16,
                   ),
-                  child: Text('Orders', style: AppTheme.displayLarge),
+                  child: Text(
+                    'Orders',
+                    style: AppTheme.displayLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+                  ),
                 ),
               ),
 
@@ -260,8 +265,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         ),
                         const SizedBox(height: AppTheme.spacing16),
 
-                        // Main Order Card - ALL IN ONE
-                        GlassCard(
+                        // Main Order Card - gated by permission (Read vs Trading)
+                        if (tradingEnabled)
+                          GlassCard(
                           padding: const EdgeInsets.all(AppTheme.spacing20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,12 +384,58 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               ),
                             ],
                           ),
-                        ),
+                        )
+                        else
+                          GlassCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(AppTheme.spacing8),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.warning.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                        border: Border.all(color: AppTheme.warning.withOpacity(0.3)),
+                                      ),
+                                      child: const Icon(Icons.lock_outline, color: AppTheme.warning, size: 20),
+                                    ),
+                                    const SizedBox(width: AppTheme.spacing12),
+                                    Expanded(
+                                      child: Text(
+                                        'Trading disabled (Read‑only mode)',
+                                        style: AppTheme.headingMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppTheme.spacing12),
+                                Text(
+                                  'You can view portfolio, market data and AI insights. Trading actions are disabled when API permission is Read Only.',
+                                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary, height: 1.4),
+                                ),
+                                const SizedBox(height: AppTheme.spacing12),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).pushNamed('/welcome');
+                                  },
+                                  icon: const Icon(Icons.info_outline),
+                                  label: const Text('Learn more'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppTheme.primary,
+                                    side: const BorderSide(color: AppTheme.primary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
                         const SizedBox(height: AppTheme.spacing24),
 
-                        // Execute Button - SUPER CLEAR
-                        RepaintBoundary(
+                        // Execute Button - SUPER CLEAR (only when trading enabled)
+                        if (tradingEnabled)
+                          RepaintBoundary(
                           child: Container(
                             width: double.infinity,
                             height: 60,
@@ -396,6 +448,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               onPressed: () async {
                               final prefs = await SharedPreferences.getInstance();
                               final bool paper = prefs.getBool('paper_trading') ?? false;
+                              if (!tradingEnabled) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trading disabled (Read Only). Enable Trading in Settings.')));
+                                }
+                                return;
+                              }
                               if (_orderType == OrderType.market) {
                                 if (paper) {
                                   final price = double.tryParse(_priceCtrl.text) ?? 0.0;
@@ -436,20 +494,20 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                           }
                                         } catch (e) {
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('OCO error: ' + e.toString())));
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('OCO error: $e')));
                                           }
                                         }
                                       }
                                     }
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Order sent: ' + (res['status']?.toString() ?? 'OK'))),
+                                        SnackBar(content: Text('Order sent: ${res['status']?.toString() ?? 'OK'}')),
                                       );
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Order error: ' + e.toString())),
+                                        SnackBar(content: Text('Order error: $e')),
                                       );
                                     }
                                   }
@@ -457,11 +515,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               } else if (_orderType == OrderType.hybrid) {
                                 _hybridSub?.cancel();
                                 _hybridSub = hybridStrategiesService.signalsStream.listen((signals) {
-                                  final StrategySignal? m = signals.firstWhere(
+                                  final StrategySignal m = signals.firstWhere(
                                     (s) => (isBuy && s.type == SignalType.BUY) || (!isBuy && s.type == SignalType.SELL),
                                     orElse: () => StrategySignal(strategyName: 'none', type: SignalType.HOLD, confidence: 0.0, reason: 'no match'),
                                   );
-                                  if (m != null && ((isBuy && m.type == SignalType.BUY) || (!isBuy && m.type == SignalType.SELL))) {
+                                  if (((isBuy && m.type == SignalType.BUY) || (!isBuy && m.type == SignalType.SELL))) {
                                     final price = double.tryParse(_priceCtrl.text) ?? 0.0;
                                     final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
                                     PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
@@ -639,7 +697,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       padding: const EdgeInsets.only(top: 8.0),
       child: Align(
         alignment: Alignment.centerRight,
-        child: Text('Total: ' + total.toStringAsFixed(2) + ' ' + quote),
+        child: Text('Total: ${total.toStringAsFixed(2)} $quote'),
       ),
     );
   }

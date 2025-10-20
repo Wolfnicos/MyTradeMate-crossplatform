@@ -835,7 +835,7 @@ class CryptoMLService {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️  Error reading trained_date for ' + modelKey + ': ' + e.toString());
+      print('⚠️  Error reading trained_date for $modelKey: $e');
     }
 
     // Model not found in registry, default to current date

@@ -1,0 +1,1926 @@
+To use 'iPhone Ana' for development, enable Developer Mode in Settings → Privacy & Security on the device. If this does not work, open Xcode, reconnect the device, and look for a popup on the device asking you to trust this computer.
+To use 'iPhone Ana' for development, enable Developer Mode in Settings → Privacy & Security on the device. If this does not work, open Xcode, reconnect the device, and look for a popup on the device asking you to trust this computer.
+Checking for wireless devices...
+Resolving dependencies...
+Downloading packages...
+  characters 1.4.0 (1.4.1 available)
+  fl_chart 0.69.2 (1.1.1 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  flutter_plugin_android_lifecycle 2.0.31 (2.0.32 available)
+  flutter_secure_storage_linux 1.2.3 (2.0.1 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.0.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.0.0 available)
+  intl 0.19.0 (0.20.2 available)
+  js 0.6.7 (0.7.2 available)
+  lints 5.1.1 (6.0.0 available)
+  local_auth 2.3.0 (3.0.0 available)
+  local_auth_android 1.0.55 (2.0.0 available)
+  local_auth_darwin 1.6.1 (2.0.0 available)
+  local_auth_windows 1.0.11 (2.0.0 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.17.0 available)
+  path_provider_android 2.2.19 (2.2.20 available)
+  path_provider_foundation 2.4.2 (2.4.3 available)
+  shared_preferences_foundation 2.5.4 (2.5.5 available)
+  syncfusion_flutter_charts 28.2.12 (31.2.2 available)
+  syncfusion_flutter_core 28.2.12 (31.2.2 available)
+  test_api 0.7.6 (0.7.7 available)
+  url_launcher_ios 6.3.4 (6.3.5 available)
+  url_launcher_macos 3.2.3 (3.2.4 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib/main.dart on iPhone Nico  in debug mode...
+Automatically signing iOS for device deployment using specified development team in Xcode project: 9J536667NJ
+Running Xcode build...                                          
+[ERROR:flutter/runtime/ptrace_check.cc(75)] Could not call ptrace(PT_TRACE_ME): Operation not permitted
+Cannot create a FlutterEngine instance in debug mode without Flutter tooling or Xcode.
+
+To launch in debug mode in iOS 14+, run flutter run from Flutter tools, run from an IDE with a Flutter IDE plugin or run the iOS project from Xcode.
+Alternatively profile and release mode apps can be launched from the home screen.
+Xcode build done.                                            9,0s
+Installing and launching...                                     
+flutter: ✅ UnifiedMLService initialized with registry schema=v1
+flutter: ❌ MLService: Failed to load model → Unable to load asset: "assets/models/mytrademate_v8_tcn_mtf_float32.tflite".
+flutter: The asset does not exist or has empty data.
+flutter: 🤖 Loading ensemble models...
+flutter:    ⚠️ Random Forest: Using rule-based fallback
+flutter:
+flutter: 🪙 ========================================
+flutter: 🪙 Loading per-coin specialized models
+flutter: 🪙 Location: assets/models/
+flutter: 🪙 ========================================
+flutter:
+flutter: 🪙 [BTC] Attempting to load: assets/models/btc_model.tflite
+flutter:    ✅ BTC model loaded successfully!
+flutter:    📊 Model: Per-coin specialized
+flutter:    📏 Size: ~27MB
+flutter:    🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)
+flutter:
+flutter: 🪙 [ETH] Attempting to load: assets/models/eth_model.tflite
+flutter:    ✅ ETH model loaded successfully!
+flutter:    📊 Model: Per-coin specialized
+flutter:    📏 Size: ~27MB
+flutter:    🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)
+flutter:
+flutter: 🪙 [BNB] Attempting to load: assets/models/bnb_model.tflite
+flutter:    ✅ BNB model loaded successfully!
+flutter:    📊 Model: Per-coin specialized
+flutter:    📏 Size: ~27MB
+flutter:    🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)
+flutter:
+flutter: 🪙 [SOL] Attempting to load: assets/models/sol_model.tflite
+flutter:    ✅ SOL model loaded successfully!
+flutter:    📊 Model: Per-coin specialized
+flutter:    📏 Size: ~27MB
+flutter:    🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)
+flutter:
+flutter: 🪙 [WLFI] Attempting to load: assets/models/wlfi_model.tflite
+flutter:    ✅ WLFI model loaded successfully!
+flutter:    📊 Model: Per-coin specialized
+flutter:    📏 Size: ~27MB
+flutter:    🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)
+flutter:
+flutter: 🪙 [TRUMP] Attempting to load: assets/models/trump_model.tflite
+flutter:    ✅ TRUMP model loaded successfully!
+flutter:    📊 Model: Per-coin specialized
+flutter:    📏 Size: ~27MB
+flutter:    🎯 Input: [1, 60, 76] -> Output: [1, 3] (SELL, HOLD, BUY)
+flutter:
+flutter: 🪙 ========================================
+flutter: 🪙 Per-coin models loading summary:
+flutter: 🪙 ========================================
+flutter:    BTC: ✅ LOADED (specialized 27MB model)
+flutter:    ETH: ✅ LOADED (specialized 27MB model)
+flutter:    BNB: ✅ LOADED (specialized 27MB model)
+flutter:    SOL: ✅ LOADED (specialized 27MB model)
+flutter:    WLFI: ✅ LOADED (specialized 27MB model)
+flutter:    TRUMP: ✅ LOADED (specialized 27MB model)
+flutter: 🪙 ========================================
+flutter:
+flutter:
+flutter: ✅ ========================================
+flutter: ✅ Ensemble models loaded summary:
+flutter: ✅ ========================================
+flutter:    Per-Coin Models (100% weight):
+flutter:       BTC: ✅ LOADED (27MB specialized)
+flutter:       ETH: ✅ LOADED (27MB specialized)
+flutter:       BNB: ✅ LOADED (27MB specialized)
+flutter:       SOL: ✅ LOADED (27MB specialized)
+flutter:       WLFI: ✅ LOADED (27MB specialized)
+flutter:       TRUMP: ✅ LOADED (27MB specialized)
+flutter: ✅ ========================================
+flutter:
+flutter: 🚀 NEW AI models activated!
+flutter: 🔄 MAIN: About to initialize CryptoMLService...
+flutter: 🚀 ========================================
+flutter: 🚀 Initializing CryptoMLService
+flutter: 🚀 Loading NEW multi-timeframe models from assets/ml/
+flutter: 🚀 ========================================
+flutter: 📦 Loading coin-specific models...
+flutter: 📦 Loading btc 5m from assets/ml/btc_5m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1246, std[0]=0.3302)
+flutter:    ✅ btc 5m loaded - Accuracy: 62.2%
+flutter: 📦 Loading btc 15m from assets/ml/btc_15m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1481, std[0]=0.3552)
+flutter:    ✅ btc 15m loaded - Accuracy: 55.9%
+flutter: 📦 Loading btc 1h from assets/ml/btc_1h_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1582, std[0]=0.3649)
+flutter:    ✅ btc 1h loaded - Accuracy: 48.9%
+flutter: 📦 Loading eth 5m from assets/ml/eth_5m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1128, std[0]=0.3164)
+flutter:    ✅ eth 5m loaded - Accuracy: 73.9%
+flutter: 📦 Loading eth 15m from assets/ml/eth_15m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1325, std[0]=0.3390)
+flutter:    ✅ eth 15m loaded - Accuracy: 52.7%
+flutter: 📦 Loading eth 1h from assets/ml/eth_1h_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1468, std[0]=0.3539)
+flutter:    ✅ eth 1h loaded - Accuracy: 42.6%
+flutter: 📦 Loading bnb 5m from assets/ml/bnb_5m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1240, std[0]=0.3296)
+flutter:    ✅ bnb 5m loaded - Accuracy: 73.4%
+flutter: 📦 Loading bnb 15m from assets/ml/bnb_15m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1363, std[0]=0.3431)
+flutter:    ✅ bnb 15m loaded - Accuracy: 48.4%
+flutter: 📦 Loading bnb 1h from assets/ml/bnb_1h_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1526, std[0]=0.3596)
+flutter:    ✅ bnb 1h loaded - Accuracy: 48.9%
+flutter: 📦 Loading sol 5m from assets/ml/sol_5m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1266, std[0]=0.3326)
+flutter:    ✅ sol 5m loaded - Accuracy: 72.9%
+flutter: 📦 Loading sol 15m from assets/ml/sol_15m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1237, std[0]=0.3292)
+flutter:    ✅ sol 15m loaded - Accuracy: 54.3%
+flutter: 📦 Loading sol 1h from assets/ml/sol_1h_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1452, std[0]=0.3524)
+flutter:    ✅ sol 1h loaded - Accuracy: 44.7%
+flutter: 📦 Loading trump 5m from assets/ml/trump_5m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1291, std[0]=0.3353)
+flutter:    ✅ trump 5m loaded - Accuracy: 71.3%
+flutter: 📦 Loading trump 15m from assets/ml/trump_15m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1640, std[0]=0.3703)
+flutter:    ✅ trump 15m loaded - Accuracy: 54.8%
+flutter: 📦 Loading trump 1h from assets/ml/trump_1h_model.tflite
+flutter:    📁 Asset file exists in bundle
+Installing and launching...                                        13,8s
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1587, std[0]=0.3654)
+flutter:    ✅ trump 1h loaded - Accuracy: 42.0%
+flutter: 📦 Loading wlfi 5m from assets/ml/wlfi_5m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1240, std[0]=0.3295)
+flutter:    ✅ wlfi 5m loaded - Accuracy: 69.7%
+flutter: 📦 Loading wlfi 15m from assets/ml/wlfi_15m_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1567, std[0]=0.3635)
+flutter:    ✅ wlfi 15m loaded - Accuracy: 53.7%
+flutter: 📦 Loading wlfi 1h from assets/ml/wlfi_1h_model.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1451, std[0]=0.3522)
+flutter:    ✅ wlfi 1h loaded - Accuracy: 41.5%
+flutter:
+flutter: 📦 Loading GENERAL models (work on ANY crypto)...
+flutter: 📦 Loading general 5m from assets/ml/general_5m.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1228, std[0]=0.3282)
+flutter:    ✅ general 5m loaded - Accuracy: 61.4%
+flutter: 📦 Loading general 1d from assets/ml/general_1d.tflite
+flutter:    📁 Asset file exists in bundle
+flutter:    ✅ Loaded with Select TF Ops support
+flutter:    📊 Loaded scaler: 76 features (mean[0]=0.1561, std[0]=0.3629)
+flutter:    ✅ general 1d loaded - Accuracy: 47.8%
+flutter: ✅ Model registry loaded (Phase 3)
+flutter:
+flutter: ✅ ========================================
+flutter: ✅ CryptoMLService initialization complete
+flutter: ✅ ========================================
+flutter:    Total models available: 20
+flutter:    ✅ Coin-specific loaded: 18/18
+flutter:    ✅ General models loaded: 2/2 (5m, 1d)
+flutter:    ✅ TOTAL loaded: 20/20
+flutter:    ❌ Failed to load: 0
+flutter: ✅ ========================================
+flutter:
+flutter: ✅ MAIN: CryptoMLService.initialize() completed successfully
+flutter: 🔄 MAIN: CryptoMLService initialization block finished
+Syncing files to device iPhone Nico ...                             92ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on iPhone Nico  is available at: http://127.0.0.1:58354/n_XtjISwhlA=/
+The Flutter DevTools debugger and profiler on iPhone Nico  is available at: http://127.0.0.1:9100?uri=http://127.0.0.1:58354/n_XtjISwhlA=/
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for BTC @1h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for BTC @ 1h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for BTCEUR: 81.8% (volume: 32139517 EUR)
+flutter: 📊 Phase 3: Volume percentile for BTCEUR: 81.8%
+flutter: 📊 Loading ALL BTC models across timeframes...
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1246, std[0]=0.3302
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0289, std[1]=0.1676
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    📊 Result: BUY (95.0%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 62.2%
+flutter:    ✅ btc_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1481, std[0]=0.3552
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0198, std[1]=0.1394
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    📊 Result: HOLD (93.3%)
+flutter:    💪 Signal strength: 83.5
+flutter:    🎯 Model accuracy: 55.9%
+flutter:    ✅ btc_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1582, std[0]=0.3649
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0255, std[1]=0.1577
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    📊 Result: HOLD (43.8%)
+flutter:    💪 Signal strength: 30.1
+flutter:    🎯 Model accuracy: 48.9%
+flutter:    ✅ btc_1h loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-18
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (52.7%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (37.2%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 49.9%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 20.0%
+flutter:    ⏸️  HOLD: 49.9%
+flutter:    📉 BUY:  30.1%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (49.9%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for BTC @1d
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1d]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for BTC @ 1d
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for BTCEUR: 81.8% (volume: 32139517 EUR)
+flutter: 📊 Phase 3: Volume percentile for BTCEUR: 81.8%
+flutter: 📊 Loading ALL BTC models across timeframes...
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1246, std[0]=0.3302
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0289, std[1]=0.1676
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    📊 Result: SELL (95.0%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 62.2%
+flutter:    ✅ btc_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1481, std[0]=0.3552
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0198, std[1]=0.1394
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    📊 Result: SELL (95.0%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 55.9%
+flutter:    ✅ btc_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1582, std[0]=0.3649
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0255, std[1]=0.1577
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    📊 Result: HOLD (43.8%)
+flutter:    💪 Signal strength: 30.1
+flutter:    🎯 Model accuracy: 48.9%
+flutter:    ✅ btc_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-18
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (43.9%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (31.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 54.7%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 54.7%
+flutter:    ⏸️  HOLD: 15.9%
+flutter:    📉 BUY:  29.3%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (54.7%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for BTC @4h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@4h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for BTC @ 4h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for BTCEUR: 81.8% (volume: 32139517 EUR)
+flutter: 📊 Phase 3: Volume percentile for BTCEUR: 81.8%
+flutter: 📊 Loading ALL BTC models across timeframes...
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1246, std[0]=0.3302
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0289, std[1]=0.1676
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    📊 Result: SELL (95.0%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 62.2%
+flutter:    ✅ btc_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1481, std[0]=0.3552
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0198, std[1]=0.1394
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    📊 Result: SELL (95.0%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 55.9%
+flutter:    ✅ btc_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1582, std[0]=0.3649
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0255, std[1]=0.1577
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    📊 Result: HOLD (43.8%)
+flutter:    💪 Signal strength: 30.1
+flutter:    🎯 Model accuracy: 48.9%
+flutter:    ✅ btc_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-18
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (49.7%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (35.1%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 62.5%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 62.5%
+flutter:    ⏸️  HOLD: 22.3%
+flutter:    📉 BUY:  15.3%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (62.5%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for BTC @5m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@5m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for BTC @ 5m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for BTCEUR: 81.8% (volume: 32139517 EUR)
+flutter: 📊 Phase 3: Volume percentile for BTCEUR: 81.8%
+flutter: 📊 Loading ALL BTC models across timeframes...
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1246, std[0]=0.3302
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0289, std[1]=0.1676
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_5m model...
+flutter:    📊 Result: BUY (95.0%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 62.2%
+flutter:    ✅ btc_5m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1481, std[0]=0.3552
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0198, std[1]=0.1394
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_15m model...
+flutter:    📊 Result: HOLD (93.3%)
+flutter:    💪 Signal strength: 83.5
+flutter:    🎯 Model accuracy: 55.9%
+flutter:    ✅ btc_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1582, std[0]=0.3649
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0255, std[1]=0.1577
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on btc_1h model...
+flutter:    📊 Result: HOLD (43.8%)
+flutter:    💪 Signal strength: 30.1
+flutter:    🎯 Model accuracy: 48.9%
+flutter:    ✅ btc_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=82%, trainedDate=2025-10-18
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (58.5%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (41.3%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: BUY
+flutter:    💪 Confidence: 60.9%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 10.7%
+flutter:    ⏸️  HOLD: 28.4%
+flutter:    📉 BUY:  60.9%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: BUY (60.9%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @5m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@5m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 5m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32936692 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (95.0%)
+flutter:    💪 Signal strength: 79.0
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (51.9%)
+flutter:    💪 Signal strength: 20.8
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (57.4%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (40.5%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 68.1%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 14.8%
+flutter:    ⏸️  HOLD: 68.1%
+flutter:    📉 BUY:  17.1%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (68.1%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @15m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@15m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 15m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32936692 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (95.0%)
+flutter:    💪 Signal strength: 72.4
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (50.5%)
+flutter:    💪 Signal strength: 17.9
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (54.5%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (38.5%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 53.9%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 11.6%
+flutter:    ⏸️  HOLD: 53.9%
+flutter:    📉 BUY:  34.5%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (53.9%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @1h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 1h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32936692 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (95.0%)
+flutter:    💪 Signal strength: 79.0
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (51.9%)
+flutter:    💪 Signal strength: 20.8
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (51.7%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (36.5%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 40.7%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 28.1%
+flutter:    ⏸️  HOLD: 40.7%
+flutter:    📉 BUY:  31.2%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (40.7%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @4h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@4h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 4h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32936915 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (92.1%)
+flutter:    💪 Signal strength: 68.2
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (50.6%)
+flutter:    💪 Signal strength: 24.2
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: HOLD (39.4%)
+flutter:    💪 Signal strength: 24.9
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (48.8%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (34.4%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 54.4%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 26.6%
+flutter:    ⏸️  HOLD: 54.4%
+flutter:    📉 BUY:  19.0%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (54.4%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @1d
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1d]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 1d
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32935393 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (90.2%)
+flutter:    💪 Signal strength: 66.2
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: SELL (94.7%)
+flutter:    💪 Signal strength: 92.6
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: HOLD (60.2%)
+flutter:    💪 Signal strength: 56.0
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (43.0%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (30.4%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 42.7%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 42.7%
+flutter:    ⏸️  HOLD: 29.2%
+flutter:    📉 BUY:  28.1%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (42.7%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @4h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@4h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 4h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32935387 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (92.1%)
+flutter:    💪 Signal strength: 68.2
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (50.6%)
+flutter:    💪 Signal strength: 24.2
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: HOLD (39.4%)
+flutter:    💪 Signal strength: 24.9
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (48.8%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (34.4%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 54.4%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 26.6%
+flutter:    ⏸️  HOLD: 54.4%
+flutter:    📉 BUY:  19.0%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (54.4%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @1h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 1h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32934178 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (95.0%)
+flutter:    💪 Signal strength: 79.0
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (51.9%)
+flutter:    💪 Signal strength: 20.8
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (51.7%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (36.5%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 40.7%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 28.1%
+flutter:    ⏸️  HOLD: 40.7%
+flutter:    📉 BUY:  31.2%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (40.7%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for ETH @15m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@15m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for ETH @ 15m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for ETHEUR: 90.9% (volume: 32935939 EUR)
+flutter: 📊 Phase 3: Volume percentile for ETHEUR: 90.9%
+flutter: 📊 Loading ALL ETH models across timeframes...
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1128, std[0]=0.3164
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0227, std[1]=0.1489
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_5m model...
+flutter:    📊 Result: HOLD (95.0%)
+flutter:    💪 Signal strength: 72.4
+flutter:    🎯 Model accuracy: 73.9%
+flutter:    ✅ eth_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1325, std[0]=0.3390
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0140, std[1]=0.1177
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_15m model...
+flutter:    📊 Result: HOLD (50.5%)
+flutter:    💪 Signal strength: 17.9
+flutter:    🎯 Model accuracy: 52.7%
+flutter:    ✅ eth_15m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1468, std[0]=0.3539
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0234, std[1]=0.1512
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on eth_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 42.6%
+flutter:    ✅ eth_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=91%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (54.5%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (38.5%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: +5% volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 53.9%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 11.6%
+flutter:    ⏸️  HOLD: 53.9%
+flutter:    📉 BUY:  34.5%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (53.9%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for TRUMP @15m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@15m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for TRUMP @ 15m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for TRUMPEUR: 0.0% (volume: 6814 EUR)
+flutter: 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+flutter: 📊 Loading ALL TRUMP models across timeframes...
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1291, std[0]=0.3353
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0258, std[1]=0.1586
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    📊 Result: HOLD (68.5%)
+flutter:    💪 Signal strength: 55.1
+flutter:    🎯 Model accuracy: 71.3%
+flutter:    ✅ trump_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1640, std[0]=0.3703
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0165, std[1]=0.1273
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    📊 Result: HOLD (34.5%)
+flutter:    💪 Signal strength: 17.0
+flutter:    🎯 Model accuracy: 54.8%
+flutter:    ✅ trump_15m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1587, std[0]=0.3654
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0963
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.0
+flutter:    🎯 Model accuracy: 42.0%
+flutter:    ✅ trump_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (47.6%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (33.6%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 44.6%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 27.6%
+flutter:    ⏸️  HOLD: 44.6%
+flutter:    📉 BUY:  27.8%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (44.6%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for TRUMP @5m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@5m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for TRUMP @ 5m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for TRUMPEUR: 0.0% (volume: 6814 EUR)
+flutter: 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+flutter: 📊 Loading ALL TRUMP models across timeframes...
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1291, std[0]=0.3353
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0258, std[1]=0.1586
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    📊 Result: HOLD (68.5%)
+flutter:    💪 Signal strength: 55.1
+flutter:    🎯 Model accuracy: 71.3%
+flutter:    ✅ trump_5m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1640, std[0]=0.3703
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0165, std[1]=0.1273
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    📊 Result: BUY (51.0%)
+flutter:    💪 Signal strength: 46.2
+flutter:    🎯 Model accuracy: 54.8%
+flutter:    ✅ trump_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1587, std[0]=0.3654
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0963
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    📊 Result: BUY (40.5%)
+flutter:    💪 Signal strength: 27.7
+flutter:    🎯 Model accuracy: 42.0%
+flutter:    ✅ trump_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (50.2%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (35.4%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 57.2%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 17.9%
+flutter:    ⏸️  HOLD: 57.2%
+flutter:    📉 BUY:  24.9%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (57.2%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for TRUMP @15m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@15m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for TRUMP @ 15m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for TRUMPEUR: 0.0% (volume: 6814 EUR)
+flutter: 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+flutter: 📊 Loading ALL TRUMP models across timeframes...
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1291, std[0]=0.3353
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0258, std[1]=0.1586
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    📊 Result: HOLD (68.5%)
+flutter:    💪 Signal strength: 55.1
+flutter:    🎯 Model accuracy: 71.3%
+flutter:    ✅ trump_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1640, std[0]=0.3703
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0165, std[1]=0.1273
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    📊 Result: HOLD (34.5%)
+flutter:    💪 Signal strength: 17.0
+flutter:    🎯 Model accuracy: 54.8%
+flutter:    ✅ trump_15m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1587, std[0]=0.3654
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0963
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    📊 Result: SELL (30.0%)
+flutter:    💪 Signal strength: 0.0
+flutter:    🎯 Model accuracy: 42.0%
+flutter:    ✅ trump_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (47.6%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (33.6%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 44.6%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 27.6%
+flutter:    ⏸️  HOLD: 44.6%
+flutter:    📉 BUY:  27.8%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (44.6%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for TRUMP @1h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for TRUMP @ 1h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for TRUMPEUR: 0.0% (volume: 6814 EUR)
+flutter: 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+flutter: 📊 Loading ALL TRUMP models across timeframes...
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1291, std[0]=0.3353
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0258, std[1]=0.1586
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    📊 Result: HOLD (68.5%)
+flutter:    💪 Signal strength: 55.1
+flutter:    🎯 Model accuracy: 71.3%
+flutter:    ✅ trump_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1640, std[0]=0.3703
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0165, std[1]=0.1273
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    📊 Result: BUY (51.0%)
+flutter:    💪 Signal strength: 46.2
+flutter:    🎯 Model accuracy: 54.8%
+flutter:    ✅ trump_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1587, std[0]=0.3654
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0963
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    📊 Result: BUY (40.5%)
+flutter:    💪 Signal strength: 27.7
+flutter:    🎯 Model accuracy: 42.0%
+flutter:    ✅ trump_1h loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (45.1%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (31.9%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: BUY
+flutter:    💪 Confidence: 53.5%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 11.2%
+flutter:    ⏸️  HOLD: 35.4%
+flutter:    📉 BUY:  53.5%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: BUY (53.5%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for TRUMP @4h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@4h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for TRUMP @ 4h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for TRUMPEUR: 0.0% (volume: 6814 EUR)
+flutter: 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+flutter: 📊 Loading ALL TRUMP models across timeframes...
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1291, std[0]=0.3353
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0258, std[1]=0.1586
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    📊 Result: HOLD (89.3%)
+flutter:    💪 Signal strength: 76.2
+flutter:    🎯 Model accuracy: 71.3%
+flutter:    ✅ trump_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1640, std[0]=0.3703
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0165, std[1]=0.1273
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    📊 Result: HOLD (37.5%)
+flutter:    💪 Signal strength: 16.4
+flutter:    🎯 Model accuracy: 54.8%
+flutter:    ✅ trump_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1587, std[0]=0.3654
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0963
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    📊 Result: BUY (30.0%)
+flutter:    💪 Signal strength: 7.9
+flutter:    🎯 Model accuracy: 42.0%
+flutter:    ✅ trump_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (42.6%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (30.1%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 49.8%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 22.4%
+flutter:    ⏸️  HOLD: 49.8%
+flutter:    📉 BUY:  27.8%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (49.8%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for TRUMP @1d
+flutter: 🔧 BinanceService: Building 76 features from 251 candles
+flutter: 🔍 FullFeatureBuilder: Processing 251 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (251 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1d]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for TRUMP @ 1d
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for TRUMPEUR: 0.0% (volume: 6814 EUR)
+flutter: 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+flutter: 📊 Loading ALL TRUMP models across timeframes...
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1291, std[0]=0.3353
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0258, std[1]=0.1586
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_5m model...
+flutter:    📊 Result: HOLD (95.0%)
+flutter:    💪 Signal strength: 87.2
+flutter:    🎯 Model accuracy: 71.3%
+flutter:    ✅ trump_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1640, std[0]=0.3703
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0165, std[1]=0.1273
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_15m model...
+flutter:    📊 Result: HOLD (36.5%)
+flutter:    💪 Signal strength: 16.0
+flutter:    🎯 Model accuracy: 54.8%
+flutter:    ✅ trump_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1587, std[0]=0.3654
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0963
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on trump_1h model...
+flutter:    📊 Result: BUY (30.0%)
+flutter:    💪 Signal strength: 0.4
+flutter:    🎯 Model accuracy: 42.0%
+flutter:    ✅ trump_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=0%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (37.6%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (30.0%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 35.4%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 35.4%
+flutter:    ⏸️  HOLD: 31.1%
+flutter:    📉 BUY:  33.5%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (35.4%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for WLFI @1d
+flutter: ❌ BinanceService: Error getting features → Exception: Insufficient 1d candles: got 48, need >=120 (for SMA100 + 60 sequence)
+flutter: ❌ AI inference error: Exception: Insufficient 1d candles: got 48, need >=120 (for SMA100 + 60 sequence)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for WLFI @4h
+flutter: 🔧 BinanceService: Building 76 features from 283 candles
+flutter: 🔍 FullFeatureBuilder: Processing 283 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (283 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@4h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for WLFI @ 4h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for WLFIEUR: 9.1% (volume: 33353 EUR)
+flutter: 📊 Phase 3: Volume percentile for WLFIEUR: 9.1%
+flutter: 📊 Loading ALL WLFI models across timeframes...
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1240, std[0]=0.3295
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0304, std[1]=0.1718
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    📊 Result: HOLD (47.1%)
+flutter:    💪 Signal strength: 25.3
+flutter:    🎯 Model accuracy: 69.7%
+flutter:    ✅ wlfi_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1567, std[0]=0.3635
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0189, std[1]=0.1362
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    📊 Result: SELL (88.7%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 53.7%
+flutter:    ✅ wlfi_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1451, std[0]=0.3522
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0964
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    📊 Result: SELL (74.1%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 41.5%
+flutter:    ✅ wlfi_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (42.6%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (30.1%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 63.2%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 63.2%
+flutter:    ⏸️  HOLD: 21.4%
+flutter:    📉 BUY:  15.4%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (63.2%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for WLFI @1h
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@1h]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for WLFI @ 1h
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for WLFIEUR: 9.1% (volume: 33353 EUR)
+flutter: 📊 Phase 3: Volume percentile for WLFIEUR: 9.1%
+flutter: 📊 Loading ALL WLFI models across timeframes...
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1240, std[0]=0.3295
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0304, std[1]=0.1718
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    📊 Result: HOLD (47.1%)
+flutter:    💪 Signal strength: 25.3
+flutter:    🎯 Model accuracy: 69.7%
+flutter:    ✅ wlfi_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1567, std[0]=0.3635
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0189, std[1]=0.1362
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    📊 Result: BUY (30.0%)
+flutter:    💪 Signal strength: 1.3
+flutter:    🎯 Model accuracy: 53.7%
+flutter:    ✅ wlfi_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1451, std[0]=0.3522
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0964
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    📊 Result: SELL (74.1%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 41.5%
+flutter:    ✅ wlfi_1h loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (45.1%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (31.9%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 78.3%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 78.3%
+flutter:    ⏸️  HOLD: 12.0%
+flutter:    📉 BUY:  9.7%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (78.3%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for WLFI @15m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@15m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for WLFI @ 15m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for WLFIEUR: 9.1% (volume: 33353 EUR)
+flutter: 📊 Phase 3: Volume percentile for WLFIEUR: 9.1%
+flutter: 📊 Loading ALL WLFI models across timeframes...
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1240, std[0]=0.3295
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0304, std[1]=0.1718
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    📊 Result: HOLD (47.1%)
+flutter:    💪 Signal strength: 25.3
+flutter:    🎯 Model accuracy: 69.7%
+flutter:    ✅ wlfi_5m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1567, std[0]=0.3635
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0189, std[1]=0.1362
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    📊 Result: BUY (30.0%)
+flutter:    💪 Signal strength: 1.3
+flutter:    🎯 Model accuracy: 53.7%
+flutter:    ✅ wlfi_15m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1451, std[0]=0.3522
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0964
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    📊 Result: SELL (74.1%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 41.5%
+flutter:    ✅ wlfi_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (47.6%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (33.6%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: SELL
+flutter:    💪 Confidence: 38.8%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 38.8%
+flutter:    ⏸️  HOLD: 31.4%
+flutter:    📉 BUY:  29.8%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: SELL (38.8%)
+flutter: 🚀 AI Strategies: fetching CryptoML prediction for WLFI @5m
+flutter: 🔧 BinanceService: Building 76 features from 1000 candles
+flutter: 🔍 FullFeatureBuilder: Processing 1000 candles
+flutter: 🔍 FullFeatureBuilder: Extracted OHLCV (1000 values each)
+flutter: 🔍 FullFeatureBuilder: Detecting candle patterns...
+flutter: 🔍 FullFeatureBuilder: Detected 25 patterns
+flutter: ✅ BinanceService: Full features 60x76 [@5m]
+flutter:
+flutter: 🎯 ==========================================
+flutter: 🎯 MULTI-TIMEFRAME ENSEMBLE for WLFI @ 5m
+flutter: 🎯 ==========================================
+flutter: 📊 Volume percentile for WLFIEUR: 9.1% (volume: 33353 EUR)
+flutter: 📊 Phase 3: Volume percentile for WLFIEUR: 9.1%
+flutter: 📊 Loading ALL WLFI models across timeframes...
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1240, std[0]=0.3295
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0304, std[1]=0.1718
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_5m model...
+flutter:    📊 Result: HOLD (47.1%)
+flutter:    💪 Signal strength: 25.3
+flutter:    🎯 Model accuracy: 69.7%
+flutter:    ✅ wlfi_5m loaded (weight: 0.350)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1567, std[0]=0.3635
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0189, std[1]=0.1362
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_15m model...
+flutter:    📊 Result: BUY (30.0%)
+flutter:    💪 Signal strength: 1.3
+flutter:    🎯 Model accuracy: 53.7%
+flutter:    ✅ wlfi_15m loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1451, std[0]=0.3522
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0094, std[1]=0.0964
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on wlfi_1h model...
+flutter:    📊 Result: SELL (74.1%)
+flutter:    💪 Signal strength: 100.0
+flutter:    🎯 Model accuracy: 41.5%
+flutter:    ✅ wlfi_1h loaded (weight: 0.050)
+flutter:    🔮 Phase 3 preview: volumePercentile=9%, trainedDate=2025-10-20
+flutter: 📊 Loading GENERAL models...
+flutter: 🔮 Running inference on general_5m model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1228, std[0]=0.3282
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0214, std[1]=0.1448
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_5m model...
+flutter:    📊 Result: HOLD (50.2%)
+flutter:    💪 Signal strength: 35.9
+flutter:    🎯 Model accuracy: 61.4%
+flutter:    ✅ general_5m loaded (weight: 0.210)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter: 🔮 Running inference on general_1d model...
+flutter:    🔍 SCALER DEBUG: mean[0]=0.1561, std[0]=0.3629
+flutter:    🔍 SCALER DEBUG: mean[1]=0.0172, std[1]=0.1302
+flutter:    🔍 SCALER DEBUG: Is identity? mean[0]==0: false, std[0]==1: false
+flutter: 🔮 Running inference on general_1d model...
+flutter:    📊 Result: BUY (35.4%)
+flutter:    💪 Signal strength: 0.1
+flutter:    🎯 Model accuracy: 47.8%
+flutter:    ✅ general_1d loaded (weight: 0.030)
+flutter:    🔮 Phase 3 preview: no volume boost, no age penalty (trained: 2025-10-19)
+flutter:
+flutter: ✅ WEIGHTED ENSEMBLE RESULT:
+flutter:    🎯 Action: HOLD
+flutter:    💪 Confidence: 45.8%
+flutter:    📊 Models used: 5
+flutter:    📈 SELL: 30.9%
+flutter:    ⏸️  HOLD: 45.8%
+flutter:    📉 BUY:  23.3%
+flutter: 🎯 ==========================================
+flutter:
+flutter: 🚀 CryptoML: HOLD (45.8%)

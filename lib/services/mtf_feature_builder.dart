@@ -61,7 +61,7 @@ class MtfFeatureBuilder {
       out.add(_sanitize(row));
     }
 
-    debugPrint('✅ MTFBuilder: Built ${out.length}x${out.isNotEmpty ? out.first.length : 0} features for ' + symbol);
+    debugPrint('✅ MTFBuilder: Built ${out.length}x${out.isNotEmpty ? out.first.length : 0} features for $symbol');
     return out;
   }
 
@@ -249,7 +249,11 @@ class MtfFeatureBuilder {
     double avgGain = 0.0, avgLoss = 0.0;
     for (int i = 1; i <= period; i++) {
       final ch = closes[i] - closes[i - 1];
-      if (ch >= 0) avgGain += ch; else avgLoss -= ch;
+      if (ch >= 0) {
+        avgGain += ch;
+      } else {
+        avgLoss -= ch;
+      }
     }
     avgGain /= period; avgLoss /= period;
     out[period] = _rsiFromAvg(avgGain, avgLoss);

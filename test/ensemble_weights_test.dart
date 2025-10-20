@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/ml/ensemble_weights_v2.dart';
+import 'package:mytrademate/ml/ensemble_weights_v2.dart';
 
 void main() {
   group('EnsembleWeightsV2 - ATR Calculation Tests', () {

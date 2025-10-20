@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/ml/confidence_threshold_filter.dart';
+import 'package:mytrademate/ml/confidence_threshold_filter.dart';
 
 void main() {
   group('ConfidenceThresholdFilter Tests', () {

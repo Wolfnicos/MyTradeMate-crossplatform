@@ -93,9 +93,10 @@ class AuthService extends ChangeNotifier {
       final storedEmail = await _secureStorage.read(key: _kEmailKey);
       final storedPasswordHash = await _secureStorage.read(key: _kPasswordHashKey);
 
+      // If no account exists yet, automatically register this email/password
       if (storedEmail == null || storedPasswordHash == null) {
-        debugPrint('AuthService: No account found');
-        return false;
+        debugPrint('AuthService: No account found, auto-registering');
+        return await register(email, password);
       }
 
       if (storedEmail != email) {
@@ -117,6 +118,18 @@ class AuthService extends ChangeNotifier {
     } catch (e) {
       debugPrint('AuthService: Error signing in: $e');
       return false;
+    }
+  }
+
+  /// Quick access without account (guest mode)
+  Future<void> signInAsGuest() async {
+    try {
+      await _secureStorage.write(key: _kIsAuthenticatedKey, value: 'true');
+      _userEmail = 'guest';
+      _isAuthenticated = true;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('AuthService: Error signing in as guest: $e');
     }
   }
 

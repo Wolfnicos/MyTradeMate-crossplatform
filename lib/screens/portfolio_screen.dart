@@ -91,7 +91,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: AppTheme.background,
+        
         body: SafeArea(
           child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -105,7 +105,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       AppTheme.spacing20,
                       AppTheme.spacing16,
                     ),
-                    child: Text('Portfolio', style: AppTheme.displayLarge),
+                    child: Text(
+                      'Portfolio',
+                      style: AppTheme.displayLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
                   ),
                 ),
 

@@ -35,6 +35,16 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(AppTheme.radiusLG);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final LinearGradient effectiveGradient = isDark
+        ? AppTheme.glassGradient
+        : const LinearGradient(
+            colors: [Color(0x33000000), Color(0x1A000000)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
+    final Color effectiveFill = color ?? (isDark ? AppTheme.glassWhite : const Color(0x40000000));
+    final Color effectiveBorderColor = isDark ? AppTheme.glassBorder : const Color(0x40000000);
 
     Widget content = ClipRRect(
       borderRadius: effectiveBorderRadius,
@@ -45,12 +55,12 @@ class GlassCard extends StatelessWidget {
           height: height,
           padding: padding ?? const EdgeInsets.all(AppTheme.spacing16),
           decoration: BoxDecoration(
-            gradient: AppTheme.glassGradient,
-            color: color ?? AppTheme.glassWhite,
+            gradient: effectiveGradient,
+            color: effectiveFill,
             borderRadius: effectiveBorderRadius,
             border: hasBorder
                 ? Border.all(
-                    color: AppTheme.glassBorder,
+                    color: effectiveBorderColor,
                     width: 1,
                   )
                 : null,

@@ -272,20 +272,7 @@ class FullFeatureBuilder {
   /// Deterministic training signature (features order + scalers + lookbacks)
   static String trainingSignature() {
     const String patterns = 'doji,dragonfly_doji,gravestone_doji,long_legged_doji,hammer,inverted_hammer,shooting_star,hanging_man,spinning_top,marubozu_bullish,marubozu_bearish,bullish_engulfing,bearish_engulfing,piercing_line,dark_cloud_cover,bullish_harami,bearish_harami,tweezer_bottom,tweezer_top,morning_star,evening_star,three_white_soldiers,three_black_crows,rising_three,falling_three';
-    const String spec = 'features:76;window:60;'
-        'patterns:' + patterns + ';'
-        'price_action:returns,log_returns,volatility,hl_range,close_position;'
-        'rsi:14;'
-        'macd:12,26,9;'
-        'bollinger:20,2.0;'
-        'atr:14;'
-        'adx:14;'
-        'stoch:14,k3;'
-        'ichimoku:tenkan9,kijun26,senkouB52;'
-        'volume_sma:20;'
-        'ma:20,50,200;'
-        'trend:higher_high,lower_low,uptrend,downtrend;'
-        'scaler:identity_76';
+    const String spec = 'features:76;window:60;patterns:$patterns;price_action:returns,log_returns,volatility,hl_range,close_position;rsi:14;macd:12,26,9;bollinger:20,2.0;atr:14;adx:14;stoch:14,k3;ichimoku:tenkan9,kijun26,senkouB52;volume_sma:20;ma:20,50,200;trend:higher_high,lower_low,uptrend,downtrend;scaler:identity_76';
     return spec;
   }
 
@@ -299,10 +286,10 @@ class FullFeatureBuilder {
     try {
       final String current = trainingSignatureSha256();
       final bool ok = expectedHash.isNotEmpty && current == expectedHash;
-      debugPrint('FullFeatureBuilder.data_quality=' + (ok ? 'OK' : 'BAD') + ' (runtime=' + current + ', expected=' + expectedHash + ')');
+      debugPrint('FullFeatureBuilder.data_quality=${ok ? 'OK' : 'BAD'} (runtime=$current, expected=$expectedHash)');
       return ok;
     } catch (e) {
-      debugPrint('FullFeatureBuilder.data_quality=BAD (hash error: ' + e.toString() + ')');
+      debugPrint('FullFeatureBuilder.data_quality=BAD (hash error: $e)');
       return false;
     }
   }

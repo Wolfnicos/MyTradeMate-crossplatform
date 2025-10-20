@@ -402,10 +402,11 @@ class MtfFeatureBuilderV2 {
     double avgGain = 0.0, avgLoss = 0.0;
     for (int i = 1; i <= period; i++) {
       final chg = p[i] - p[i - 1];
-      if (chg > 0)
+      if (chg > 0) {
         avgGain += chg;
-      else
+      } else {
         avgLoss -= chg;
+      }
     }
     avgGain /= period;
     avgLoss /= period;

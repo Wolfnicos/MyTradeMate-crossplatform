@@ -290,14 +290,36 @@ class CryptoMLService {
 
     final weightedPredictions = <_WeightedPrediction>[];
 
-    // PHASE 3: Fetch volume percentile for Phase 3 logging
+    // PHASE 3: Fetch volume percentile for Phase 3 logging (resolve real symbol: EUR -> USDT -> USDC -> USD)
     double volumePercentile = 0.5; // Default to median
     try {
-      final symbol = '${coin.toUpperCase()}EUR';
-      volumePercentile = await _binanceService.getVolumePercentile(symbol);
-      if (!silent) {
-        // ignore: avoid_print
-        print('📊 Phase 3: Volume percentile for $symbol: ${(volumePercentile * 100).toStringAsFixed(1)}%');
+      final String upper = coin.toUpperCase();
+      final List<String> candidates = <String>[
+        '${upper}EUR',
+        '${upper}USDT',
+        '${upper}USDC',
+        '${upper}USD',
+      ];
+      String? resolvedSymbol;
+      for (final s in candidates) {
+        try {
+          // Probe volume endpoint to verify symbol exists
+          await _binanceService.get24hVolume(s);
+          resolvedSymbol = s;
+          break;
+        } catch (_) {}
+      }
+      if (resolvedSymbol != null) {
+        volumePercentile = await _binanceService.getVolumePercentile(resolvedSymbol);
+        if (!silent) {
+          // ignore: avoid_print
+          print('📊 Phase 3: Volume percentile for $resolvedSymbol: ${(volumePercentile * 100).toStringAsFixed(1)}%');
+        }
+      } else {
+        if (!silent) {
+          // ignore: avoid_print
+          print('⚠️  Phase 3: Could not resolve volume symbol for $upper, using default 0.5');
+        }
       }
     } catch (e) {
       if (!silent) {

@@ -131,6 +131,10 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
         timeframe: _interval,
       );
 
+      // Debug-only: print final JSON-like summary for QA (no UI impact)
+      // ignore: avoid_print
+      print('JSON_AI_STRATEGIES: {"coin":"$coin","timeframe":"$_interval","action":"${prediction.action}","confidence":${prediction.confidence.toStringAsFixed(4)}}');
+
       debugPrint('🚀 CryptoML: ${prediction.action} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
 
       if (mounted) {

@@ -5,7 +5,7 @@ import 'package:mytrademate/ml/ensemble_example.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('Run EnsembleExample for TRUMP@1h and ADA@1h and print final JSON', () async {
+  test('Run EnsembleExample for TRUMP@1h and BTC@1h and print final JSON', () async {
     final example = EnsembleExample();
 
     final trump = await example.getPredictionTRUMP();
@@ -17,13 +17,13 @@ void main() {
     // ignore: avoid_print
     print('JSON_TRUMP: ' + jsonEncode(trump));
 
-    final ada = await example.getPredictionADA();
+    final btc = await example.getPredictionBTC();
     // ignore: avoid_print
-    print('JSON_ADA: ' + jsonEncode(ada));
+    print('JSON_BTC: ' + jsonEncode(btc));
 
     // Basic sanity checks (action present)
     expect(trump.containsKey('action'), true);
-    expect(ada.containsKey('action'), true);
+    expect(btc.containsKey('action'), true);
   });
 }
 

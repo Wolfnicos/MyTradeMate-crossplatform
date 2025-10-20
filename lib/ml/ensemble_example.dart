@@ -22,10 +22,10 @@ class EnsembleExample {
     return _getPredictionForCoin('TRUMPEUR', 'TRUMP', '1h');
   }
 
-  /// Get prediction for ADA at 1h timeframe
+  /// Get prediction for BTC at 1h timeframe
   /// Returns JSON: { "action": "HOLD", "confidence": 0.45, "explanation": "...", "risk": "low" }
-  Future<Map<String, dynamic>> getPredictionADA() async {
-    return _getPredictionForCoin('ADAEUR', 'ADA', '1h');
+  Future<Map<String, dynamic>> getPredictionBTC() async {
+    return _getPredictionForCoin('BTCEUR', 'BTC', '1h');
   }
 
   /// Internal method to get prediction for any coin
@@ -246,7 +246,7 @@ class EnsembleExample {
     return buffer.toString();
   }
 
-  /// Run both examples and compare
+  /// Run both examples and compare (TRUMP + BTC)
   Future<void> runBothExamples() async {
     print('\n${'=' * 80}');
     print('ENHANCED ENSEMBLE STRATEGY - EXAMPLE USAGE');
@@ -254,15 +254,15 @@ class EnsembleExample {
 
     final trumpResult = await getPredictionTRUMP();
     print('\n${'-' * 80}');
-    final adaResult = await getPredictionADA();
+    final btcResult = await getPredictionBTC();
 
     print('\n${'=' * 80}');
     print('COMPARISON:');
     print('=' * 80);
     print('TRUMP: ${trumpResult['action']} (${trumpResult['confidence']}), '
         'Risk: ${trumpResult['risk']}, ATR: ${trumpResult['atr']}%');
-    print('ADA:   ${adaResult['action']} (${adaResult['confidence']}), '
-        'Risk: ${adaResult['risk']}, ATR: ${adaResult['atr']}%');
+    print('BTC:   ${btcResult['action']} (${btcResult['confidence']}), '
+        'Risk: ${btcResult['risk']}, ATR: ${btcResult['atr']}%');
   }
 }
 
@@ -277,18 +277,18 @@ class EnsembleExampleScreen extends StatefulWidget {
 class _EnsembleExampleScreenState extends State<EnsembleExampleScreen> {
   final EnsembleExample _example = EnsembleExample();
   Map<String, dynamic>? _trumpResult;
-  Map<String, dynamic>? _adaResult;
+  Map<String, dynamic>? _btcResult;
   bool _loading = false;
 
   Future<void> _runExamples() async {
     setState(() => _loading = true);
 
     final trump = await _example.getPredictionTRUMP();
-    final ada = await _example.getPredictionADA();
+    final btc = await _example.getPredictionBTC();
 
     setState(() {
       _trumpResult = trump;
-      _adaResult = ada;
+      _btcResult = btc;
       _loading = false;
     });
   }
@@ -310,7 +310,7 @@ class _EnsembleExampleScreenState extends State<EnsembleExampleScreen> {
             ),
             const SizedBox(height: 24),
             if (_trumpResult != null) _buildResultCard('TRUMP', _trumpResult!),
-            if (_adaResult != null) _buildResultCard('ADA', _adaResult!),
+            if (_btcResult != null) _buildResultCard('BTC', _btcResult!),
           ],
         ),
       ),

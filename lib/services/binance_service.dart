@@ -407,6 +407,76 @@ class BinanceService {
     return {'lastPrice': lastPrice, 'priceChangePercent': changePercent};
   }
 
+  /// Get 24h trading volume for a symbol in quote currency (e.g., EUR for BTCEUR)
+  /// Returns volume in quote currency (for BTCEUR, returns EUR volume)
+  ///
+  /// Used by Phase 3 of Enhanced Ensemble Strategy to apply volume-based confidence boost.
+  /// High-volume coins (> median) get +5% confidence boost for general models.
+  Future<double> get24hVolume(String symbol) async {
+    try {
+      final uri = Uri.https(_baseHost, '/api/v3/ticker/24hr', {'symbol': symbol});
+      final http.Response res = await http.get(uri);
+      if (res.statusCode != 200) {
+        throw Exception('Binance 24hr volume error ${res.statusCode}: ${res.body}');
+      }
+      final Map<String, dynamic> data = json.decode(res.body) as Map<String, dynamic>;
+
+      // quoteVolume = 24h trading volume in quote currency (e.g., EUR)
+      final double quoteVolume = double.tryParse((data['quoteVolume']).toString()) ?? 0.0;
+      return quoteVolume;
+    } catch (e) {
+      debugPrint('❌ BinanceService: Failed to fetch 24h volume for $symbol: $e');
+      rethrow;
+    }
+  }
+
+  /// Get 24h volumes for multiple symbols and calculate volume percentile for target symbol
+  /// Returns volume percentile (0.0 to 1.0) indicating where target symbol ranks
+  ///
+  /// Example: percentile = 0.75 means target symbol has higher volume than 75% of comparison symbols
+  ///
+  /// Used by Phase 3: High-volume symbols (percentile > 0.5) get +5% confidence boost
+  Future<double> getVolumePercentile(String targetSymbol, {List<String>? comparisonSymbols}) async {
+    try {
+      // Default comparison set: major EUR pairs
+      final symbols = comparisonSymbols ?? [
+        'BTCEUR',
+        'ETHEUR',
+        'XRPEUR',
+        'ADAEUR',
+        'DOGEEUR',
+        'MATICEUR',
+        'DOTEUR',
+        'LINKEUR',
+        'UNIEUR',
+        'TRUMPEUR',
+        'WLFIEUR',
+      ];
+
+      // Fetch volumes for all symbols in parallel
+      final volumeFutures = symbols.map((s) => get24hVolume(s));
+      final volumes = await Future.wait(volumeFutures, eagerError: false);
+
+      // Get target volume
+      final targetVolume = await get24hVolume(targetSymbol);
+
+      // Calculate percentile: % of symbols with lower volume
+      int lowerCount = 0;
+      for (final vol in volumes) {
+        if (vol < targetVolume) lowerCount++;
+      }
+
+      final percentile = lowerCount / volumes.length;
+      debugPrint('📊 Volume percentile for $targetSymbol: ${(percentile * 100).toStringAsFixed(1)}% (volume: ${targetVolume.toStringAsFixed(0)} EUR)');
+
+      return percentile;
+    } catch (e) {
+      debugPrint('❌ BinanceService: Failed to calculate volume percentile: $e');
+      // Return median (0.5) on error - no boost or penalty
+      return 0.5;
+    }
+  }
+
   /// Try multiple symbols until one works (useful for tokens with alt tickers like 1000TRUMPUSDT)
   Future<Map<String, double>> fetchTicker24hWithFallback(List<String> symbols) async {
     for (final String s in symbols) {

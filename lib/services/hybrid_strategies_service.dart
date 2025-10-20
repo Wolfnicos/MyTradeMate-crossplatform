@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../ml/ensemble_predictor.dart' hide SignalType;
+import '../ml/crypto_ml_service.dart';
 import 'binance_service.dart';
 
 /// Represents a trading signal with confidence
@@ -161,32 +161,40 @@ class RSIMLHybridStrategy extends HybridStrategy {
     final priceAboveSMA = data.price > data.sma20;
     debugPrint('[RSI/ML Hybrid] rsi=' + rsi.toStringAsFixed(2) + ', sma20=' + data.sma20.toStringAsFixed(2) + ', price=' + data.price.toStringAsFixed(2));
 
-    // Get AI prediction from Ensemble Transformer
+    // Get AI prediction from CryptoML multi-timeframe ensemble
     SignalType? aiSignal;
     double aiConfidence = 0.0;
     String aiLabel = '';
 
-    if (globalEnsemblePredictor.isLoaded) {
-      try {
-        debugPrint('[RSI/ML Hybrid] Fetching Transformer prediction for ' + symbol + ' @' + interval);
-        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
+    try {
+      // Get coin from symbol (e.g., BTCEUR -> BTC)
+      final coin = symbol.replaceAll(RegExp(r'(EUR|USDT|USDC)$'), '');
 
-        // Map 4-class prediction to 3-class SignalType
-        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
-          aiSignal = SignalType.BUY;
-        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
-          aiSignal = SignalType.SELL;
-        } else {
-          aiSignal = SignalType.HOLD;
-        }
+      debugPrint('[RSI/ML Hybrid] Fetching CryptoML prediction for $coin @$interval');
 
-        aiConfidence = prediction.confidence;
-        aiLabel = prediction.label;
-        debugPrint('[RSI/ML Hybrid] AI: ${prediction.label} (${(prediction.confidence * 100).toStringAsFixed(1)}%), Transformer: ${(prediction.modelContributions['transformer']![2] * 100).toStringAsFixed(1)}%');
-      } catch (e) {
-        debugPrint('[RSI/ML Hybrid] AI prediction failed: $e');
+      // Fetch price data (60x76 features) from Binance
+      final priceData = await BinanceService().getFeaturesForModel(symbol, interval: interval);
+
+      final prediction = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: priceData,
+        timeframe: interval,
+      );
+
+      // Map action to SignalType
+      if (prediction.action == 'BUY') {
+        aiSignal = SignalType.BUY;
+      } else if (prediction.action == 'SELL') {
+        aiSignal = SignalType.SELL;
+      } else {
+        aiSignal = SignalType.HOLD;
       }
+
+      aiConfidence = prediction.confidence;
+      aiLabel = prediction.action;
+      debugPrint('[RSI/ML Hybrid] AI: ${prediction.action} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
+    } catch (e) {
+      debugPrint('[RSI/ML Hybrid] AI prediction failed: $e');
     }
 
     // Get technical indicator signals
@@ -281,29 +289,35 @@ class MomentumScalperStrategy extends HybridStrategy {
         : 0.0;
     debugPrint('[Momentum Scalper] macd=' + macd.toStringAsFixed(4) + ', priceChange%=' + priceChange.toStringAsFixed(2));
 
-    // Get AI prediction
+    // Get AI prediction from CryptoML
     SignalType? aiSignal;
     double aiConfidence = 0.0;
     String aiLabel = '';
 
-    if (globalEnsemblePredictor.isLoaded) {
-      try {
-        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
+    try {
+      final coin = symbol.replaceAll(RegExp(r'(EUR|USDT|USDC)$'), '');
 
-        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
-          aiSignal = SignalType.BUY;
-        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
-          aiSignal = SignalType.SELL;
-        } else {
-          aiSignal = SignalType.HOLD;
-        }
+      // Fetch price data (60x76 features) from Binance
+      final priceData = await BinanceService().getFeaturesForModel(symbol, interval: interval);
 
-        aiConfidence = prediction.confidence;
-        aiLabel = prediction.label;
-      } catch (e) {
-        debugPrint('[Momentum Scalper] AI error: $e');
+      final prediction = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: priceData,
+        timeframe: interval,
+      );
+
+      if (prediction.action == 'BUY') {
+        aiSignal = SignalType.BUY;
+      } else if (prediction.action == 'SELL') {
+        aiSignal = SignalType.SELL;
+      } else {
+        aiSignal = SignalType.HOLD;
       }
+
+      aiConfidence = prediction.confidence;
+      aiLabel = prediction.action;
+    } catch (e) {
+      debugPrint('[Momentum Scalper] AI error: $e');
     }
 
     // Technical signals
@@ -443,29 +457,35 @@ class BreakoutStrategy extends HybridStrategy {
     final low = recent.reduce((a, b) => a < b ? a : b);
     debugPrint('[Breakout] price=' + data.price.toStringAsFixed(2) + ', high(' + lookback.toString() + ')=' + high.toStringAsFixed(2) + ', low=' + low.toStringAsFixed(2));
 
-    // Get AI prediction
+    // Get AI prediction from CryptoML
     SignalType? aiSignal;
     double aiConfidence = 0.0;
     String aiLabel = '';
 
-    if (globalEnsemblePredictor.isLoaded) {
-      try {
-        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
+    try {
+      final coin = symbol.replaceAll(RegExp(r'(EUR|USDT|USDC)$'), '');
 
-        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
-          aiSignal = SignalType.BUY;
-        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
-          aiSignal = SignalType.SELL;
-        } else {
-          aiSignal = SignalType.HOLD;
-        }
+      // Fetch price data (60x76 features) from Binance
+      final priceData = await BinanceService().getFeaturesForModel(symbol, interval: interval);
 
-        aiConfidence = prediction.confidence;
-        aiLabel = prediction.label;
-      } catch (e) {
-        debugPrint('[Breakout] AI error: $e');
+      final prediction = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: priceData,
+        timeframe: interval,
+      );
+
+      if (prediction.action == 'BUY') {
+        aiSignal = SignalType.BUY;
+      } else if (prediction.action == 'SELL') {
+        aiSignal = SignalType.SELL;
+      } else {
+        aiSignal = SignalType.HOLD;
       }
+
+      aiConfidence = prediction.confidence;
+      aiLabel = prediction.action;
+    } catch (e) {
+      debugPrint('[Breakout] AI error: $e');
     }
 
     // Technical signals
@@ -540,29 +560,35 @@ class MeanReversionStrategy extends HybridStrategy {
     final lower = mean - stdDev * sd;
     debugPrint('[Mean Reversion] price=' + data.price.toStringAsFixed(2) + ', mean=' + mean.toStringAsFixed(2) + ', sd=' + sd.toStringAsFixed(2) + ', upper=' + upper.toStringAsFixed(2) + ', lower=' + lower.toStringAsFixed(2));
 
-    // Get AI prediction
+    // Get AI prediction from CryptoML
     SignalType? aiSignal;
     double aiConfidence = 0.0;
     String aiLabel = '';
 
-    if (globalEnsemblePredictor.isLoaded) {
-      try {
-        final features = await BinanceService().getFeaturesForModel(symbol, interval: interval);
-        final prediction = await globalEnsemblePredictor.predict(features, symbol: symbol);
+    try {
+      final coin = symbol.replaceAll(RegExp(r'(EUR|USDT|USDC)$'), '');
 
-        if (prediction.label == 'STRONG_BUY' || prediction.label == 'BUY') {
-          aiSignal = SignalType.BUY;
-        } else if (prediction.label == 'STRONG_SELL' || prediction.label == 'SELL') {
-          aiSignal = SignalType.SELL;
-        } else {
-          aiSignal = SignalType.HOLD;
-        }
+      // Fetch price data (60x76 features) from Binance
+      final priceData = await BinanceService().getFeaturesForModel(symbol, interval: interval);
 
-        aiConfidence = prediction.confidence;
-        aiLabel = prediction.label;
-      } catch (e) {
-        debugPrint('[Mean Reversion] AI error: $e');
+      final prediction = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: priceData,
+        timeframe: interval,
+      );
+
+      if (prediction.action == 'BUY') {
+        aiSignal = SignalType.BUY;
+      } else if (prediction.action == 'SELL') {
+        aiSignal = SignalType.SELL;
+      } else {
+        aiSignal = SignalType.HOLD;
       }
+
+      aiConfidence = prediction.confidence;
+      aiLabel = prediction.action;
+    } catch (e) {
+      debugPrint('[Mean Reversion] AI error: $e');
     }
 
     // Technical signals

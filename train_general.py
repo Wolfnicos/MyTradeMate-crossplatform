@@ -288,9 +288,12 @@ def train_general_model(timeframe='15m'):
     
     # 5. Build and train model
     model = create_general_model()
+
+    # CALIBRATION FIX: Label smoothing to prevent 100% confidence predictions
+    # Transforms hard labels [0,1] -> soft labels [0.05, 0.95]
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=0.001),
-        loss='categorical_crossentropy',
+        loss=keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
         metrics=['accuracy']
     )
     
@@ -339,10 +342,19 @@ def train_general_model(timeframe='15m'):
     with open(tflite_path, 'wb') as f:
         f.write(tflite_model)
     
-    # Save scaler
-    scaler_path = f'assets/ml/general_{timeframe}_scaler.pkl'
-    joblib.dump(scaler, scaler_path)
-    
+    # Save scaler in JSON format (for Flutter)
+    scaler_json = {
+        'mean': scaler.mean_.tolist(),
+        'std': scaler.scale_.tolist(),
+    }
+    scaler_json_path = f'assets/ml/general_{timeframe}_scaler.json'
+    with open(scaler_json_path, 'w') as f:
+        json.dump(scaler_json, f, indent=2)
+
+    # Also save .pkl for Python compatibility
+    scaler_pkl_path = f'assets/ml/general_{timeframe}_scaler.pkl'
+    joblib.dump(scaler, scaler_pkl_path)
+
     # Save metadata
     metadata = {
         'type': 'GENERAL',
@@ -352,6 +364,10 @@ def train_general_model(timeframe='15m'):
         'train_samples': len(X_train),
         'test_samples': len(X_test),
         'model_size_kb': len(tflite_model) / 1024,
+        'num_features': NUM_FEATURES,  # Required by Flutter CryptoMLService
+        'num_classes': NUM_CLASSES,
+        'calibration': 'label_smoothing_0.1',  # Model calibration to prevent overconfident predictions
+        'scaler_path': f'general_{timeframe}_scaler.json',  # Path to scaler JSON
         'date': datetime.now().isoformat()
     }
     

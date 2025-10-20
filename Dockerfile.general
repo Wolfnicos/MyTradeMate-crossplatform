@@ -1,17 +1,36 @@
 FROM python:3.10-slim
 
-# Install dependencies
+# Install system dependencies for TA-Lib
+RUN apt-get update && apt-get install -y \
+    wget \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install TA-Lib C library with ARM64/aarch64 support
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib && \
+    wget 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' -O config.guess && \
+    wget 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' -O config.sub && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
+
+# Install Python dependencies
 RUN pip install --no-cache-dir \
     tensorflow==2.13.0 \
     numpy \
     pandas \
     scikit-learn \
     ccxt \
-    joblib
+    joblib \
+    TA-Lib
 
 WORKDIR /workspace
 
 # Copy training script
-COPY train_general.py /workspace/
+COPY train_general_FIXED.py /workspace/
 
-CMD ["python", "train_general.py"]
+CMD ["python", "train_general_FIXED.py"]

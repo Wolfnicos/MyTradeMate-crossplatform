@@ -168,7 +168,7 @@ def build_76_features_for_daily(df):
     return features.values
 
 def create_trend_model():
-    """Model pentru trend prediction (UP/DOWN)"""
+    """Model pentru trend prediction (UP/DOWN) cu calibrare corectă"""
 
     model = keras.Sequential([
         layers.Input(shape=(SEQUENCE_LENGTH, NUM_FEATURES)),
@@ -191,11 +191,11 @@ def create_trend_model():
         # Agregare
         layers.GlobalAveragePooling1D(),
 
-        # Classification pentru UP/DOWN
+        # Classification pentru UP/DOWN - minimal regularization
         layers.Dense(64, activation='relu'),
-        layers.Dropout(0.3),
+        layers.Dropout(0.3),  # Light dropout
         layers.Dense(32, activation='relu'),
-        layers.Dropout(0.2),
+        layers.Dropout(0.2),  # Light dropout
 
         # Output: 2 clase (DOWN, UP)
         layers.Dense(2, activation='softmax')
@@ -276,9 +276,12 @@ def train_daily_weekly_model(prediction_days=1):
 
     # 5. Build and train
     model = create_trend_model()
+
+    # Label smoothing = 0.1 pentru a preveni overconfidence (100% predictions)
+    # Transformă [0, 1] în [0.05, 0.95] → modelul învață să fie mai puțin sigur
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=0.0005),  # Lower LR pentru stability
-        loss='categorical_crossentropy',
+        loss=keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
         metrics=['accuracy']
     )
 
@@ -342,8 +345,18 @@ def train_daily_weekly_model(prediction_days=1):
     with open(tflite_path, 'wb') as f:
         f.write(tflite_model)
 
-    scaler_path = f'assets/ml/general_{model_name}_scaler.pkl'
-    joblib.dump(scaler, scaler_path)
+    # Save scaler in JSON format (for Flutter)
+    scaler_json = {
+        'mean': scaler.mean_.tolist(),
+        'std': scaler.scale_.tolist(),
+    }
+    scaler_json_path = f'assets/ml/general_{model_name}_scaler.json'
+    with open(scaler_json_path, 'w') as f:
+        json.dump(scaler_json, f, indent=2)
+
+    # Also save .pkl for Python compatibility
+    scaler_pkl_path = f'assets/ml/general_{model_name}_scaler.pkl'
+    joblib.dump(scaler, scaler_pkl_path)
 
     metadata = {
         'type': 'GENERAL_TREND',
@@ -355,6 +368,10 @@ def train_daily_weekly_model(prediction_days=1):
         'train_samples': len(X_train),
         'test_samples': len(X_test),
         'model_size_kb': len(tflite_model) / 1024,
+        'num_features': NUM_FEATURES,  # Required by Flutter CryptoMLService
+        'num_classes': 2,  # Binary: DOWN (0) vs UP (1)
+        'calibration': 'label_smoothing_0.1',  # Label smoothing for probability calibration
+        'scaler_path': f'general_{model_name}_scaler.json',  # Path to scaler JSON
         'date': datetime.now().isoformat()
     }
 

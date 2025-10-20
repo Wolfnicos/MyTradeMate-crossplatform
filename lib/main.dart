@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'ml/tflite_predictor.dart';
 import 'ml/ml_service.dart';
+import 'ml/unified_ml_service.dart';
 import 'ml/ensemble_predictor.dart';
 import 'ml/crypto_ml_service.dart';
 import 'providers/theme_provider.dart';
@@ -26,6 +27,8 @@ Future<void> main() async {
   await AppSettingsService().load();
   await AuthService().load();
   await globalPredictor.init();
+  try { await unifiedMLService.initialize(); } catch (_) {}
+  // Legacy model kept for compatibility; unifiedMLService will be used by UI
   await globalMlService.loadModel();
 
   // Initialize NEW Ensemble Predictor (Transformer + LSTM + RF)

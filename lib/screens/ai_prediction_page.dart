@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../ml/ml_service.dart';
+import '../ml/crypto_ml_service.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
 import '../widgets/premium_card.dart';
@@ -12,8 +12,8 @@ class AiPredictionPage extends StatefulWidget {
 }
 
 class _AiPredictionPageState extends State<AiPredictionPage> {
-  TradingSignal _signal = TradingSignal.HOLD;
-  List<double> _probabilities = <double>[0, 0, 0];
+  String _action = 'HOLD';
+  List<double> _probabilities = <double>[0.33, 0.34, 0.33];
   bool _isLoading = true;
   bool _isModelReady = false;
   bool _isFetchingData = false;
@@ -21,7 +21,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
   String _selectedSymbol = 'BTCUSDT';
   String _interval = '1h'; // 15m, 1h, 4h
 
-  final BinanceService _binanceService = BinanceService();
+  // final BinanceService _binanceService = BinanceService();
   final List<String> _bases = const ['BTC','ETH','BNB','SOL','WLFI','TRUMP'];
 
   @override
@@ -32,9 +32,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
 
   Future<void> _initialize() async {
     setState(() => _isLoading = true);
-    if (!globalMlService.isInitialized) {
-      await globalMlService.loadModel();
-    }
+    await CryptoMLService().initialize();
     // Load saved quote and base selection if any
     final quote = AppSettingsService().quoteCurrency;
     final opts = _buildPairOptions(quote);
@@ -43,7 +41,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
     }
     setState(() {
       _isLoading = false;
-      _isModelReady = globalMlService.isInitialized;
+      _isModelReady = true;
     });
     if (mounted && _isModelReady) {
       // Auto-run once to populate UI
@@ -60,18 +58,30 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
     });
 
     try {
-      // Fetch real data from Binance
-      debugPrint('▶️ AIPage: fetching features for ' + _selectedSymbol + ' @' + _interval);
-      final features = await _binanceService.getFeaturesForModel(_selectedSymbol, interval: _interval);
-      debugPrint('ℹ️ AIPage: features shape = ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0'));
+      // Get coin from symbol (e.g., BTCUSDT -> BTC)
+      final coin = _selectedSymbol.replaceAll(RegExp(r'(USDT|EUR|USDC)$'), '');
 
-      // Run prediction with real data
-      final Map<String, dynamic> result = globalMlService.getSignal(features, symbol: _selectedSymbol);
-      debugPrint('ℹ️ AIPage: result=' + result.toString());
+      debugPrint('▶️ AIPage: fetching ML prediction for $coin @$_interval');
+
+      // Fetch price data (60x76 features) from Binance
+      final priceData = await BinanceService().getFeaturesForModel(_selectedSymbol, interval: _interval);
+
+      // Use CryptoMLService multi-timeframe weighted ensemble
+      final res = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: priceData,
+        timeframe: _interval,
+      );
+
+      debugPrint('ℹ️ AIPage: CryptoML result action=${res.action} conf=${res.confidence.toStringAsFixed(3)}');
 
       setState(() {
-        _signal = result['signal'] as TradingSignal;
-        _probabilities = (result['probabilities'] as List<dynamic>).cast<double>();
+        _action = res.action;
+        _probabilities = [
+          res.probabilities['SELL'] ?? 0.0,
+          res.probabilities['HOLD'] ?? 0.0,
+          res.probabilities['BUY'] ?? 0.0,
+        ];
         _isFetchingData = false;
       });
     } catch (e) {
@@ -85,7 +95,7 @@ class _AiPredictionPageState extends State<AiPredictionPage> {
   Widget _buildSignalWidget() {
     final maxProb = _probabilities.reduce((a, b) => a > b ? a : b);
     return SignalIndicator(
-      signal: _signal.name,
+      signal: _action,
       confidence: maxProb,
     );
   }

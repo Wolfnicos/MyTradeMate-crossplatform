@@ -69,12 +69,12 @@ class _MarketScreenState extends State<MarketScreen> {
     try {
       // Use different limits based on timeframe to avoid too much historical data
       int limit;
-      if (_interval == '1w') {
-        limit = 20;  // 20 weeks = ~5 months
-      } else if (_interval == '1d') {
+      if (_interval == '1d') {
         limit = 30;  // 30 days = 1 month
       } else if (_interval == '4h') {
         limit = 42;  // 42 x 4h = 7 days
+      } else if (_interval == '5m') {
+        limit = 100;  // 5m x 100 = ~8 hours
       } else {
         limit = 60;  // 15m/1h: 60 candles
       }
@@ -260,11 +260,11 @@ class _MarketScreenState extends State<MarketScreen> {
                         spacing: AppTheme.spacing8,
                         runSpacing: AppTheme.spacing8,
                         children: [
-                          _buildIntervalChip('15m', '15m'),
+                          _buildIntervalChip('5M', '5m'),
+                          _buildIntervalChip('15M', '15m'),
                           _buildIntervalChip('1H', '1h'),
                           _buildIntervalChip('4H', '4h'),
                           _buildIntervalChip('1D', '1d'),
-                          _buildIntervalChip('1W', '1w'),
                         ],
                       ),
                     ],

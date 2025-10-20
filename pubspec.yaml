@@ -92,6 +92,7 @@ flutter:
     - assets/models/  # Legacy per-coin models (fallback)
     - assets/models/legacy/  # Legacy fallback models
     - assets/ml/  # NEW multi-timeframe models (6 coins × 3 timeframes = 18 models)
+    - assets/models/model_registry.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

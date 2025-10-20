@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:crypto/crypto.dart' as crypto;
+import 'dart:convert' show utf8;
 import '../models/candle.dart';
 import 'candle_pattern_detector.dart';
 
@@ -12,11 +14,12 @@ class FullFeatureBuilder {
 
   /// Build complete 76-feature vector for 60 timesteps
   /// Returns List<List<double>> of shape (60, 76)
+  /// Minimum 120 candles required (for SMA100 + 60 sequence)
   List<List<double>> buildFeatures({
     required List<Candle> candles,
   }) {
-    if (candles.length < 260) {
-      throw ArgumentError('Need at least 260 candles (for SMA200 + 60 sequence)');
+    if (candles.length < 120) {
+      throw ArgumentError('Need at least 120 candles (for SMA100 + 60 sequence), got ${candles.length}');
     }
 
     // Sort by time ascending
@@ -264,6 +267,44 @@ class FullFeatureBuilder {
     }
 
     return output;
+  }
+
+  /// Deterministic training signature (features order + scalers + lookbacks)
+  static String trainingSignature() {
+    const String patterns = 'doji,dragonfly_doji,gravestone_doji,long_legged_doji,hammer,inverted_hammer,shooting_star,hanging_man,spinning_top,marubozu_bullish,marubozu_bearish,bullish_engulfing,bearish_engulfing,piercing_line,dark_cloud_cover,bullish_harami,bearish_harami,tweezer_bottom,tweezer_top,morning_star,evening_star,three_white_soldiers,three_black_crows,rising_three,falling_three';
+    const String spec = 'features:76;window:60;'
+        'patterns:' + patterns + ';'
+        'price_action:returns,log_returns,volatility,hl_range,close_position;'
+        'rsi:14;'
+        'macd:12,26,9;'
+        'bollinger:20,2.0;'
+        'atr:14;'
+        'adx:14;'
+        'stoch:14,k3;'
+        'ichimoku:tenkan9,kijun26,senkouB52;'
+        'volume_sma:20;'
+        'ma:20,50,200;'
+        'trend:higher_high,lower_low,uptrend,downtrend;'
+        'scaler:identity_76';
+    return spec;
+  }
+
+  static String trainingSignatureSha256() {
+    final String spec = trainingSignature();
+    final List<int> bytes = utf8.encode(spec);
+    return crypto.sha256.convert(bytes).toString();
+  }
+
+  static bool isDataQualityOk(String expectedHash) {
+    try {
+      final String current = trainingSignatureSha256();
+      final bool ok = expectedHash.isNotEmpty && current == expectedHash;
+      debugPrint('FullFeatureBuilder.data_quality=' + (ok ? 'OK' : 'BAD') + ' (runtime=' + current + ', expected=' + expectedHash + ')');
+      return ok;
+    } catch (e) {
+      debugPrint('FullFeatureBuilder.data_quality=BAD (hash error: ' + e.toString() + ')');
+      return false;
+    }
   }
 
   // ========== HELPER METHODS (CONTINUED IN NEXT MESSAGE DUE TO LENGTH) ==========

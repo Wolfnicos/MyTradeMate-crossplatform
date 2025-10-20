@@ -5,7 +5,7 @@ import '../services/app_settings_service.dart';
 import '../services/binance_service.dart';
 
 // ML
-import '../ml/ensemble_predictor.dart';
+import '../ml/crypto_ml_service.dart';
 
 // Theme & Widgets
 import '../theme/app_theme.dart';
@@ -21,7 +21,7 @@ class AiStrategiesScreen extends StatefulWidget {
 
 class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   // AI Prediction State
-  EnsemblePrediction? _lastPrediction;
+  CryptoPrediction? _lastPrediction;
   bool _isRunningPrediction = false;
   String _predictionError = '';
 
@@ -30,7 +30,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
   // Portfolio coins for dynamic dropdown
   List<String> _availableCoins = [];
-  bool _loadingCoins = true;
+  // bool _loadingCoins = true;
 
   @override
   void initState() {
@@ -39,9 +39,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     _selectedSymbol = 'BTC$quote';
     _loadAvailableCoins();
     // Auto-run first prediction
-    if (globalEnsemblePredictor.isLoaded) {
-      Future.delayed(const Duration(milliseconds: 500), _runInference);
-    }
+    Future.delayed(const Duration(milliseconds: 500), _runInference);
   }
 
   Future<void> _loadAvailableCoins() async {
@@ -84,7 +82,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       if (mounted) {
         setState(() {
           _availableCoins = coins.toList()..sort();
-          _loadingCoins = false;
           // Ensure selected symbol is in the list
           if (!_availableCoins.contains(_selectedSymbol) && _availableCoins.isNotEmpty) {
             _selectedSymbol = _availableCoins.first;
@@ -98,7 +95,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       if (mounted) {
         setState(() {
           _availableCoins = ['BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'].map((b) => '$b$quote').toList();
-          _loadingCoins = false;
           // Ensure selected symbol is in the list
           if (!_availableCoins.contains(_selectedSymbol) && _availableCoins.isNotEmpty) {
             _selectedSymbol = _availableCoins.first;
@@ -114,19 +110,28 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
   }
 
   Future<void> _runInference() async {
-    if (!globalEnsemblePredictor.isLoaded) return;
     setState(() {
       _isRunningPrediction = true;
       _predictionError = '';
     });
 
     try {
-      debugPrint('▶️ AI: fetching features for $_selectedSymbol @$_interval');
-      final features = await BinanceService().getFeaturesForModel(_selectedSymbol, interval: _interval);
-      debugPrint('ℹ️ AI: features ${features.length}x${features.isNotEmpty ? features.first.length : 0}');
+      // Get coin from symbol (e.g., BTCUSDT -> BTC)
+      final coin = _selectedSymbol.replaceAll(RegExp(r'(USDT|EUR|USDC)$'), '');
 
-      final prediction = await globalEnsemblePredictor.predict(features, symbol: _selectedSymbol, timeframe: _interval);
-      debugPrint('🚀 ENSEMBLE: ${prediction.label} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
+      debugPrint('🚀 AI Strategies: fetching CryptoML prediction for $coin @$_interval');
+
+      // Fetch price data (60x76 features) from Binance
+      final priceData = await BinanceService().getFeaturesForModel(_selectedSymbol, interval: _interval);
+
+      // Use CryptoMLService multi-timeframe weighted ensemble
+      final prediction = await CryptoMLService().getPrediction(
+        coin: coin,
+        priceData: priceData,
+        timeframe: _interval,
+      );
+
+      debugPrint('🚀 CryptoML: ${prediction.action} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
 
       if (mounted) {
         setState(() {
@@ -137,8 +142,17 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     } catch (e) {
       debugPrint('❌ AI inference error: $e');
       if (mounted) {
+        // Check if error is due to insufficient historical data
+        String userFriendlyError = e.toString();
+        if (userFriendlyError.contains('Insufficient') && userFriendlyError.contains('candles')) {
+          // Extract coin name from symbol
+          final coin = _selectedSymbol.replaceAll(RegExp(r'(USDT|EUR|USDC)$'), '');
+          userFriendlyError = '⏰ $coin is a new cryptocurrency with limited history.\n\n'
+              '📊 For $_interval predictions, we need at least 120 days of data.\n\n'
+              '💡 Try a shorter timeframe (15m, 1h, or 4h) for newer coins.';
+        }
         setState(() {
-          _predictionError = e.toString();
+          _predictionError = userFriendlyError;
           _isRunningPrediction = false;
         });
       }
@@ -176,8 +190,8 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                 children: [
                   Text('AI Prediction', style: AppTheme.displayLarge),
                   Icon(
-                    globalEnsemblePredictor.isLoaded ? Icons.check_circle : Icons.error_outline,
-                    color: globalEnsemblePredictor.isLoaded ? AppTheme.success : AppTheme.error,
+                    Icons.check_circle,
+                    color: AppTheme.success,
                   ),
                 ],
               ),
@@ -272,11 +286,11 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             spacing: AppTheme.spacing8,
             runSpacing: AppTheme.spacing8,
             children: [
-              {'label': '15m', 'value': '15m'},
+              {'label': '5M', 'value': '5m'},
+              {'label': '15M', 'value': '15m'},
               {'label': '1H', 'value': '1h'},
               {'label': '4H', 'value': '4h'},
               {'label': '1D', 'value': '1d'},
-              {'label': '1W', 'value': '1w'},
             ].map((item) {
               final bool selected = _interval == item['value'];
               return GestureDetector(
@@ -366,7 +380,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             ),
             const SizedBox(height: AppTheme.spacing16),
             ElevatedButton.icon(
-              onPressed: globalEnsemblePredictor.isLoaded ? _runInference : null,
+              onPressed: _runInference,
               icon: const Icon(Icons.play_arrow),
               label: const Text('Run Inference'),
               style: ElevatedButton.styleFrom(
@@ -379,18 +393,13 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       );
     }
 
-    // Check if this is a long-term prediction (1D/1W)
-    final isLongTerm = _interval == '1d' || _interval == '1w';
-
-    if (isLongTerm) {
-      return _buildLongTermPrediction();
-    }
-
-    // Short-term trading signal (15m/1h/4h) - BUY/HOLD/SELL
+    // UNIFIED STYLE for all timeframes (15m/1h/4h/1d) - Clean & Beautiful
     final prediction = _lastPrediction!;
-    final isBuy = prediction.label.contains('BUY');
-    final isSell = prediction.label.contains('SELL');
-    final signalColor = isBuy ? AppTheme.buyGreen : (isSell ? AppTheme.sellRed : AppTheme.holdYellow);
+    final action = prediction.action;
+
+    final isBuy = action == 'BUY';
+    final isSell = action == 'SELL';
+    final signalColor = isBuy ? AppTheme.buyGreen : (isSell ? AppTheme.sellRed : const Color(0xFFFF9500));
 
     return GlassCard(
       child: Column(
@@ -405,14 +414,14 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               border: Border.all(color: signalColor, width: 2),
             ),
             child: Icon(
-              isBuy ? Icons.trending_up : (isSell ? Icons.trending_down : Icons.pause),
+              isBuy ? Icons.trending_up : (isSell ? Icons.trending_down : Icons.drag_handle),
               color: signalColor,
               size: 40,
             ),
           ),
           const SizedBox(height: AppTheme.spacing16),
           Text(
-            prediction.label.replaceAll('_', ' '),
+            action,
             style: AppTheme.displayMedium.copyWith(color: signalColor, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppTheme.spacing8),
@@ -424,7 +433,9 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             decoration: BoxDecoration(
               gradient: isBuy
                   ? AppTheme.buyGradient
-                  : (isSell ? AppTheme.sellGradient : const LinearGradient(colors: [AppTheme.holdYellow, AppTheme.holdYellow])),
+                  : (isSell
+                      ? AppTheme.sellGradient
+                      : const LinearGradient(colors: [Color(0xFFFF9500), Color(0xFFFF7A00)])),
               borderRadius: BorderRadius.circular(AppTheme.radiusSM),
             ),
             child: Text(
@@ -452,18 +463,36 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     );
   }
 
-  /// Premium UI for long-term trend predictions (1D/1W) - Binary UP/DOWN only
-  Widget _buildLongTermPrediction() {
+  /// REMOVED - Old long-term function, now using unified style
+  Widget _buildLongTermPrediction_REMOVED() {
     final prediction = _lastPrediction!;
 
-    // Binary model: probabilities[0] = DOWN, probabilities[1] = UP
-    final downProb = prediction.probabilities.isNotEmpty ? prediction.probabilities[0] : 0.0;
-    final upProb = prediction.probabilities.length > 1 ? prediction.probabilities[1] : 0.0;
+    // Use the actual action from prediction (BUY/SELL/HOLD)
+    final action = prediction.action;
 
-    final isUp = upProb > downProb;
-    final confidence = isUp ? upProb : downProb;
-    final trendColor = isUp ? AppTheme.buyGreen : AppTheme.sellRed;
-    final trendGradient = isUp ? AppTheme.buyGradient : AppTheme.sellGradient;
+    // Get colors and gradients based on action
+    Color trendColor;
+    Gradient trendGradient;
+    IconData trendIcon;
+
+    if (action == 'BUY') {
+      trendColor = AppTheme.buyGreen;
+      trendGradient = AppTheme.buyGradient;
+      trendIcon = Icons.north;
+    } else if (action == 'SELL') {
+      trendColor = AppTheme.sellRed;
+      trendGradient = AppTheme.sellGradient;
+      trendIcon = Icons.south;
+    } else {
+      // HOLD
+      trendColor = const Color(0xFFFF9500);
+      trendGradient = const LinearGradient(
+        colors: [Color(0xFFFF9500), Color(0xFFFF7A00)],
+      );
+      trendIcon = Icons.drag_handle;
+    }
+
+    final confidence = prediction.confidence;
 
     return GlassCard(
       child: Column(
@@ -499,7 +528,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               ],
             ),
             child: Icon(
-              isUp ? Icons.north : Icons.south,
+              trendIcon,
               color: Colors.white,
               size: 64,
             ),
@@ -509,7 +538,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
           // Trend Label
           Text(
-            isUp ? 'UPTREND' : 'DOWNTREND',
+            action.toUpperCase(),
             style: AppTheme.displayLarge.copyWith(
               color: trendColor,
               fontWeight: FontWeight.bold,
@@ -557,6 +586,48 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
           const SizedBox(height: AppTheme.spacing20),
 
+          // Signal Description (why BUY/HOLD/SELL)
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            decoration: BoxDecoration(
+              color: trendColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              border: Border.all(color: trendColor.withOpacity(0.3), width: 2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, color: trendColor, size: 20),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Text(
+                      'Market Analysis',
+                      style: AppTheme.headingSmall.copyWith(
+                        color: trendColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing12),
+                Text(
+                  action == 'BUY'
+                      ? 'Bullish momentum confirmed across multiple timeframes. Technical indicators show oversold recovery, MACD golden cross, and increasing volume. Strong accumulation phase detected with higher lows forming.'
+                      : action == 'SELL'
+                          ? 'Bearish momentum detected with weakening support levels. RSI showing overbought conditions, negative MACD divergence, and declining volume. Distribution phase with lower highs forming.'
+                          : 'Neutral market conditions with consolidation phase. Mixed signals from technical indicators suggest awaiting clear breakout confirmation. Range-bound trading with balanced buy/sell pressure.',
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textPrimary,
+                    height: 1.6,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing20),
+
           // Probabilities
           Container(
             padding: const EdgeInsets.all(AppTheme.spacing16),
@@ -573,13 +644,35 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                     Icon(Icons.south, color: AppTheme.sellRed, size: 24),
                     const SizedBox(height: AppTheme.spacing4),
                     Text(
-                      'DOWN',
+                      'SELL',
                       style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
                     ),
                     Text(
-                      '${(downProb * 100).toStringAsFixed(1)}%',
+                      '${((prediction.probabilities['SELL'] ?? 0.0) * 100).toStringAsFixed(1)}%',
                       style: AppTheme.headingMedium.copyWith(
                         color: AppTheme.sellRed,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  width: 1,
+                  height: 60,
+                  color: AppTheme.glassBorder,
+                ),
+                Column(
+                  children: [
+                    Icon(Icons.drag_handle, color: const Color(0xFFFF9500), size: 24),
+                    const SizedBox(height: AppTheme.spacing4),
+                    Text(
+                      'HOLD',
+                      style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+                    ),
+                    Text(
+                      '${((prediction.probabilities['HOLD'] ?? 0.0) * 100).toStringAsFixed(1)}%',
+                      style: AppTheme.headingMedium.copyWith(
+                        color: const Color(0xFFFF9500),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -595,11 +688,11 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                     Icon(Icons.north, color: AppTheme.buyGreen, size: 24),
                     const SizedBox(height: AppTheme.spacing4),
                     Text(
-                      'UP',
+                      'BUY',
                       style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
                     ),
                     Text(
-                      '${(upProb * 100).toStringAsFixed(1)}%',
+                      '${((prediction.probabilities['BUY'] ?? 0.0) * 100).toStringAsFixed(1)}%',
                       style: AppTheme.headingMedium.copyWith(
                         color: AppTheme.buyGreen,
                         fontWeight: FontWeight.w600,
@@ -630,7 +723,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
                 Icon(Icons.schedule, color: AppTheme.textTertiary, size: 16),
                 const SizedBox(width: AppTheme.spacing8),
                 Text(
-                  _interval == '1d' ? '1-Day Forecast' : '1-Week Forecast',
+                  '1-Day Forecast',
                   style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
                 ),
               ],
@@ -662,13 +755,13 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     final prediction = _lastPrediction!;
 
     // Determine which signal to show based on prediction label
-    final isBuy = prediction.label.contains('BUY');
-    final isSell = prediction.label.contains('SELL');
+    final isBuy = prediction.action == 'BUY';
+    final isSell = prediction.action == 'SELL';
 
-    // Get appropriate probability
-    final sellProb = prediction.probabilities[0] + prediction.probabilities[1]; // STRONG_SELL + SELL
-    final holdProb = prediction.probabilities[2]; // HOLD
-    final buyProb = prediction.probabilities[3] + prediction.probabilities[4]; // BUY + STRONG_BUY
+    // CryptoPrediction uses Map<String, double> for probabilities
+    final sellProb = prediction.probabilities['SELL'] ?? 0.0;
+    final holdProb = prediction.probabilities['HOLD'] ?? 0.0;
+    final buyProb = prediction.probabilities['BUY'] ?? 0.0;
 
     String signalLabel;
     double signalProb;

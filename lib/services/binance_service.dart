@@ -9,6 +9,31 @@ import '../models/candle.dart';
 // import '../services/technical_indicator_calculator.dart';
 import '../services/full_feature_builder.dart';
 
+/// Result wrapper for feature extraction
+class FeatureResult {
+  final bool ok;
+  final List<List<double>>? features;
+  final String? error;
+  final int? need;
+  final int? got;
+
+  const FeatureResult._({
+    required this.ok,
+    this.features,
+    this.error,
+    this.need,
+    this.got,
+  });
+
+  factory FeatureResult.ok(List<List<double>> features) {
+    return FeatureResult._(ok: true, features: features);
+  }
+
+  factory FeatureResult.error(String error, {int? need, int? got}) {
+    return FeatureResult._(ok: false, error: error, need: need, got: got);
+  }
+}
+
 class BinanceService {
   static const String _baseHost = 'api.binance.com'; // Only LIVE mode
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
@@ -425,38 +450,26 @@ class BinanceService {
       // Fetch data based on selected interval
       // MTF structure: base timeframe + lower timeframe + higher timeframe
       List<Candle> baseData;
-      List<Candle> lowData;
-      List<Candle> highData;
 
       if (interval == '15m') {
-        // Base: 15m, Low: 5m, High: 1h
-        baseData = await fetchCustomKlines(symbol, '15m', limit: 260);
-        lowData = await fetchCustomKlines(symbol, '5m', limit: 260 * 3);
-        highData = await fetchCustomKlines(symbol, '1h', limit: 260 ~/ 4 + 10);
+        // Base: 15m, Low: 5m, High: 1h - MAXIM 1000 from Binance
+        baseData = await fetchCustomKlines(symbol, '15m', limit: 1000);
       } else if (interval == '4h') {
-        // Base: 4h, Low: 1h, High: 1d
-        baseData = await fetchCustomKlines(symbol, '4h', limit: 260);
-        lowData = await fetchCustomKlines(symbol, '1h', limit: 260 * 4);
-        highData = await fetchCustomKlines(symbol, '1d', limit: 260 ~/ 6 + 10);
+        // Base: 4h, Low: 1h, High: 1d - MAXIM 1000 from Binance
+        baseData = await fetchCustomKlines(symbol, '4h', limit: 1000);
       } else if (interval == '1d') {
-        // Base: 1d (daily), Low: 4h, High: 1w
-        baseData = await fetchCustomKlines(symbol, '1d', limit: 260);
-        lowData = await fetchCustomKlines(symbol, '4h', limit: 260 * 6);
-        highData = await fetchCustomKlines(symbol, '1w', limit: 260 ~/ 7 + 10);
+        // Base: 1d (daily), Low: 4h, High: 1w - MAXIM 1000 from Binance
+        baseData = await fetchCustomKlines(symbol, '1d', limit: 1000);
       } else if (interval == '1w') {
-        // Base: 1w (weekly), Low: 1d, High: 1M
-        baseData = await fetchCustomKlines(symbol, '1w', limit: 260);
-        lowData = await fetchCustomKlines(symbol, '1d', limit: 260 * 7);
-        highData = await fetchCustomKlines(symbol, '1M', limit: 260 ~/ 4 + 10);
+        // Base: 1w (weekly), Low: 1d, High: 1M - MAXIM 1000 from Binance
+        baseData = await fetchCustomKlines(symbol, '1w', limit: 1000);
       } else {
-        // Default: Base: 1h, Low: 15m, High: 4h
-        baseData = await fetchCustomKlines(symbol, '1h', limit: 260);
-        lowData = await fetchCustomKlines(symbol, '15m', limit: 260 * 4);
-        highData = await fetchCustomKlines(symbol, '4h', limit: 260 ~/ 4 + 10);
+        // Default: Base: 1h, Low: 15m, High: 4h - MAXIM 1000 from Binance
+        baseData = await fetchCustomKlines(symbol, '1h', limit: 1000);
       }
 
-      if (baseData.length < 260) {
-        throw Exception('Insufficient $interval candles: got ${baseData.length}, need >=260 (for SMA200)');
+      if (baseData.length < 120) {
+        throw Exception('Insufficient $interval candles: got ${baseData.length}, need >=120 (for SMA100 + 60 sequence)');
       }
 
       debugPrint('🔧 BinanceService: Building 76 features from ${baseData.length} candles');
@@ -467,6 +480,38 @@ class BinanceService {
     } catch (e) {
       debugPrint('❌ BinanceService: Error getting features → $e');
       rethrow;
+    }
+  }
+
+  /// Feature extraction with structured error reporting
+  Future<FeatureResult> getFeaturesForModelResult(String symbol, {String interval = '1h'}) async {
+    try {
+      List<Candle> baseData;
+      if (interval == '15m') {
+        baseData = await fetchCustomKlines(symbol, '15m', limit: 1000);
+      } else if (interval == '4h') {
+        baseData = await fetchCustomKlines(symbol, '4h', limit: 1000);
+      } else if (interval == '1d') {
+        baseData = await fetchCustomKlines(symbol, '1d', limit: 1000);
+      } else if (interval == '1w') {
+        baseData = await fetchCustomKlines(symbol, '1w', limit: 1000);
+      } else {
+        baseData = await fetchCustomKlines(symbol, '1h', limit: 1000);
+      }
+
+      if (baseData.length < 120) {
+        debugPrint('❌ BinanceService: insufficient_data for ' + symbol + ' @' + interval + ' need=120 got=' + baseData.length.toString());
+        return FeatureResult.error('insufficient_data', need: 120, got: baseData.length);
+      }
+
+      debugPrint('🔧 BinanceService: Building 76 features from ' + baseData.length.toString() + ' candles');
+      final fullBuilder = FullFeatureBuilder();
+      final features = fullBuilder.buildFeatures(candles: baseData);
+      debugPrint('✅ BinanceService: Full features ' + features.length.toString() + 'x' + (features.isNotEmpty ? features.first.length.toString() : '0') + ' [@' + interval + ']');
+      return FeatureResult.ok(features);
+    } catch (e) {
+      debugPrint('❌ BinanceService: feature build error → ' + e.toString());
+      return FeatureResult.error('error');
     }
   }
 }

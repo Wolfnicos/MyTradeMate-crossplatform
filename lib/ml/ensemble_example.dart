@@ -175,10 +175,10 @@ class EnsembleExample {
     }
     return <String>[
       if (quote != null) '$base$quote' else upper,
-      '$baseUSDT',
-      '$baseEUR',
-      '$baseUSDC',
-      '$baseUSD',
+      '${base}USDT',
+      '${base}EUR',
+      '${base}USDC',
+      '${base}USD',
     ];
   }
 

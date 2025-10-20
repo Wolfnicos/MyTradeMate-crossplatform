@@ -1,6 +1,6 @@
 {
-  "type": "GENERAL_TREND",
-  "prediction_horizon": "1 day(s)",
+  "type": "GENERAL",
+  "architecture": "TRANSFORMER",
   "timeframe": "1d",
   "trained_on": [
     "BTC",
@@ -9,25 +9,19 @@
     "SOL",
     "ADA",
     "XRP",
-    "MATIC",
     "DOT",
+    "MATIC",
     "AVAX",
     "LINK"
   ],
-  "test_accuracy": 0.6674259901046753,
-  "confusion_matrix": [
-    [
-      308,
-      122
-    ],
-    [
-      170,
-      278
-    ]
-  ],
-  "train_samples": 3512,
-  "test_samples": 878,
-  "model_size_kb": 50.4140625,
-  "date": "2025-10-19T13:57:44.316774",
-  "num_classes": 2
+  "test_accuracy": 0.4778449237346649,
+  "train_samples": 7944,
+  "test_samples": 1986,
+  "model_size_kb": 1943.9765625,
+  "num_features": 76,
+  "num_classes": 3,
+  "calibration": "label_smoothing_0.1",
+  "scaler_path": "general_1d_scaler.json",
+  "feature_extraction": "build_exact_76_features",
+  "date": "2025-10-19T23:49:12.239744"
 }

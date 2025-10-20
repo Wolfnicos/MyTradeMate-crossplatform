@@ -1,5 +1,6 @@
 {
   "type": "GENERAL",
+  "architecture": "TRANSFORMER",
   "timeframe": "5m",
   "trained_on": [
     "BTC",
@@ -7,13 +8,20 @@
     "BNB",
     "SOL",
     "ADA",
-    "DOGE",
     "XRP",
-    "MATIC"
+    "DOT",
+    "MATIC",
+    "AVAX",
+    "LINK"
   ],
-  "test_accuracy": 0.5580000281333923,
-  "train_samples": 5996,
-  "test_samples": 1500,
-  "model_size_kb": 87.46875,
-  "date": "2025-10-19T13:24:34.543289"
+  "test_accuracy": 0.613796591758728,
+  "train_samples": 7944,
+  "test_samples": 1986,
+  "model_size_kb": 1942.8515625,
+  "num_features": 76,
+  "num_classes": 3,
+  "calibration": "label_smoothing_0.1",
+  "scaler_path": "general_5m_scaler.json",
+  "feature_extraction": "build_exact_76_features",
+  "date": "2025-10-19T23:19:21.845006"
 }

@@ -815,15 +815,22 @@ class CryptoMLService {
 
   /// PHASE 3: Get trained_date from model registry for recency calculations
   String? _getTrainedDate(String modelKey) {
-    if (_modelRegistry == null) return null;
+    if (_modelRegistry == null) {
+      // Default to current date if registry not loaded
+      return DateTime.now().toIso8601String().split('T')[0];
+    }
 
     try {
       final models = _modelRegistry!['models'] as List?;
-      if (models == null) return null;
+      if (models == null) {
+        return DateTime.now().toIso8601String().split('T')[0];
+      }
 
       for (final model in models) {
         if (model is Map<String, dynamic> && model['id'] == modelKey) {
-          return model['trained_date'] as String?;
+          final trainedDate = model['trained_date'] as String?;
+          // Return trained_date if found, otherwise default to current date
+          return trainedDate ?? DateTime.now().toIso8601String().split('T')[0];
         }
       }
     } catch (e) {
@@ -831,7 +838,8 @@ class CryptoMLService {
       print('⚠️  Error reading trained_date for ' + modelKey + ': ' + e.toString());
     }
 
-    return null;
+    // Model not found in registry, default to current date
+    return DateTime.now().toIso8601String().split('T')[0];
   }
 
   /// Cleanup - eliberează resursele

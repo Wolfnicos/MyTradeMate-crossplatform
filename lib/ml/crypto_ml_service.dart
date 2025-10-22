@@ -307,21 +307,21 @@ class CryptoMLService {
       print('📈 ATR (volatility): ${(volatility * 100).toStringAsFixed(2)}%${atr != null ? ' (from candles)' : ' (from features)'}');
     }
 
-    // PHASE 3: Fetch volume percentile with caching (5 min TTL)
+    // PHASE 3: Fetch volume percentile with caching (5 min TTL) - only if pilot active
     double volumePercentile = 0.5; // Default to median
     String? resolvedSymbol;
-    try {
-      final String upper = coin.toUpperCase();
-      final List<String> candidates = <String>[
-        '${upper}EUR',
-        '${upper}USDT',
-        '${upper}USDC',
-        '${upper}USD',
-      ];
-      
-      // Try to resolve symbol
-      for (final s in candidates) {
-        try {
+    if (applyPhase3) {
+      try {
+        final String upper = coin.toUpperCase();
+        final List<String> candidates = <String>[
+          '${upper}EUR',
+          '${upper}USDT',
+          '${upper}USDC',
+          '${upper}USD',
+        ];
+        
+        // Try to resolve symbol
+        for (final s in candidates) {
           // Check cache first
           final cached = _volumeCache[s];
           if (cached != null && DateTime.now().difference(cached.$2) < _volumeCacheTTL) {
@@ -334,32 +334,33 @@ class CryptoMLService {
             break;
           }
           
-          // Not cached, fetch from API
-          await _binanceService.get24hVolume(s);
-          resolvedSymbol = s;
-          volumePercentile = await _binanceService.getVolumePercentile(s);
-          
-          // Cache for 5 minutes
-          _volumeCache[s] = (volumePercentile, DateTime.now());
-          
-          if (!silent) {
-            // ignore: avoid_print
-            print('📊 Phase 3: Volume percentile for $s: ${(volumePercentile * 100).toStringAsFixed(1)}%');
+          // Not cached, try to fetch from API
+          try {
+            volumePercentile = await _binanceService.getVolumePercentile(s);
+            resolvedSymbol = s;
+            
+            // Cache for 5 minutes
+            _volumeCache[s] = (volumePercentile, DateTime.now());
+            
+            if (!silent) {
+              // ignore: avoid_print
+              print('📊 Phase 3: Volume percentile for $s: ${(volumePercentile * 100).toStringAsFixed(1)}%');
+            }
+            break;
+          } catch (_) {
+            // Try next candidate
           }
-          break;
-        } catch (_) {
-          // Try next candidate
         }
-      }
-      
-      if (resolvedSymbol == null && !silent) {
-        // ignore: avoid_print
-        print('⚠️  Phase 3: Could not resolve volume symbol for $upper, using default 0.5');
-      }
-    } catch (e) {
-      if (!silent) {
-        // ignore: avoid_print
-        print('⚠️  Phase 3: Failed to fetch volume percentile, using default 0.5: $e');
+        
+        if (resolvedSymbol == null && !silent) {
+          // ignore: avoid_print
+          print('⚠️  Phase 3: Could not resolve volume symbol for $upper, using default 0.5');
+        }
+      } catch (e) {
+        if (!silent) {
+          // ignore: avoid_print
+          print('⚠️  Phase 3: Failed to fetch volume percentile, using default 0.5: $e');
+        }
       }
     }
     

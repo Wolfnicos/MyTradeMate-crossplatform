@@ -29,7 +29,16 @@ class CryptoMLService {
 
   // PHASE 3 PILOT: Feature flag for gradual rollout
   static const Set<String> _phase3EnabledCoins = {'BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'};
-  static const Set<String> _phase3EnabledTimeframes = {'1h'};
+  static const Set<String> _phase3EnabledTimeframes = {'5m', '15m', '1h', '4h'};
+  
+  // PHASE 3 PILOT: Exclusions (WLFI@1d has insufficient history)
+  static bool _isPhase3Enabled(String coin, String timeframe) {
+    if (coin.toUpperCase() == 'WLFI' && timeframe == '1d') {
+      return false; // WLFI doesn't have enough 1d history
+    }
+    return _phase3EnabledCoins.contains(coin.toUpperCase()) && 
+           _phase3EnabledTimeframes.contains(timeframe);
+  }
 
   // PHASE 3 PILOT: Volume percentile cache (5 min TTL)
   static final Map<String, (double, DateTime)> _volumeCache = {};
@@ -301,8 +310,7 @@ class CryptoMLService {
     final weightedPredictions = <_WeightedPrediction>[];
 
     // PHASE 3 PILOT: Check if Phase 3 weights should be applied for this coin+timeframe
-    final bool applyPhase3 = _phase3EnabledCoins.contains(coin.toUpperCase()) && 
-                              _phase3EnabledTimeframes.contains(timeframe);
+    final bool applyPhase3 = _isPhase3Enabled(coin, timeframe);
     if (!silent && applyPhase3) {
       // ignore: avoid_print
       print('🚀 Phase 3 PILOT ACTIVE for ${coin.toUpperCase()}@$timeframe');

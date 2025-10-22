@@ -28,7 +28,7 @@ class CryptoMLService {
   Map<String, dynamic>? _modelRegistry;
 
   // PHASE 3 PILOT: Feature flag for gradual rollout
-  static const Set<String> _phase3EnabledCoins = {'BTC', 'TRUMP'};
+  static const Set<String> _phase3EnabledCoins = {'BTC', 'ETH', 'BNB', 'SOL', 'WLFI', 'TRUMP'};
   static const Set<String> _phase3EnabledTimeframes = {'1h'};
 
   // PHASE 3 PILOT: Volume percentile cache (5 min TTL)

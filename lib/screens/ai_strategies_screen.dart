@@ -121,19 +121,20 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
 
       debugPrint('🚀 AI Strategies: fetching CryptoML prediction for $coin @$_interval');
 
-      // Fetch price data (60x76 features) from Binance with symbol fallback (USD -> USDT/EUR/USDC)
-      final priceData = await BinanceService().getFeaturesForModelWithFallback(_selectedSymbol, interval: _interval);
+      // Fetch price data (60x76 features) + ATR from Binance with symbol fallback (USD -> USDT/EUR/USDC)
+      final result = await BinanceService().getFeaturesWithATRFallback(_selectedSymbol, interval: _interval);
 
       // Use CryptoMLService multi-timeframe weighted ensemble
       final prediction = await CryptoMLService().getPrediction(
         coin: coin,
-        priceData: priceData,
+        priceData: result.features,
         timeframe: _interval,
+        atr: result.atr, // Pass real ATR for Phase 3 volatility weights
       );
 
       // Debug-only: print final JSON-like summary for QA (no UI impact)
       // ignore: avoid_print
-      print('JSON_AI_STRATEGIES: {"coin":"$coin","timeframe":"$_interval","action":"${prediction.action}","confidence":${prediction.confidence.toStringAsFixed(4)}}');
+      print('JSON_AI_STRATEGIES: {"coin":"$coin","timeframe":"$_interval","action":"${prediction.action}","confidence":${prediction.confidence.toStringAsFixed(4)},"atr":${(result.atr * 100).toStringAsFixed(2)}}');
 
       debugPrint('🚀 CryptoML: ${prediction.action} (${(prediction.confidence * 100).toStringAsFixed(1)}%)');
 

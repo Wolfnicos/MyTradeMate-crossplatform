@@ -33,6 +33,14 @@ class FeatureResult {
   }
 }
 
+/// Result wrapper for features + ATR (for Phase 3 volatility-based weights)
+class FeaturesWithATR {
+  final List<List<double>> features;
+  final double atr;
+
+  const FeaturesWithATR({required this.features, required this.atr});
+}
+
 class BinanceService {
   static const String _baseHost = 'api.binance.com'; // Only LIVE mode
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
@@ -504,6 +512,12 @@ class BinanceService {
 
   /// Build ML features with symbol fallback (e.g., BTCUSD -> try BTCUSDT/BTCEUR/BTCUSDC)
   Future<List<List<double>>> getFeaturesForModelWithFallback(String symbol, {String interval = '1h'}) async {
+    final result = await getFeaturesWithATRFallback(symbol, interval: interval);
+    return result.features;
+  }
+
+  /// Build ML features + ATR with symbol fallback (for Phase 3 volatility-based weights)
+  Future<FeaturesWithATR> getFeaturesWithATRFallback(String symbol, {String interval = '1h'}) async {
     final String upper = symbol.toUpperCase();
     final RegExp suffix = RegExp(r'(USDT|USDC|EUR|USD)$');
     String base = upper;
@@ -533,8 +547,74 @@ class BinanceService {
       }
     }
 
-    // Delegate to the standard builder which fetches sufficient history (1000 candles)
-    return getFeaturesForModel(resolved, interval: interval);
+    // Fetch candles to calculate ATR before feature engineering
+    int limit;
+    switch (interval) {
+      case '15m':
+        limit = 1000;
+        break;
+      case '4h':
+        limit = 1000;
+        break;
+      case '1d':
+        limit = 1000;
+        break;
+      case '1w':
+        limit = 1000;
+        break;
+      default:
+        limit = 1000;
+    }
+
+    final candles = await fetchKlines(resolved, interval: interval, limit: limit);
+    
+    // Calculate ATR from raw candles
+    final candlesForATR = candles.map((c) => [
+      c.openTime.millisecondsSinceEpoch.toDouble(),
+      c.open,
+      c.high,
+      c.low,
+      c.close,
+      c.volume,
+    ]).toList();
+    
+    final atr = _calculateATR(candlesForATR, period: 14);
+    
+    // Build features
+    final fullBuilder = FullFeatureBuilder();
+    final features = fullBuilder.buildFeatures(candles: candles);
+    
+    return FeaturesWithATR(features: features, atr: atr);
+  }
+
+  /// Calculate ATR (Average True Range) from candles
+  static double _calculateATR(List<List<double>> candles, {int period = 14}) {
+    if (candles.length < period + 1) {
+      debugPrint('⚠️  Insufficient candles for ATR (need ${period + 1}, got ${candles.length})');
+      return 0.02; // Default 2% volatility
+    }
+
+    final trueRanges = <double>[];
+    for (int i = 1; i < candles.length; i++) {
+      final high = candles[i][2];
+      final low = candles[i][3];
+      final prevClose = candles[i - 1][4];
+      final tr = _max3(high - low, (high - prevClose).abs(), (low - prevClose).abs());
+      trueRanges.add(tr);
+    }
+
+    if (trueRanges.length < period) {
+      return 0.02;
+    }
+
+    final lastN = trueRanges.sublist(trueRanges.length - period);
+    final atrValue = lastN.reduce((a, b) => a + b) / period;
+    final avgPrice = candles.map((c) => c[4]).reduce((a, b) => a + b) / candles.length;
+    return avgPrice > 0 ? atrValue / avgPrice : 0.02;
+  }
+
+  static double _max3(double a, double b, double c) {
+    return a > b ? (a > c ? a : c) : (b > c ? b : c);
   }
 
   static Candle _parseKlineArray(List<dynamic> arr) {

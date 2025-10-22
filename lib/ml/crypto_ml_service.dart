@@ -285,6 +285,7 @@ class CryptoMLService {
     required List<List<double>> priceData,
     String timeframe = '5m',
     bool silent = false,
+    double? atr, // PHASE 3: Optional real ATR from caller (if null, calculate from priceData)
   }) async {
     // ignore: avoid_print
     print('');
@@ -299,11 +300,11 @@ class CryptoMLService {
 
     final weightedPredictions = <_WeightedPrediction>[];
 
-    // PHASE 3: Calculate ATR from priceData for volatility-based weight adjustments
-    final double atr = EnsembleWeightsV2.calculateATR(candles: priceData, period: 14);
+    // PHASE 3: Use provided ATR or calculate from priceData for volatility-based weight adjustments
+    final double volatility = atr ?? EnsembleWeightsV2.calculateATR(candles: priceData, period: 14);
     if (!silent) {
       // ignore: avoid_print
-      print('📈 ATR (volatility): ${(atr * 100).toStringAsFixed(2)}%');
+      print('📈 ATR (volatility): ${(volatility * 100).toStringAsFixed(2)}%${atr != null ? ' (from candles)' : ' (from features)'}');
     }
 
     // PHASE 3: Fetch volume percentile with caching (5 min TTL)
@@ -397,7 +398,7 @@ class CryptoMLService {
               requestedTf: timeframe,
               modelTf: tf,
               coin: coin,
-              atr: atr, // Real ATR from priceData
+              atr: volatility, // Real ATR from candles
               modelKey: coinKey,
               isGeneral: false,
               volumePercentile: volumePercentile,
@@ -450,7 +451,7 @@ class CryptoMLService {
               requestedTf: timeframe,
               modelTf: tf,
               coin: coin,
-              atr: atr, // Real ATR from priceData
+              atr: volatility, // Real ATR from candles
               modelKey: generalKey,
               isGeneral: true,
               volumePercentile: volumePercentile,

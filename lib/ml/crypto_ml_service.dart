@@ -300,6 +300,14 @@ class CryptoMLService {
 
     final weightedPredictions = <_WeightedPrediction>[];
 
+    // PHASE 3 PILOT: Check if Phase 3 weights should be applied for this coin+timeframe
+    final bool applyPhase3 = _phase3EnabledCoins.contains(coin.toUpperCase()) && 
+                              _phase3EnabledTimeframes.contains(timeframe);
+    if (!silent && applyPhase3) {
+      // ignore: avoid_print
+      print('🚀 Phase 3 PILOT ACTIVE for ${coin.toUpperCase()}@$timeframe');
+    }
+
     // PHASE 3: Use provided ATR or calculate from priceData for volatility-based weight adjustments
     final double volatility = atr ?? EnsembleWeightsV2.calculateATR(candles: priceData, period: 14);
     if (!silent) {
@@ -362,14 +370,6 @@ class CryptoMLService {
           print('⚠️  Phase 3: Failed to fetch volume percentile, using default 0.5: $e');
         }
       }
-    }
-    
-    // PHASE 3 PILOT: Check if Phase 3 weights should be applied
-    final bool applyPhase3 = _phase3EnabledCoins.contains(coin.toUpperCase()) && 
-                              _phase3EnabledTimeframes.contains(timeframe);
-    if (!silent && applyPhase3) {
-      // ignore: avoid_print
-      print('🚀 Phase 3 PILOT ACTIVE for ${coin.toUpperCase()}@$timeframe');
     }
 
     // STEP 1: Load ALL coin-specific models across ALL timeframes

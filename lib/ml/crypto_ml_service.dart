@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'dart:convert';
-import 'dart:math' show log;
+import 'dart:math' show log, max;
 import 'package:mytrademate/services/binance_service.dart';
 import 'package:mytrademate/ml/ensemble_weights_v2.dart';
 
@@ -299,6 +299,13 @@ class CryptoMLService {
 
     final weightedPredictions = <_WeightedPrediction>[];
 
+    // PHASE 3: Calculate ATR from priceData for volatility-based weight adjustments
+    final double atr = EnsembleWeightsV2.calculateATR(candles: priceData, period: 14);
+    if (!silent) {
+      // ignore: avoid_print
+      print('📈 ATR (volatility): ${(atr * 100).toStringAsFixed(2)}%');
+    }
+
     // PHASE 3: Fetch volume percentile with caching (5 min TTL)
     double volumePercentile = 0.5; // Default to median
     String? resolvedSymbol;
@@ -384,13 +391,13 @@ class CryptoMLService {
           // PHASE 3 PILOT: Apply Phase 3 weights if enabled for this coin+timeframe
           final double weight;
           if (applyPhase3) {
-            // Use Phase 3 enhanced weights (volume boost + recency penalty)
+            // Use Phase 3 enhanced weights (real ATR + volume boost + recency penalty)
             final trainedDate = _getTrainedDate(coinKey);
             weight = EnsembleWeightsV2.calculateTimeframeWeight(
               requestedTf: timeframe,
               modelTf: tf,
               coin: coin,
-              atr: 0.025, // Will be calculated properly from priceData
+              atr: atr, // Real ATR from priceData
               modelKey: coinKey,
               isGeneral: false,
               volumePercentile: volumePercentile,
@@ -437,13 +444,13 @@ class CryptoMLService {
           // PHASE 3 PILOT: Apply Phase 3 weights if enabled for this coin+timeframe
           final double weight;
           if (applyPhase3) {
-            // Use Phase 3 enhanced weights (volume boost + recency penalty for general models)
+            // Use Phase 3 enhanced weights (real ATR + volume boost + recency penalty for general models)
             final trainedDate = _getTrainedDate(generalKey);
             weight = EnsembleWeightsV2.calculateTimeframeWeight(
               requestedTf: timeframe,
               modelTf: tf,
               coin: coin,
-              atr: 0.025, // Will be calculated properly from priceData
+              atr: atr, // Real ATR from priceData
               modelKey: generalKey,
               isGeneral: true,
               volumePercentile: volumePercentile,

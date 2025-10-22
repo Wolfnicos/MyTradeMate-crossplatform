@@ -3,6 +3,7 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'dart:convert';
 import 'dart:math' show log;
 import 'package:mytrademate/services/binance_service.dart';
+import 'package:mytrademate/ml/ensemble_weights_v2.dart';
 
 /// Service pentru predicții ML crypto
 class CryptoMLService {
@@ -25,6 +26,14 @@ class CryptoMLService {
 
   // PHASE 3: Model registry with trained_date
   Map<String, dynamic>? _modelRegistry;
+
+  // PHASE 3 PILOT: Feature flag for gradual rollout
+  static const Set<String> _phase3EnabledCoins = {'BTC', 'TRUMP'};
+  static const Set<String> _phase3EnabledTimeframes = {'1h'};
+
+  // PHASE 3 PILOT: Volume percentile cache (5 min TTL)
+  static final Map<String, (double, DateTime)> _volumeCache = {};
+  static const Duration _volumeCacheTTL = Duration(minutes: 5);
 
   /// Inițializează serviciul și încarcă modelele
   Future<void> initialize() async {
@@ -290,8 +299,9 @@ class CryptoMLService {
 
     final weightedPredictions = <_WeightedPrediction>[];
 
-    // PHASE 3: Fetch volume percentile for Phase 3 logging (resolve real symbol: EUR -> USDT -> USDC -> USD)
+    // PHASE 3: Fetch volume percentile with caching (5 min TTL)
     double volumePercentile = 0.5; // Default to median
+    String? resolvedSymbol;
     try {
       final String upper = coin.toUpperCase();
       final List<String> candidates = <String>[
@@ -300,32 +310,57 @@ class CryptoMLService {
         '${upper}USDC',
         '${upper}USD',
       ];
-      String? resolvedSymbol;
+      
+      // Try to resolve symbol
       for (final s in candidates) {
         try {
-          // Probe volume endpoint to verify symbol exists
+          // Check cache first
+          final cached = _volumeCache[s];
+          if (cached != null && DateTime.now().difference(cached.$2) < _volumeCacheTTL) {
+            volumePercentile = cached.$1;
+            resolvedSymbol = s;
+            if (!silent) {
+              // ignore: avoid_print
+              print('📊 Phase 3: Volume percentile for $s: ${(volumePercentile * 100).toStringAsFixed(1)}% (cached)');
+            }
+            break;
+          }
+          
+          // Not cached, fetch from API
           await _binanceService.get24hVolume(s);
           resolvedSymbol = s;
+          volumePercentile = await _binanceService.getVolumePercentile(s);
+          
+          // Cache for 5 minutes
+          _volumeCache[s] = (volumePercentile, DateTime.now());
+          
+          if (!silent) {
+            // ignore: avoid_print
+            print('📊 Phase 3: Volume percentile for $s: ${(volumePercentile * 100).toStringAsFixed(1)}%');
+          }
           break;
-        } catch (_) {}
+        } catch (_) {
+          // Try next candidate
+        }
       }
-      if (resolvedSymbol != null) {
-        volumePercentile = await _binanceService.getVolumePercentile(resolvedSymbol);
-        if (!silent) {
-          // ignore: avoid_print
-          print('📊 Phase 3: Volume percentile for $resolvedSymbol: ${(volumePercentile * 100).toStringAsFixed(1)}%');
-        }
-      } else {
-        if (!silent) {
-          // ignore: avoid_print
-          print('⚠️  Phase 3: Could not resolve volume symbol for $upper, using default 0.5');
-        }
+      
+      if (resolvedSymbol == null && !silent) {
+        // ignore: avoid_print
+        print('⚠️  Phase 3: Could not resolve volume symbol for $upper, using default 0.5');
       }
     } catch (e) {
       if (!silent) {
         // ignore: avoid_print
         print('⚠️  Phase 3: Failed to fetch volume percentile, using default 0.5: $e');
       }
+    }
+    
+    // PHASE 3 PILOT: Check if Phase 3 weights should be applied
+    final bool applyPhase3 = _phase3EnabledCoins.contains(coin.toUpperCase()) && 
+                              _phase3EnabledTimeframes.contains(timeframe);
+    if (!silent && applyPhase3) {
+      // ignore: avoid_print
+      print('🚀 Phase 3 PILOT ACTIVE for ${coin.toUpperCase()}@$timeframe');
     }
 
     // STEP 1: Load ALL coin-specific models across ALL timeframes
@@ -345,7 +380,27 @@ class CryptoMLService {
             coin: coin,
             timeframe: tf,
           );
-          final weight = _calculateTimeframeWeight(timeframe, tf);
+          
+          // PHASE 3 PILOT: Apply Phase 3 weights if enabled for this coin+timeframe
+          final double weight;
+          if (applyPhase3) {
+            // Use Phase 3 enhanced weights (volume boost + recency penalty)
+            final trainedDate = _getTrainedDate(coinKey);
+            weight = EnsembleWeightsV2.calculateTimeframeWeight(
+              requestedTf: timeframe,
+              modelTf: tf,
+              coin: coin,
+              atr: 0.025, // Will be calculated properly from priceData
+              modelKey: coinKey,
+              isGeneral: false,
+              volumePercentile: volumePercentile,
+              trainedDate: trainedDate,
+            );
+          } else {
+            // Use existing logic (preview mode)
+            weight = _calculateTimeframeWeight(timeframe, tf);
+          }
+          
           weightedPredictions.add(_WeightedPrediction(pred, weight, coinKey));
           if (!silent) {
             // ignore: avoid_print
@@ -378,8 +433,27 @@ class CryptoMLService {
             coin: coin,
             timeframe: timeframe, // Use requested timeframe for confidence
           );
-          // General models have lower weight (0.15-0.20)
-          final weight = _calculateTimeframeWeight(timeframe, tf) * 0.6; // Reduce by 40%
+          
+          // PHASE 3 PILOT: Apply Phase 3 weights if enabled for this coin+timeframe
+          final double weight;
+          if (applyPhase3) {
+            // Use Phase 3 enhanced weights (volume boost + recency penalty for general models)
+            final trainedDate = _getTrainedDate(generalKey);
+            weight = EnsembleWeightsV2.calculateTimeframeWeight(
+              requestedTf: timeframe,
+              modelTf: tf,
+              coin: coin,
+              atr: 0.025, // Will be calculated properly from priceData
+              modelKey: generalKey,
+              isGeneral: true,
+              volumePercentile: volumePercentile,
+              trainedDate: trainedDate,
+            );
+          } else {
+            // Use existing logic (general penalty 0.6x)
+            weight = _calculateTimeframeWeight(timeframe, tf) * 0.6;
+          }
+          
           weightedPredictions.add(_WeightedPrediction(pred, weight, generalKey));
           if (!silent) {
             // ignore: avoid_print

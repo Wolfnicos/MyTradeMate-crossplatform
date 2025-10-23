@@ -310,6 +310,8 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
             ),
           ),
           const SizedBox(height: AppTheme.spacing40),
+          // Extra space for bottom navigation bar
+          const SizedBox(height: 80),
         ],
       ),
     ),
@@ -963,7 +965,7 @@ class _AuthPageState extends State<_AuthPage> {
               autofillHints: const [AutofillHints.username, AutofillHints.email],
               style: TextStyle(
                 color: colors.onSurface,
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
@@ -987,7 +989,7 @@ class _AuthPageState extends State<_AuthPage> {
               autofillHints: const [AutofillHints.password],
               style: TextStyle(
                 color: colors.onSurface,
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
@@ -1103,6 +1105,8 @@ class _AuthPageState extends State<_AuthPage> {
             ),
           ],
           const SizedBox(height: AppTheme.spacing40),
+          // Extra space for bottom navigation bar
+          const SizedBox(height: 80),
         ],
       ),
     ),

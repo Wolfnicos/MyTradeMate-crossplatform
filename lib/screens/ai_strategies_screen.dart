@@ -559,7 +559,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     return buffer.toString();
   }
 
-  /// PHASE 4: Build market context badge (volatility or liquidity)
+  /// PHASE 4: Build market context badge with descriptive labels
   Widget _buildMarketBadge({
     required IconData icon,
     required String label,
@@ -567,8 +567,53 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     required bool isHigh,
     required BuildContext context,
   }) {
-    final color = isHigh ? AppTheme.success : AppTheme.textSecondary;
-    final bgColor = isHigh ? AppTheme.success.withOpacity(0.15) : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5);
+    // Parse value to get numeric part
+    String displayLabel = value;
+    Color color = AppTheme.textSecondary;
+    Color bgColor = Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5);
+    
+    // For Volatility badge
+    if (label == 'Volatility') {
+      final atrValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
+      if (atrValue >= 4.0) {
+        displayLabel = 'High ($value)';
+        color = AppTheme.sellRed;
+        bgColor = AppTheme.sellRed.withOpacity(0.15);
+      } else if (atrValue >= 2.5) {
+        displayLabel = 'Elevated ($value)';
+        color = const Color(0xFFFF9500);
+        bgColor = const Color(0xFFFF9500).withOpacity(0.15);
+      } else if (atrValue >= 1.5) {
+        displayLabel = 'Normal ($value)';
+        color = Colors.blue;
+        bgColor = Colors.blue.withOpacity(0.15);
+      } else {
+        displayLabel = 'Calm ($value)';
+        color = AppTheme.success;
+        bgColor = AppTheme.success.withOpacity(0.15);
+      }
+    }
+    // For Liquidity badge
+    else if (label == 'Liquidity') {
+      final volValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
+      if (volValue >= 70) {
+        displayLabel = 'High ($value)';
+        color = AppTheme.success;
+        bgColor = AppTheme.success.withOpacity(0.15);
+      } else if (volValue >= 40) {
+        displayLabel = 'Medium ($value)';
+        color = Colors.blue;
+        bgColor = Colors.blue.withOpacity(0.15);
+      } else if (volValue >= 15) {
+        displayLabel = 'Low ($value)';
+        color = AppTheme.textSecondary;
+        bgColor = Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5);
+      } else {
+        displayLabel = 'Very Low ($value)';
+        color = AppTheme.textSecondary;
+        bgColor = Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5);
+      }
+    }
     
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -592,7 +637,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             style: AppTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
           ),
           Text(
-            value,
+            displayLabel,
             style: AppTheme.bodySmall.copyWith(
               color: color,
               fontWeight: FontWeight.bold,

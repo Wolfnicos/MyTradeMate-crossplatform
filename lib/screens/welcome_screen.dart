@@ -310,7 +310,7 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
           ),
           const SizedBox(height: AppTheme.spacing40),
           // Extra padding for iOS bottom safe area + navigation bar
-          const SizedBox(height: 100), // Fixed height for iOS bottom area
+          const SizedBox(height: 150), // Fixed height for iOS bottom area (iPhone Pro Max)
         ],
       ),
     );
@@ -1100,7 +1100,7 @@ class _AuthPageState extends State<_AuthPage> {
           ],
           const SizedBox(height: AppTheme.spacing40),
           // Extra padding for iOS bottom safe area + navigation bar
-          const SizedBox(height: 100), // Fixed height for iOS bottom area
+          const SizedBox(height: 150), // Fixed height for iOS bottom area (iPhone Pro Max)
         ],
       ),
     );

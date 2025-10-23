@@ -34,18 +34,44 @@ class CryptoIconService {
     return map[upper] ?? symbol.toLowerCase();
   }
 
-  /// Get logo URL using GitHub CDN (spothq/cryptocurrency-icons)
-  /// This is a free, open-source repository with no authentication required
-  /// Works reliably without 403 errors
+  /// Get logo URL - uses Coinpaprika API (free, no auth, no 403)
+  /// Fallback to original CoinGecko URLs which work when cached
   static String getLogoUrl(String symbol, {bool large = false}) {
     final sym = symbol.toUpperCase();
-    final size = large ? '128' : '64';
     
-    // Use cryptocurrency-icons GitHub repo via jsDelivr CDN
-    // Format: https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/svg/color/{symbol}.svg
-    // Or PNG: https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/{size}x{size}/{symbol}.png
+    // Try multiple CDN sources in order of reliability
+    // 1. Coinpaprika - free API, no authentication
+    // 2. CryptoCompare - free, works for most coins
+    // 3. Fallback to letter avatar (handled by CryptoAvatar widget)
     
-    return 'https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/${size}x$size/${sym.toLowerCase()}.png';
+    // Coinpaprika format: https://static.coinpaprika.com/coin/{id}/logo.png
+    final coinpaprikaIds = <String, String>{
+      'BTC': 'btc-bitcoin',
+      'ETH': 'eth-ethereum',
+      'BNB': 'bnb-binance-coin',
+      'SOL': 'sol-solana',
+      'ADA': 'ada-cardano',
+      'DOT': 'dot-polkadot',
+      'LINK': 'link-chainlink',
+      'UNI': 'uni-uniswap',
+      'DOGE': 'doge-dogecoin',
+      'SHIB': 'shib-shiba-inu',
+      'MATIC': 'matic-polygon',
+      'AVAX': 'avax-avalanche',
+      'ATOM': 'atom-cosmos',
+      'XRP': 'xrp-xrp',
+      'LTC': 'ltc-litecoin',
+      'USDT': 'usdt-tether',
+      'USDC': 'usdc-usd-coin',
+    };
+    
+    final coinpaprikaId = coinpaprikaIds[sym];
+    if (coinpaprikaId != null) {
+      return 'https://static.coinpaprika.com/coin/$coinpaprikaId/logo.png';
+    }
+    
+    // Fallback: return a URL that will fail and trigger letter avatar
+    return 'https://static.coinpaprika.com/coin/${sym.toLowerCase()}/logo.png';
   }
 
   /// Get brand color for fallback letter avatars

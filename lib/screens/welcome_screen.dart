@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/risk_disclaimer_dialog.dart';
 import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
 
@@ -30,8 +31,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           controller: _pageController,
           onPageChanged: (index) => setState(() => _currentPage = index),
           children: const [
-            _IntroPage(),
-            _FeatureTiersPage(),
+            _PremiumIntroPage(),
             _AuthPage(),
           ],
         ),
@@ -39,12 +39,352 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       bottomNavigationBar: _BottomIndicator(
         currentPage: _currentPage,
         pageController: _pageController,
+        totalPages: 2,
       ),
     );
   }
 }
 
-// Page 1: App Introduction
+// Page 1: Premium Introduction with Features & Disclaimer
+class _PremiumIntroPage extends StatefulWidget {
+  const _PremiumIntroPage();
+
+  @override
+  State<_PremiumIntroPage> createState() => _PremiumIntroPageState();
+}
+
+class _PremiumIntroPageState extends State<_PremiumIntroPage> {
+  bool _disclaimerAccepted = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppTheme.spacing24),
+      child: Column(
+        children: [
+          const SizedBox(height: AppTheme.spacing32),
+          
+          // Premium Hero Section
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              gradient: AppTheme.premiumGoldGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.warning.withOpacity(0.5),
+                  blurRadius: 60,
+                  spreadRadius: 10,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.auto_awesome,
+              size: 72,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing24),
+
+          // App Title with Premium Badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ShaderMask(
+                shaderCallback: (bounds) => AppTheme.premiumGoldGradient.createShader(bounds),
+                child: Text(
+                  'MyTradeMate',
+                  style: AppTheme.displayLarge.copyWith(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacing8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing8,
+                  vertical: AppTheme.spacing4,
+                ),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.premiumGoldGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                ),
+                child: Text(
+                  'PRO',
+                  style: AppTheme.labelSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacing12),
+
+          // Tagline
+          Text(
+            'AI-Powered Crypto Trading',
+            style: AppTheme.headingLarge.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing8),
+          Text(
+            'Your intelligent trading assistant with advanced AI predictions and automated strategies',
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textSecondary,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.spacing40),
+
+          // Premium Features
+          _buildPremiumFeature(
+            icon: Icons.psychology,
+            gradient: AppTheme.primaryGradient,
+            title: 'Advanced AI Predictions',
+            description: '6 timeframes • 76 indicators • Ensemble models',
+          ),
+          const SizedBox(height: AppTheme.spacing16),
+          _buildPremiumFeature(
+            icon: Icons.trending_up,
+            gradient: AppTheme.buyGradient,
+            title: '4 Order Types',
+            description: 'Market, Limit, Stop-Limit, Stop-Market',
+          ),
+          const SizedBox(height: AppTheme.spacing16),
+          _buildPremiumFeature(
+            icon: Icons.account_balance_wallet,
+            gradient: AppTheme.secondaryGradient,
+            title: 'Portfolio Tracking',
+            description: 'Real-time balances • P&L • Performance analytics',
+          ),
+          const SizedBox(height: AppTheme.spacing16),
+          _buildPremiumFeature(
+            icon: Icons.shield_outlined,
+            gradient: LinearGradient(
+              colors: [AppTheme.success, AppTheme.success.withOpacity(0.6)],
+            ),
+            title: 'Secure & Private',
+            description: 'Biometric auth • Encrypted storage • Your keys',
+          ),
+          
+          const SizedBox(height: AppTheme.spacing40),
+          
+          // Risk Disclaimer Section
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacing20),
+            decoration: BoxDecoration(
+              color: AppTheme.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              border: Border.all(
+                color: AppTheme.warning.withOpacity(0.3),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: AppTheme.warning, size: 24),
+                    const SizedBox(width: AppTheme.spacing12),
+                    Expanded(
+                      child: Text(
+                        'Important Risk Disclaimer',
+                        style: AppTheme.headingMedium.copyWith(
+                          color: AppTheme.warning,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing16),
+                _buildDisclaimerPoint('⚠️', 'Crypto trading involves substantial risk of loss'),
+                _buildDisclaimerPoint('📊', 'Not financial advice - AI predictions may be inaccurate'),
+                _buildDisclaimerPoint('🔞', 'You must be 18+ to use this app'),
+                _buildDisclaimerPoint('💼', 'Always do your own research (DYOR)'),
+                const SizedBox(height: AppTheme.spacing16),
+                
+                // Accept Checkbox
+                GestureDetector(
+                  onTap: () => setState(() => _disclaimerAccepted = !_disclaimerAccepted),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing12),
+                    decoration: BoxDecoration(
+                      color: _disclaimerAccepted 
+                          ? AppTheme.success.withOpacity(0.1)
+                          : AppTheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      border: Border.all(
+                        color: _disclaimerAccepted 
+                            ? AppTheme.success
+                            : AppTheme.glassBorder,
+                        width: 2,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _disclaimerAccepted 
+                              ? Icons.check_circle
+                              : Icons.circle_outlined,
+                          color: _disclaimerAccepted 
+                              ? AppTheme.success
+                              : AppTheme.textTertiary,
+                          size: 24,
+                        ),
+                        const SizedBox(width: AppTheme.spacing12),
+                        Expanded(
+                          child: Text(
+                            'I understand and accept the risks',
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: _disclaimerAccepted 
+                                  ? AppTheme.success
+                                  : AppTheme.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: AppTheme.spacing32),
+          
+          // Get Started Button
+          SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              onPressed: _disclaimerAccepted
+                  ? () {
+                      // Save disclaimer acceptance
+                      RiskDisclaimerDialog.markAccepted();
+                      // Go to auth page
+                      final pageController = context.findAncestorStateOfType<_WelcomeScreenState>()?._pageController;
+                      pageController?.nextPage(
+                        duration: AppTheme.animationNormal,
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _disclaimerAccepted ? AppTheme.primary : AppTheme.textDisabled,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppTheme.textDisabled,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
+                elevation: _disclaimerAccepted ? 8 : 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Get Started',
+                    style: AppTheme.headingMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacing8),
+                  const Icon(Icons.arrow_forward, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing24),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildPremiumFeature({
+    required IconData icon,
+    required Gradient gradient,
+    required String title,
+    required String description,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      decoration: BoxDecoration(
+        gradient: AppTheme.glassGradient,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(color: AppTheme.glassBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: AppTheme.spacing16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.headingSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacing4),
+                Text(
+                  description,
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDisclaimerPoint(String emoji, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.spacing8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: AppTheme.spacing8),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.bodySmall.copyWith(
+                color: AppTheme.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// OLD Page 1: App Introduction (REMOVED)
 class _IntroPage extends StatelessWidget {
   const _IntroPage();
 
@@ -761,10 +1101,12 @@ class _AuthPageState extends State<_AuthPage> {
 class _BottomIndicator extends StatelessWidget {
   final int currentPage;
   final PageController pageController;
+  final int totalPages;
 
   const _BottomIndicator({
     required this.currentPage,
     required this.pageController,
+    this.totalPages = 2,
   });
 
   @override
@@ -801,7 +1143,7 @@ class _BottomIndicator extends StatelessWidget {
             // Page Indicators
             Row(
               mainAxisSize: MainAxisSize.min,
-              children: List.generate(3, (index) {
+              children: List.generate(totalPages, (index) {
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacing4),
                   width: index == currentPage ? 24 : 8,
@@ -817,16 +1159,16 @@ class _BottomIndicator extends StatelessWidget {
 
             // Next/Skip Button
             TextButton(
-              onPressed: currentPage < 2
+              onPressed: currentPage < (totalPages - 1)
                   ? () => pageController.nextPage(
                         duration: AppTheme.animationNormal,
                         curve: Curves.easeInOut,
                       )
                   : null,
               child: Text(
-                currentPage < 2 ? 'Next' : '',
+                currentPage < (totalPages - 1) ? 'Next' : '',
                 style: AppTheme.labelLarge.copyWith(
-                  color: currentPage < 2 ? AppTheme.primary : Colors.transparent,
+                  color: currentPage < (totalPages - 1) ? AppTheme.primary : Colors.transparent,
                 ),
               ),
             ),

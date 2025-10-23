@@ -382,10 +382,6 @@ class CryptoMLService {
 
     // STEP 1: Load ALL coin-specific models across ALL timeframes
     final allTimeframes = ['5m', '15m', '1h', '4h', '1d'];
-    if (!silent) {
-      // ignore: avoid_print
-      print('📊 Loading ALL ${coin.toUpperCase()} models across timeframes...');
-    }
 
     for (final tf in allTimeframes) {
       final coinKey = '${coin.toLowerCase()}_$tf';
@@ -419,14 +415,6 @@ class CryptoMLService {
           }
           
           weightedPredictions.add(_WeightedPrediction(pred, weight, coinKey));
-          if (!silent) {
-            // ignore: avoid_print
-            print('   ✅ $coinKey loaded (weight: ${weight.toStringAsFixed(3)})');
-            // PHASE 3: Show what new weights would be with Phase 3 enhancements
-            final trainedDate = _getTrainedDate(coinKey);
-            // ignore: avoid_print
-            print('   🔮 Phase 3 preview: volumePercentile=${(volumePercentile * 100).toStringAsFixed(0)}%, trainedDate=$trainedDate');
-          }
         } catch (e) {
           // ignore: avoid_print
           print('   ❌ Error loading $coinKey: $e');
@@ -435,10 +423,6 @@ class CryptoMLService {
     }
 
     // STEP 2: Load ALL general models
-    if (!silent) {
-      // ignore: avoid_print
-      print('📊 Loading GENERAL models...');
-    }
 
     for (final tf in ['5m', '1d']) {
       final generalKey = 'general_$tf';
@@ -472,17 +456,6 @@ class CryptoMLService {
           }
           
           weightedPredictions.add(_WeightedPrediction(pred, weight, generalKey));
-          if (!silent) {
-            // ignore: avoid_print
-            print('   ✅ $generalKey loaded (weight: ${weight.toStringAsFixed(3)})');
-            // PHASE 3: Show what new weights would be with Phase 3 enhancements
-            final trainedDate = _getTrainedDate(generalKey);
-            final isOld = trainedDate != null && DateTime.now().difference(DateTime.parse(trainedDate)).inDays > 90;
-            final volumeBoost = volumePercentile > 0.5 ? '+5% volume boost' : 'no volume boost';
-            final agePenalty = isOld ? '-10% age penalty' : 'no age penalty';
-            // ignore: avoid_print
-            print('   🔮 Phase 3 preview: $volumeBoost, $agePenalty (trained: $trainedDate)');
-          }
         } catch (e) {
           // ignore: avoid_print
           print('   ❌ Error loading $generalKey: $e');
@@ -572,11 +545,6 @@ class CryptoMLService {
       String? timeframe,
     }
   ) async {
-    if (!silent) {
-      // ignore: avoid_print
-      print('🔮 Running inference on $modelKey model...');
-    }
-
     final interpreter = _interpreters[modelKey]!;
     final scaler = _scalers[modelKey]!;
     final metadata = _metadata[modelKey]!;
@@ -604,11 +572,6 @@ class CryptoMLService {
       1,
       (_) => List<double>.filled(numClasses, 0.0),
     );
-
-    if (!silent) {
-      // ignore: avoid_print
-      print('🔮 Running inference on $modelKey model...');
-    }
 
     interpreter.run(input, output);
 
@@ -658,13 +621,6 @@ class CryptoMLService {
     final signalStrength = _calculateSignalStrength(probabilities);
     final accuracy = (metadata['test_accuracy'] as num?)?.toDouble() ?? 0.0;
 
-    if (!silent) {
-      // ignore: avoid_print
-      print('   📊 Result: $action (${(confidence * 100).toStringAsFixed(1)}%)');
-      print('   💪 Signal strength: ${signalStrength.toStringAsFixed(1)}');
-      print('   🎯 Model accuracy: ${(accuracy * 100).toStringAsFixed(1)}%');
-    }
-
     return CryptoPrediction(
       action: action,
       confidence: confidence,
@@ -682,14 +638,6 @@ class CryptoMLService {
   ) {
     final mean = (scaler['mean'] as List).cast<double>();
     final std = (scaler['std'] as List).cast<double>();
-
-    // DEBUG: Print first 3 scaler values to verify they're loaded correctly
-    // ignore: avoid_print
-    print('   🔍 SCALER DEBUG: mean[0]=${mean[0].toStringAsFixed(4)}, std[0]=${std[0].toStringAsFixed(4)}');
-    // ignore: avoid_print
-    print('   🔍 SCALER DEBUG: mean[1]=${mean[1].toStringAsFixed(4)}, std[1]=${std[1].toStringAsFixed(4)}');
-    // ignore: avoid_print
-    print('   🔍 SCALER DEBUG: Is identity? mean[0]==0: ${mean[0] == 0.0}, std[0]==1: ${std[0] == 1.0}');
 
     return data
         .map((row) => List<double>.generate(row.length, (i) => (row[i] - mean[i]) / (std[i] + 1e-8)))

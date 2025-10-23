@@ -465,6 +465,35 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             'Ensemble Prediction',
             style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
           ),
+          
+          // PHASE 4: Market Context Badges (ATR + Volume)
+          if (prediction.atr != null || prediction.volumePercentile != null) ...[
+            const SizedBox(height: AppTheme.spacing16),
+            Wrap(
+              spacing: AppTheme.spacing8,
+              runSpacing: AppTheme.spacing8,
+              alignment: WrapAlignment.center,
+              children: [
+                // ATR (Volatility) Badge
+                if (prediction.atr != null) _buildMarketBadge(
+                  icon: Icons.show_chart,
+                  label: 'Volatility',
+                  value: '${(prediction.atr! * 100).toStringAsFixed(2)}%',
+                  isHigh: prediction.atr! > 0.025,
+                  context: context,
+                ),
+                // Volume Percentile Badge
+                if (prediction.volumePercentile != null) _buildMarketBadge(
+                  icon: Icons.water_drop,
+                  label: 'Liquidity',
+                  value: '${(prediction.volumePercentile! * 100).toStringAsFixed(0)}%',
+                  isHigh: prediction.volumePercentile! > 0.70,
+                  context: context,
+                ),
+              ],
+            ),
+          ],
+          
           const SizedBox(height: AppTheme.spacing16),
           ElevatedButton.icon(
             onPressed: _runInference,
@@ -473,6 +502,50 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,
               foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// PHASE 4: Build market context badge (volatility or liquidity)
+  Widget _buildMarketBadge({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isHigh,
+    required BuildContext context,
+  }) {
+    final color = isHigh ? AppTheme.success : AppTheme.textSecondary;
+    final bgColor = isHigh ? AppTheme.success.withOpacity(0.15) : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing12,
+        vertical: AppTheme.spacing8,
+      ),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: AppTheme.spacing4),
+          Text(
+            '$label: ',
+            style: AppTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+          ),
+          Text(
+            value,
+            style: AppTheme.bodySmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

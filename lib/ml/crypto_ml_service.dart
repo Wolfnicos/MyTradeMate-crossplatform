@@ -527,7 +527,18 @@ class CryptoMLService {
       print('');
     }
 
-    return ensemble;
+    // PHASE 4: Return prediction with market context (ATR + volume)
+    return CryptoPrediction(
+      action: ensemble.action,
+      confidence: ensemble.confidence,
+      probabilities: ensemble.probabilities,
+      signalStrength: ensemble.signalStrength,
+      modelAccuracy: ensemble.modelAccuracy,
+      timestamp: ensemble.timestamp,
+      isEnsemble: ensemble.isEnsemble,
+      atr: volatility,
+      volumePercentile: volumePercentile,
+    );
   }
 
   /// Returnează o predicție neutră HOLD când modelele nu sunt disponibile
@@ -975,6 +986,10 @@ class CryptoPrediction {
   final double modelAccuracy;
   final DateTime timestamp;
   final bool isEnsemble;
+  
+  // PHASE 4: Market context for UI display
+  final double? atr; // Average True Range (volatility)
+  final double? volumePercentile; // 0.0-1.0 (market liquidity rank)
 
   CryptoPrediction({
     required this.action,
@@ -984,6 +999,8 @@ class CryptoPrediction {
     required this.modelAccuracy,
     required this.timestamp,
     this.isEnsemble = false,
+    this.atr,
+    this.volumePercentile,
   });
 
   bool get isStrongSignal => confidence > 0.70;

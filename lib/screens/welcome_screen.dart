@@ -928,28 +928,31 @@ class _AuthPageState extends State<_AuthPage> {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppTheme.spacing20),
+      padding: const EdgeInsets.all(AppTheme.spacing16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: AppTheme.spacing16),
+          const SizedBox(height: AppTheme.spacing12),
           Text(
             'Sign in to continue',
               style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(
-                fontSize: 22,
+                fontSize: 20,
                 color: colors.onBackground,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppTheme.spacing8),
+          const SizedBox(height: AppTheme.spacing4),
           Text(
-            'Use email or quick biometric login',
-            style: (textTheme.bodySmall ?? AppTheme.bodyMedium).copyWith(color: colors.onBackground.withOpacity(0.7)),
+            'Use email or biometric login',
+            style: AppTheme.bodySmall.copyWith(
+              color: colors.onBackground.withOpacity(0.7),
+              fontSize: 13,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppTheme.spacing20),
+          const SizedBox(height: AppTheme.spacing16),
 
           // Email Field
           GlassCard(
@@ -1001,12 +1004,12 @@ class _AuthPageState extends State<_AuthPage> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing16),
+          const SizedBox(height: AppTheme.spacing12),
 
           // Sign In Button
           SizedBox(
             width: double.infinity,
-            height: 56,
+            height: 48,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _signIn,
               style: ElevatedButton.styleFrom(
@@ -1022,15 +1025,15 @@ class _AuthPageState extends State<_AuthPage> {
                       height: 24,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  : const Text('Sign In', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing12),
+          const SizedBox(height: AppTheme.spacing8),
 
           // Register Button
           SizedBox(
             width: double.infinity,
-            height: 56,
+            height: 48,
             child: OutlinedButton(
               onPressed: _isLoading ? null : _register,
               style: OutlinedButton.styleFrom(
@@ -1040,11 +1043,11 @@ class _AuthPageState extends State<_AuthPage> {
                   borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                 ),
               ),
-              child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: const Text('Create Account', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
 
-          const SizedBox(height: AppTheme.spacing12),
+          const SizedBox(height: AppTheme.spacing8),
 
           // Guest Mode
           TextButton(
@@ -1065,21 +1068,21 @@ class _AuthPageState extends State<_AuthPage> {
 
           // Biometric Login (if available)
           if (_canUseBiometrics) ...[
-            const SizedBox(height: AppTheme.spacing16),
+            const SizedBox(height: AppTheme.spacing12),
             Row(
               children: [
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
-                  child: Text('OR', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing8),
+                  child: Text('OR', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary, fontSize: 12)),
                 ),
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing16),
+            const SizedBox(height: AppTheme.spacing12),
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 48,
               child: OutlinedButton.icon(
                 onPressed: _isLoading ? null : _signInWithBiometrics,
                 icon: Icon(

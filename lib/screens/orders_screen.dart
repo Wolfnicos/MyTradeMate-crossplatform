@@ -634,6 +634,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             ),
                             child: ElevatedButton(
                               onPressed: () async {
+                              // Show confirmation dialog first
+                              final confirmed = await _confirmOrder();
+                              if (!confirmed) return;
+                              
                               final prefs = await SharedPreferences.getInstance();
                               final bool paper = prefs.getBool('paper_trading') ?? false;
                               if (!tradingEnabled) {
@@ -1309,6 +1313,180 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       case OrderType.stopMarket:
         return 'Stop-Market activates a market order when price reaches stop price. Guarantees execution but not price.';
     }
+  }
+  
+  /// Show order confirmation dialog before executing trade
+  Future<bool> _confirmOrder() async {
+    final amount = _amountCtrl.text;
+    final price = _priceCtrl.text;
+    final total = _totalCtrl.text;
+    final action = isBuy ? 'BUY' : 'SELL';
+    final baseCurrency = _selectedPair.replaceAll('USDT', '').replaceAll('EUR', '').replaceAll('USDC', '');
+    final quoteCurrency = AppSettingsService().quoteCurrency.toUpperCase();
+    
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing8),
+              decoration: BoxDecoration(
+                gradient: isBuy ? AppTheme.buyGradient : AppTheme.sellGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              ),
+              child: Icon(
+                isBuy ? Icons.arrow_upward : Icons.arrow_downward,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
+            Expanded(
+              child: Text(
+                'Confirm $action Order',
+                style: AppTheme.headingLarge,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'You are about to $action:',
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              decoration: BoxDecoration(
+                color: (isBuy ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                border: Border.all(
+                  color: (isBuy ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Amount:',
+                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                      ),
+                      Text(
+                        '$amount $baseCurrency',
+                        style: AppTheme.monoMedium.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.spacing8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Price:',
+                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                      ),
+                      Text(
+                        '~${AppSettingsService.currencyPrefix(quoteCurrency)}$price',
+                        style: AppTheme.monoMedium.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: AppTheme.spacing16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total:',
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${AppSettingsService.currencyPrefix(quoteCurrency)}$total',
+                        style: AppTheme.monoLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isBuy ? AppTheme.buyGreen : AppTheme.sellRed,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing12),
+              decoration: BoxDecoration(
+                color: AppTheme.warning.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                border: Border.all(
+                  color: AppTheme.warning.withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: AppTheme.warning, size: 20),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: Text(
+                      'This action cannot be undone',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.warning,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isBuy ? AppTheme.buyGreen : AppTheme.sellRed,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing24,
+                vertical: AppTheme.spacing12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              ),
+            ),
+            child: Text(
+              'Confirm $action',
+              style: AppTheme.bodyMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 }
 

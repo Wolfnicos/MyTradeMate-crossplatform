@@ -45,9 +45,27 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    // Set initial pair based on quote currency
+    final quote = AppSettingsService().quoteCurrency.toUpperCase();
+    _selectedPair = 'BTC$quote';
+    
     // Load last order type preference
     _loadSavedOrderType();
     _loadPairs();
+    
+    // Listen for quote currency changes
+    AppSettingsService().addListener(_onQuoteCurrencyChanged);
+  }
+  
+  void _onQuoteCurrencyChanged() {
+    // Reload pairs when quote currency changes
+    final quote = AppSettingsService().quoteCurrency.toUpperCase();
+    setState(() {
+      _selectedPair = 'BTC$quote';
+      _loadingPairs = true;
+    });
+    _loadPairs();
+    _loadCurrentPrice();
   }
 
   Future<void> _loadSavedOrderType() async {
@@ -166,6 +184,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   void dispose() {
     _hybridSub?.cancel();
     _aiTimer?.cancel();
+    AppSettingsService().removeListener(_onQuoteCurrencyChanged);
+    _amountCtrl.dispose();
+    _priceCtrl.dispose();
+    _totalCtrl.dispose();
+    _limitPriceCtrl.dispose();
+    _stopPriceCtrl.dispose();
     super.dispose();
   }
 

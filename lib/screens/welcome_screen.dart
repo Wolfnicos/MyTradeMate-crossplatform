@@ -1003,7 +1003,7 @@ class _AuthPageState extends State<_AuthPage> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing8),
+          const SizedBox(height: 4),
 
           // Sign In Button
           SizedBox(
@@ -1027,7 +1027,7 @@ class _AuthPageState extends State<_AuthPage> {
                   : const Text('Sign In', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing8),
+          const SizedBox(height: 4),
 
           // Register Button
           SizedBox(
@@ -1046,7 +1046,7 @@ class _AuthPageState extends State<_AuthPage> {
             ),
           ),
 
-          const SizedBox(height: AppTheme.spacing8),
+          const SizedBox(height: 4),
 
           // Guest Mode
           TextButton(
@@ -1067,7 +1067,7 @@ class _AuthPageState extends State<_AuthPage> {
 
           // Biometric Login (if available)
           if (_canUseBiometrics) ...[
-            const SizedBox(height: AppTheme.spacing8),
+            const SizedBox(height: 4),
             Row(
               children: [
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
@@ -1078,7 +1078,7 @@ class _AuthPageState extends State<_AuthPage> {
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing8),
+            const SizedBox(height: 4),
             SizedBox(
               width: double.infinity,
               height: 44,

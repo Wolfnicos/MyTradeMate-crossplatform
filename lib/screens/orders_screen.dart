@@ -1274,7 +1274,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
-        setState(() => _orderType = type);
+        setState(() {
+          _orderType = type;
+          debugPrint('Orders: Order type changed to: ${type.name}');
+        });
       },
       child: Container(
         padding: const EdgeInsets.symmetric(

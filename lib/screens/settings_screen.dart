@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/theme_provider.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
@@ -783,16 +784,220 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   leading: const Icon(Icons.privacy_tip, color: AppTheme.primary),
                   title: Text('Privacy Policy', style: AppTheme.bodyMedium),
+                  subtitle: Text('How we handle your data', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  trailing: const Icon(Icons.open_in_new, color: AppTheme.textTertiary),
+                  onTap: () => _openPrivacyPolicy(),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.description, color: AppTheme.primary),
+                  title: Text('Terms of Service', style: AppTheme.bodyMedium),
+                  subtitle: Text('Legal terms and conditions', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  trailing: const Icon(Icons.open_in_new, color: AppTheme.textTertiary),
+                  onTap: () => _openTermsOfService(),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.help_outline, color: AppTheme.primary),
+                  title: Text('Support & FAQ', style: AppTheme.bodyMedium),
+                  subtitle: Text('Get help and answers', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  trailing: const Icon(Icons.open_in_new, color: AppTheme.textTertiary),
+                  onTap: () => _openSupport(),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info_outline, color: AppTheme.primary),
+                  title: Text('About MyTradeMate', style: AppTheme.bodyMedium),
+                  subtitle: Text('Version 1.0.0+1', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
                   trailing: const Icon(Icons.chevron_right, color: AppTheme.textTertiary),
-                  onTap: () {
-                    _showSnackBar('Coming soon', isError: false);
-                  },
+                  onTap: () => _showAboutDialog(),
                 ),
               ],
             ),
           ),
 
           const SizedBox(height: AppTheme.spacing40),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final Uri url = Uri.parse('https://mytrademate.app/privacy');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      _showSnackBar('Could not open Privacy Policy', isError: true);
+    }
+  }
+
+  Future<void> _openTermsOfService() async {
+    final Uri url = Uri.parse('https://mytrademate.app/terms');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      _showSnackBar('Could not open Terms of Service', isError: true);
+    }
+  }
+
+  Future<void> _openSupport() async {
+    final Uri url = Uri.parse('https://mytrademate.app/support');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      _showSnackBar('Could not open Support page', isError: true);
+    }
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing8),
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              ),
+              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: AppTheme.spacing12),
+            Text('MyTradeMate', style: AppTheme.headingLarge),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'AI-Powered Crypto Trading Assistant',
+                style: AppTheme.bodyLarge.copyWith(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacing16),
+              _buildAboutRow('Version', '1.0.0+1'),
+              _buildAboutRow('Build', 'Production'),
+              _buildAboutRow('Platform', 'Flutter 3.9.2'),
+              const SizedBox(height: AppTheme.spacing16),
+              Text(
+                'Features:',
+                style: AppTheme.labelLarge.copyWith(color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: AppTheme.spacing8),
+              _buildFeatureRow('🤖', 'AI predictions on 6 timeframes'),
+              _buildFeatureRow('📊', '4 order types (Market, Limit, Stop)'),
+              _buildFeatureRow('💼', 'Real-time portfolio tracking'),
+              _buildFeatureRow('🔒', 'Bank-level security'),
+              _buildFeatureRow('📈', 'Professional charts'),
+              const SizedBox(height: AppTheme.spacing16),
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                  border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.warning_amber, color: AppTheme.warning, size: 18),
+                        const SizedBox(width: AppTheme.spacing8),
+                        Text(
+                          'Disclaimer',
+                          style: AppTheme.labelMedium.copyWith(
+                            color: AppTheme.warning,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spacing8),
+                    Text(
+                      'Cryptocurrency trading involves substantial risk. This app provides tools and information but does NOT constitute financial advice. Trade responsibly.',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacing16),
+              Center(
+                child: Text(
+                  '© 2025 MyTradeMate. All rights reserved.',
+                  style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(context);
+              final Uri url = Uri.parse('https://mytrademate.com');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+            icon: const Icon(Icons.language),
+            label: const Text('Visit Website'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.spacing8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+          ),
+          Text(
+            value,
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(String emoji, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.spacing4),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: AppTheme.spacing8),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+            ),
+          ),
         ],
       ),
     );

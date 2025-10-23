@@ -309,8 +309,8 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
             ),
           ),
           const SizedBox(height: AppTheme.spacing40),
-          // Extra padding for iOS bottom safe area
-          SizedBox(height: MediaQuery.of(context).padding.bottom + AppTheme.spacing24),
+          // Extra padding for iOS bottom safe area + navigation bar
+          const SizedBox(height: 100), // Fixed height for iOS bottom area
         ],
       ),
     );
@@ -1099,8 +1099,8 @@ class _AuthPageState extends State<_AuthPage> {
             ),
           ],
           const SizedBox(height: AppTheme.spacing40),
-          // Extra padding for iOS bottom safe area
-          SizedBox(height: MediaQuery.of(context).padding.bottom + AppTheme.spacing24),
+          // Extra padding for iOS bottom safe area + navigation bar
+          const SizedBox(height: 100), // Fixed height for iOS bottom area
         ],
       ),
     );

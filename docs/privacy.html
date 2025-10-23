@@ -1,409 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MyTradeMate - AI-Powered Crypto Trading Assistant. Get real-time BUY/SELL signals, track your portfolio, and trade with confidence.">
-    <title>MyTradeMate - AI-Powered Crypto Trading</title>
+    <title>Privacy Policy - MyTradeMate</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* Header */
-        header {
-            padding: 20px 0;
+            padding: 40px 20px;
             text-align: center;
         }
-        
-        .logo {
+
+        .header h1 {
             font-size: 3em;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        h1 {
-            font-size: 3.5em;
-            margin: 20px 0;
-            font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .tagline {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-            opacity: 0.95;
-        }
-        
-        .description {
-            font-size: 1.3em;
-            margin-bottom: 40px;
-            opacity: 0.9;
-            line-height: 1.6;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Badges */
-        .badges {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-        }
-        
-        .badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 25px;
-            backdrop-filter: blur(10px);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* Features Grid */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin: 60px 0;
-        }
-        
-        .feature {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .feature:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .feature-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-        
-        .feature h3 {
-            font-size: 1.4em;
-            margin-bottom: 12px;
-        }
-        
-        .feature p {
-            font-size: 1em;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-        
-        /* CTA Buttons */
-        .cta-section {
-            text-align: center;
-            margin: 60px 0;
-        }
-        
-        .cta-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-        
-        .btn {
-            padding: 18px 40px;
-            border-radius: 15px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.2em;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        
-        .btn-primary {
-            background: white;
-            color: #667eea;
-        }
-        
-        .btn-secondary {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid white;
-        }
-        
-        /* Comparison Table */
-        .comparison {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 50px 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            margin: 60px 0;
-        }
-        
-        .comparison h2 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 40px;
-        }
-        
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        
-        .plan {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 40px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .plan.premium {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border: 3px solid #ffd700;
-            transform: scale(1.05);
-        }
-        
-        .plan h3 {
-            font-size: 2em;
             margin-bottom: 10px;
         }
-        
-        .plan .price {
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
             font-size: 1.5em;
-            margin-bottom: 20px;
-            opacity: 0.9;
         }
-        
-        .plan ul {
-            list-style: none;
-            margin: 20px 0;
+
+        p {
+            margin-bottom: 15px;
         }
-        
-        .plan li {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .plan li:before {
-            content: "✓ ";
-            color: #4ade80;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-        
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 50px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            margin-top: 80px;
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
+
+        ul {
+            margin-left: 30px;
             margin-bottom: 20px;
         }
-        
-        .footer-links a {
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 30px;
+            background: #667eea;
             color: white;
             text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.3s;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
         }
-        
-        .footer-links a:hover {
-            opacity: 1;
-            text-decoration: underline;
+
+        .back-link:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
         }
-        
-        .copyright {
-            opacity: 0.6;
-            font-size: 0.9em;
-            margin-top: 20px;
+
+        .last-updated {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
         }
-        
-        /* Responsive */
+
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5em;
+            .container {
+                margin: 20px;
+                padding: 25px;
             }
-            
-            .tagline {
-                font-size: 1.3em;
-            }
-            
-            .description {
-                font-size: 1.1em;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-            }
-            
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .plan.premium {
-                transform: scale(1);
+
+            .header h1 {
+                font-size: 2em;
             }
         }
     </style>
 </head>
+
 <body>
+    <div class="header">
+        <h1>🔒 Privacy Policy</h1>
+        <p>Your Privacy is Our Priority</p>
+    </div>
+
     <div class="container">
-        <header>
-            <div class="logo">🤖</div>
-            <h1>MyTradeMate</h1>
-            <p class="tagline">AI-Powered Crypto Trading Assistant</p>
-            <p class="description">
-                Get real-time BUY/SELL signals powered by machine learning.<br>
-                Track your portfolio and trade with confidence.
-            </p>
-            
-            <div class="badges">
-                <div class="badge">🔒 Bank-Level Security</div>
-                <div class="badge">🤖 76 AI Indicators</div>
-                <div class="badge">📊 4 Order Types</div>
-                <div class="badge">💼 Real-Time Portfolio</div>
-            </div>
-        </header>
-        
-        <section class="cta-section">
-            <h2 style="font-size: 2em; margin-bottom: 20px;">📱 Coming Soon to App Store & Google Play</h2>
-            <div class="cta-buttons">
-                <a href="#" class="btn btn-primary">
-                    <span>📱</span>
-                    <span>Download on App Store</span>
-                </a>
-                <a href="#" class="btn btn-primary">
-                    <span>🤖</span>
-                    <span>Get it on Google Play</span>
-                </a>
-            </div>
-        </section>
-        
-        <section class="features">
-            <div class="feature">
-                <div class="feature-icon">🤖</div>
-                <h3>AI Neural Engine</h3>
-                <p>Multi-timeframe predictions (5m to 7d) powered by ensemble ML models trained on millions of data points.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">📊</div>
-                <h3>4 Order Types</h3>
-                <p>Market, Limit, Stop-Limit, and Stop-Market orders. Full control over your trading strategy.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">💼</div>
-                <h3>Portfolio Tracking</h3>
-                <p>Real-time portfolio valuation, profit/loss tracking, and asset distribution analytics.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">📈</div>
-                <h3>Professional Charts</h3>
-                <p>Candlestick charts with multiple timeframes and technical indicators for deep market analysis.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <h3>Bank-Level Security</h3>
-                <p>Encrypted API keys, biometric authentication, and no data collection. Your keys, your crypto.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">🎯</div>
-                <h3>Paper Trading</h3>
-                <p>Practice with $10,000 virtual funds. Test strategies risk-free before trading real money.</p>
-            </div>
-        </section>
-        
-        <section class="comparison">
-            <h2>💎 Choose Your Plan</h2>
-            <div class="comparison-grid">
-                <div class="plan">
-                    <h3>🆓 FREE</h3>
-                    <p class="price">$0 Forever</p>
-                    <ul>
-                        <li>Portfolio Viewing</li>
-                        <li>Real-time Prices</li>
-                        <li>Charts (All Timeframes)</li>
-                        <li>AI Predictions (Daily Only)</li>
-                        <li>Paper Trading Mode</li>
-                        <li>Basic Analytics</li>
-                    </ul>
-                </div>
-                
-                <div class="plan premium">
-                    <h3>💎 PREMIUM</h3>
-                    <p class="price">Use Your Own API</p>
-                    <ul>
-                        <li>Everything in FREE</li>
-                        <li>AI Predictions (ALL Timeframes)</li>
-                        <li>Trading Capabilities</li>
-                        <li>4 Order Types</li>
-                        <li>Advanced Indicators</li>
-                        <li>Volatility & Liquidity Analysis</li>
-                        <li>Priority Support</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        
-        <footer>
-            <div class="footer-links">
-                <a href="privacy.html">Privacy Policy</a>
-                <a href="terms.html">Terms of Service</a>
-                <a href="support.html">Support & FAQ</a>
-                <a href="mailto:mytrademate.app@gmail.com">Contact Us</a>
-            </div>
-            <p class="copyright">
-                © 2025 MyTradeMate. All rights reserved.<br>
-                ⚠️ Cryptocurrency trading involves substantial risk. Trade responsibly.
-            </p>
-        </footer>
+        <p class="last-updated"><strong>Last Updated:</strong> October 23, 2025 | <strong>Effective Date:</strong>
+            October 23, 2025</p>
+
+        <div class="highlight">
+            <h3>🎯 TL;DR - The Short Version</h3>
+            <p><strong>We don't collect, store, or transmit ANY of your personal data. Everything stays on YOUR
+                    device.</strong></p>
+            <p>No tracking. No analytics. No data collection. Period.</p>
+        </div>
+
+        <h2>What We DO NOT Collect</h2>
+        <p>MyTradeMate is built with privacy-first principles. We <strong>DO NOT</strong> collect:</p>
+        <ul>
+            <li>❌ Your name, email, or contact information</li>
+            <li>❌ Your Binance API keys or credentials</li>
+            <li>❌ Your trading history or portfolio data</li>
+            <li>❌ Your device information or identifiers</li>
+            <li>❌ Your location data</li>
+            <li>❌ Your usage analytics or behavior</li>
+            <li>❌ Any cookies or tracking data</li>
+            <li>❌ Any personally identifiable information (PII)</li>
+        </ul>
+
+        <h2>How Your Data is Stored</h2>
+        <h3>Local Storage Only</h3>
+        <p>All data in MyTradeMate is stored <strong>locally on your device</strong>:</p>
+
+        <p><strong>1. FlutterSecureStorage (for API keys)</strong></p>
+        <ul>
+            <li>Your Binance API keys are encrypted and stored in your device's secure keychain</li>
+            <li>iOS: Stored in iOS Keychain (hardware-encrypted)</li>
+            <li>Android: Stored in Android Keystore (hardware-encrypted)</li>
+            <li>Never transmitted to our servers (we don't have servers!)</li>
+        </ul>
+
+        <p><strong>2. SharedPreferences (for app settings)</strong></p>
+        <ul>
+            <li>Theme preference (light/dark mode)</li>
+            <li>Quote currency preference (USDT/EUR/USDC)</li>
+            <li>Paper trading mode toggle</li>
+            <li>Risk disclaimer acceptance flag</li>
+        </ul>
+
+        <div class="highlight">
+            <h3>✅ What This Means for You</h3>
+            <ul>
+                <li>✅ Your data never leaves your device</li>
+                <li>✅ We cannot access your API keys</li>
+                <li>✅ We cannot see your portfolio</li>
+                <li>✅ We cannot track your trades</li>
+                <li>✅ If you uninstall the app, all data is deleted</li>
+            </ul>
+        </div>
+
+        <h2>Third-Party Services</h2>
+        <p>MyTradeMate connects to external services to provide functionality:</p>
+
+        <h3>1. Binance API</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Fetch market data, portfolio balances, and execute trades</li>
+            <li><strong>Data Sent:</strong> Your API keys (encrypted in transit via HTTPS)</li>
+            <li><strong>Data Received:</strong> Market prices, portfolio balances, order status</li>
+            <li><strong>Privacy Policy:</strong> <a href="https://www.binance.com/en/privacy" target="_blank">Binance
+                    Privacy Policy</a></li>
+        </ul>
+
+        <h3>2. Coinpaprika API</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Fetch cryptocurrency logos</li>
+            <li><strong>Data Sent:</strong> Cryptocurrency symbol only (e.g., "BTC")</li>
+            <li><strong>Data Received:</strong> Logo image URL</li>
+            <li><strong>Privacy Policy:</strong> <a href="https://coinpaprika.com/privacy-policy"
+                    target="_blank">Coinpaprika Privacy</a></li>
+        </ul>
+
+        <h3>3. RevenueCat (Subscription Management)</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Process in-app subscriptions (Premium plan)</li>
+            <li><strong>Data Sent:</strong> Anonymous user ID, subscription status, purchase receipts</li>
+            <li><strong>Data Received:</strong> Subscription status, entitlements, expiration date</li>
+            <li><strong>Data Stored:</strong> Purchase history (required by Apple/Google)</li>
+            <li><strong>Privacy Policy:</strong> <a href="https://www.revenuecat.com/privacy" target="_blank">RevenueCat
+                    Privacy Policy</a></li>
+        </ul>
+
+        <h3>4. Apple App Store / Google Play Store</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Process payments for Premium subscriptions</li>
+            <li><strong>Data Collected:</strong> Payment information, purchase history (handled by Apple/Google)</li>
+            <li><strong>Privacy Policy:</strong>
+                <a href="https://www.apple.com/legal/privacy/" target="_blank">Apple Privacy</a> |
+                <a href="https://policies.google.com/privacy" target="_blank">Google Privacy</a>
+            </li>
+        </ul>
+
+        <p><strong>Important:</strong> All API calls are made <strong>directly from your device</strong> to these
+            services. We do not act as a middleman. We do not log or store any requests.</p>
+
+        <h2>Permissions Used</h2>
+
+        <h3>iOS Permissions:</h3>
+        <ul>
+            <li><strong>Internet Access:</strong> Required to connect to Binance API</li>
+            <li><strong>Face ID / Touch ID (Optional):</strong> Secure authentication when opening the app</li>
+        </ul>
+
+        <h3>Android Permissions:</h3>
+        <ul>
+            <li><strong>Internet Access:</strong> Required to connect to Binance API</li>
+            <li><strong>Network State:</strong> Check internet connection status</li>
+            <li><strong>Biometric Authentication (Optional):</strong> Fingerprint authentication</li>
+        </ul>
+
+        <h2>Subscription Data</h2>
+        <p>If you subscribe to MyTradeMate Premium, the following data is processed:</p>
+
+        <h3>What We Collect for Subscriptions:</h3>
+        <ul>
+            <li><strong>Anonymous User ID:</strong> Generated by RevenueCat (not linked to your identity)</li>
+            <li><strong>Subscription Status:</strong> Active, expired, or cancelled</li>
+            <li><strong>Purchase Receipts:</strong> Validated by Apple/Google (we don't see payment details)</li>
+            <li><strong>Subscription Type:</strong> Monthly or Annual plan</li>
+            <li><strong>Expiration Date:</strong> When your subscription renews or expires</li>
+        </ul>
+
+        <h3>What We DO NOT Collect:</h3>
+        <ul>
+            <li>❌ Credit card numbers or payment information</li>
+            <li>❌ Your real name or email (unless you contact support)</li>
+            <li>❌ Billing address</li>
+            <li>❌ Purchase history beyond subscription status</li>
+        </ul>
+
+        <h3>How Subscription Data is Used:</h3>
+        <ul>
+            <li>✅ Verify your Premium subscription status</li>
+            <li>✅ Unlock Premium features in the app</li>
+            <li>✅ Restore purchases on new devices</li>
+            <li>✅ Prevent subscription fraud</li>
+        </ul>
+
+        <h3>Data Retention:</h3>
+        <ul>
+            <li>Subscription data is retained as long as your subscription is active</li>
+            <li>After cancellation, data is retained for 90 days (for refund/support purposes)</li>
+            <li>You can request deletion by emailing mytrademate.app@gmail.com</li>
+        </ul>
+
+        <h2>Data Security</h2>
+        <p>Even though we don't collect data, we take security seriously:</p>
+        <ul>
+            <li>✅ API keys encrypted using FlutterSecureStorage</li>
+            <li>✅ All API calls use HTTPS (TLS 1.2+)</li>
+            <li>✅ No plaintext storage of sensitive data</li>
+            <li>✅ Optional biometric authentication</li>
+            <li>✅ Password hashing using SHA-256</li>
+            <li>✅ Order confirmation dialogs prevent accidental trades</li>
+            <li>✅ Subscription data encrypted in transit and at rest</li>
+            <li>✅ Payment processing handled by Apple/Google (PCI-DSS compliant)</li>
+        </ul>
+
+        <h2>Your Rights</h2>
+        <p>Since we don't collect any data:</p>
+        <ul>
+            <li><strong>Delete:</strong> Simply uninstall the app</li>
+            <li><strong>Export:</strong> You control your device</li>
+            <li><strong>Correct:</strong> Edit settings in the app</li>
+            <li><strong>Access:</strong> All data is on your device</li>
+        </ul>
+
+        <h2>Children's Privacy</h2>
+        <p>MyTradeMate is <strong>NOT intended for users under 18 years of age.</strong> Cryptocurrency trading involves
+            financial risk and is only suitable for adults.</p>
+
+        <h2>GDPR Compliance (EU Users)</h2>
+        <ul>
+            <li><strong>Data Controller:</strong> You (it's on your device)</li>
+            <li><strong>Legal Basis:</strong> Not applicable (we don't process personal data)</li>
+            <li><strong>Your Rights:</strong> Full control via your device</li>
+        </ul>
+
+        <h2>CCPA Compliance (California Users)</h2>
+        <ul>
+            <li><strong>Personal Information Collected:</strong> None</li>
+            <li><strong>Sale of Personal Information:</strong> We don't sell data (we don't collect it)</li>
+        </ul>
+
+        <h2>Contact Us</h2>
+        <p>Questions about this Privacy Policy?</p>
+        <ul>
+            <li><strong>Email:</strong> <a href="mailto:mytrademate.app@gmail.com">mytrademate.app@gmail.com</a></li>
+            <li><strong>Website:</strong> <a href="https://mytrademate.app">https://mytrademate.app</a></li>
+            <li><strong>Response Time:</strong> Within 48 hours</li>
+        </ul>
+
+        <div class="highlight">
+            <h3>📋 Summary</h3>
+            <p><strong>What we collect:</strong> Nothing</p>
+            <p><strong>What we store:</strong> Nothing (except locally on your device)</p>
+            <p><strong>What we share:</strong> Nothing</p>
+            <p><strong>What we sell:</strong> Nothing</p>
+            <p><strong>Your data = Your device = Your control</strong></p>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 </body>
+
 </html>

@@ -34,46 +34,18 @@ class CryptoIconService {
     return map[upper] ?? symbol.toLowerCase();
   }
 
-  /// Get logo URL for a coin using CoinGecko public CDN
-  /// Uses coin-images.coingecko.com which allows public access (no 403)
+  /// Get logo URL using GitHub CDN (spothq/cryptocurrency-icons)
+  /// This is a free, open-source repository with no authentication required
+  /// Works reliably without 403 errors
   static String getLogoUrl(String symbol, {bool large = false}) {
-    final coinId = getCoinGeckoId(symbol);
-    final size = large ? 'large' : 'thumb';  // thumb = 64x64, small = 32x32, large = 256x256
+    final sym = symbol.toUpperCase();
+    final size = large ? '128' : '64';
     
-    // Map of coin slug to image ID (from CoinGecko API)
-    final imageIds = <String, String>{
-      'bitcoin': '1',
-      'ethereum': '279',
-      'binancecoin': '825',
-      'solana': '4128',
-      'cardano': '975',
-      'polkadot': '12171',
-      'chainlink': '1975',
-      'uniswap': '12504',
-      'dogecoin': '5',
-      'shiba-inu': '11939',
-      'pepe': '29850',
-      'matic-network': '4713',
-      'avalanche-2': '12559',
-      'cosmos': '3794',
-      'ripple': '44',
-      'litecoin': '2',
-      'tether': '325',
-      'usd-coin': '6319',
-      'dai': '4943',
-      'world-liberty-financial-wlfi': '38036',
-      'maga-trump': '37967',
-    };
+    // Use cryptocurrency-icons GitHub repo via jsDelivr CDN
+    // Format: https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/svg/color/{symbol}.svg
+    // Or PNG: https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/{size}x{size}/{symbol}.png
     
-    final imageId = imageIds[coinId];
-    
-    if (imageId != null) {
-      // Use public CDN (no authentication required, no 403 errors)
-      return 'https://coin-images.coingecko.com/coins/images/$imageId/$size/$coinId.png';
-    } else {
-      // Fallback for unknown coins
-      return 'https://coin-images.coingecko.com/coins/images/1/$size/bitcoin.png';
-    }
+    return 'https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/${size}x$size/${sym.toLowerCase()}.png';
   }
 
   /// Get brand color for fallback letter avatars

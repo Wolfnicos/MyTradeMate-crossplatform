@@ -58,11 +58,12 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppTheme.spacing24),
-      child: Column(
-        children: [
-          const SizedBox(height: AppTheme.spacing32),
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppTheme.spacing24),
+        child: Column(
+          children: [
+            const SizedBox(height: AppTheme.spacing32),
           
           // Premium Hero Section
           Container(
@@ -309,10 +310,9 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
             ),
           ),
           const SizedBox(height: AppTheme.spacing40),
-          // Extra padding for iOS bottom safe area + navigation bar
-          const SizedBox(height: 150), // Fixed height for iOS bottom area (iPhone Pro Max)
         ],
       ),
+    ),
     );
   }
   
@@ -927,13 +927,14 @@ class _AuthPageState extends State<_AuthPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppTheme.spacing16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: AppTheme.spacing12),
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppTheme.spacing16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppTheme.spacing12),
           Text(
             'Sign in to continue',
               style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(
@@ -1102,10 +1103,9 @@ class _AuthPageState extends State<_AuthPage> {
             ),
           ],
           const SizedBox(height: AppTheme.spacing40),
-          // Extra padding for iOS bottom safe area + navigation bar
-          const SizedBox(height: 150), // Fixed height for iOS bottom area (iPhone Pro Max)
         ],
       ),
+    ),
     );
   }
 }

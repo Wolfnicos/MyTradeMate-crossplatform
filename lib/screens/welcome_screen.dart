@@ -926,16 +926,16 @@ class _AuthPageState extends State<_AuthPage> {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppTheme.spacing24),
+      padding: const EdgeInsets.all(AppTheme.spacing20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing16),
           Text(
             'Sign in to continue',
               style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(
-                fontSize: 24,
+                fontSize: 22,
                 color: colors.onBackground,
                 fontWeight: FontWeight.w800,
               ),
@@ -944,10 +944,10 @@ class _AuthPageState extends State<_AuthPage> {
           const SizedBox(height: AppTheme.spacing8),
           Text(
             'Use email or quick biometric login',
-            style: (textTheme.bodyMedium ?? AppTheme.bodyLarge).copyWith(color: colors.onBackground.withOpacity(0.7)),
+            style: (textTheme.bodySmall ?? AppTheme.bodyMedium).copyWith(color: colors.onBackground.withOpacity(0.7)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing20),
 
           // Email Field
           GlassCard(
@@ -999,7 +999,7 @@ class _AuthPageState extends State<_AuthPage> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing16),
 
           // Sign In Button
           SizedBox(
@@ -1063,7 +1063,7 @@ class _AuthPageState extends State<_AuthPage> {
 
           // Biometric Login (if available)
           if (_canUseBiometrics) ...[
-            const SizedBox(height: AppTheme.spacing24),
+            const SizedBox(height: AppTheme.spacing16),
             Row(
               children: [
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
@@ -1074,7 +1074,7 @@ class _AuthPageState extends State<_AuthPage> {
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing24),
+            const SizedBox(height: AppTheme.spacing16),
             SizedBox(
               width: double.infinity,
               height: 56,

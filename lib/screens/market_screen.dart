@@ -5,6 +5,7 @@ import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/crypto_avatar.dart';
 import '../utils/responsive.dart';
 
 class MarketScreen extends StatefulWidget {
@@ -369,29 +370,13 @@ class _MarketScreenState extends State<MarketScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Coin name
+              // Coin name with logo
               Row(
                 children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: (isGain ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                      border: Border.all(
-                        color: (isGain ? AppTheme.buyGreen : AppTheme.sellRed).withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        base.substring(0, 1),
-                        style: AppTheme.bodySmall.copyWith(
-                          color: isGain ? AppTheme.buyGreen : AppTheme.sellRed,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
+                  CryptoAvatar(
+                    symbol: base,
+                    size: 28,
+                    showBorder: true,
                   ),
                   const SizedBox(width: AppTheme.spacing8),
                   Expanded(

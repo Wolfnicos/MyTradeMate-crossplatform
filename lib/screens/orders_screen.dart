@@ -9,6 +9,7 @@ import '../ml/ml_service.dart';
 import 'dart:async';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/crypto_avatar.dart';
 import '../services/app_settings_service.dart';
 import '../widgets/orders/achievement_toast.dart';
 import '../widgets/orders/open_orders_card.dart';
@@ -1231,17 +1232,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(AppTheme.spacing8),
-              decoration: BoxDecoration(
-                gradient: AppTheme.secondaryGradient,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-              ),
-              child: const Icon(
-                Icons.currency_bitcoin,
-                color: Colors.white,
-                size: 20,
-              ),
+            CryptoAvatar(
+              symbol: _selectedPair.replaceAll('USDT', '').replaceAll('EUR', '').replaceAll('USDC', ''),
+              size: 36,
+              showBorder: true,
             ),
             const SizedBox(width: AppTheme.spacing12),
             Expanded(

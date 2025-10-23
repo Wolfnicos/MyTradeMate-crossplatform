@@ -466,31 +466,47 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary),
           ),
           
-          // PHASE 4: Market Context Badges (ATR + Volume)
+          // PHASE 4: Market Context Badges (ATR + Volume) with animation
           if (prediction.atr != null || prediction.volumePercentile != null) ...[
             const SizedBox(height: AppTheme.spacing16),
-            Wrap(
-              spacing: AppTheme.spacing8,
-              runSpacing: AppTheme.spacing8,
-              alignment: WrapAlignment.center,
-              children: [
-                // ATR (Volatility) Badge
-                if (prediction.atr != null) _buildMarketBadge(
-                  icon: Icons.show_chart,
-                  label: 'Volatility',
-                  value: '${(prediction.atr! * 100).toStringAsFixed(2)}%',
-                  isHigh: prediction.atr! > 0.025,
-                  context: context,
-                ),
-                // Volume Percentile Badge
-                if (prediction.volumePercentile != null) _buildMarketBadge(
-                  icon: Icons.water_drop,
-                  label: 'Liquidity',
-                  value: '${(prediction.volumePercentile! * 100).toStringAsFixed(0)}%',
-                  isHigh: prediction.volumePercentile! > 0.70,
-                  context: context,
-                ),
-              ],
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOut,
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(0, 10 * (1 - value)),
+                    child: child,
+                  ),
+                );
+              },
+              child: Wrap(
+                spacing: AppTheme.spacing8,
+                runSpacing: AppTheme.spacing8,
+                alignment: WrapAlignment.center,
+                children: [
+                  // ATR (Volatility) Badge
+                  if (prediction.atr != null) _buildMarketBadge(
+                    icon: Icons.show_chart,
+                    label: 'Volatility',
+                    value: '${(prediction.atr! * 100).toStringAsFixed(2)}%',
+                    isHigh: prediction.atr! > 0.025,
+                    context: context,
+                    tooltipMessage: 'ATR (Average True Range) measures market volatility. Higher values indicate more price movement and trading opportunities.',
+                  ),
+                  // Volume Percentile Badge
+                  if (prediction.volumePercentile != null) _buildMarketBadge(
+                    icon: Icons.water_drop,
+                    label: 'Liquidity',
+                    value: '${(prediction.volumePercentile! * 100).toStringAsFixed(0)}%',
+                    isHigh: prediction.volumePercentile! > 0.70,
+                    context: context,
+                    tooltipMessage: 'Liquidity rank compared to major cryptocurrencies. Higher liquidity means more reliable trading signals and better execution.',
+                  ),
+                ],
+              ),
             ),
           ],
           
@@ -559,13 +575,14 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     return buffer.toString();
   }
 
-  /// PHASE 4: Build market context badge with descriptive labels
+  /// PHASE 4: Build market context badge with descriptive labels and tooltip
   Widget _buildMarketBadge({
     required IconData icon,
     required String label,
     required String value,
     required bool isHigh,
     required BuildContext context,
+    required String tooltipMessage,
   }) {
     // Parse value to get numeric part
     String displayLabel = value;
@@ -615,35 +632,47 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       }
     }
     
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacing12,
-        vertical: AppTheme.spacing8,
-      ),
+    return Tooltip(
+      message: tooltipMessage,
+      padding: const EdgeInsets.all(AppTheme.spacing12),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-        ),
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        border: Border.all(color: color.withOpacity(0.5)),
+        boxShadow: AppTheme.glassShadow,
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: AppTheme.spacing4),
-          Text(
-            '$label: ',
-            style: AppTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+      textStyle: AppTheme.bodySmall.copyWith(color: AppTheme.textPrimary),
+      preferBelow: false,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing12,
+          vertical: AppTheme.spacing8,
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+          border: Border.all(
+            color: color.withOpacity(0.3),
           ),
-          Text(
-            displayLabel,
-            style: AppTheme.bodySmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: AppTheme.spacing4),
+            Text(
+              '$label: ',
+              style: AppTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
             ),
-          ),
-        ],
+            Text(
+              displayLabel,
+              style: AppTheme.bodySmall.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

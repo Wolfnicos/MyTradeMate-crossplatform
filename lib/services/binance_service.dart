@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:async';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -73,6 +75,70 @@ class BinanceService {
     await _secureStorage.write(key: 'binance_api_secret', value: apiSecret);
     _apiKey = apiKey;
     _apiSecret = apiSecret;
+  }
+
+  /// Retry HTTP requests with exponential backoff
+  Future<http.Response> _requestWithRetry(
+    Future<http.Response> Function() request, {
+    int maxRetries = 3,
+    Duration initialDelay = const Duration(seconds: 1),
+  }) async {
+    int retryCount = 0;
+    
+    while (true) {
+      try {
+        final response = await request().timeout(
+          const Duration(seconds: 10),
+        );
+        
+        // Success
+        if (response.statusCode == 200) {
+          return response;
+        }
+        
+        // Rate limited - wait longer
+        if (response.statusCode == 429) {
+          if (retryCount >= maxRetries) {
+            throw Exception('Rate limited. Please try again later.');
+          }
+          
+          final delay = Duration(
+            seconds: (2 << (retryCount + 1)), // 4s, 8s, 16s
+          );
+          debugPrint('Rate limited. Retrying in ${delay.inSeconds}s...');
+          await Future.delayed(delay);
+          retryCount++;
+          continue;
+        }
+        
+        // Other HTTP errors
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+        
+      } on TimeoutException {
+        if (retryCount >= maxRetries) {
+          throw Exception('Request timed out after $maxRetries retries');
+        }
+        
+        final delay = Duration(
+          seconds: initialDelay.inSeconds * (1 << retryCount), // 1s, 2s, 4s
+        );
+        debugPrint('Timeout. Retrying in ${delay.inSeconds}s...');
+        await Future.delayed(delay);
+        retryCount++;
+        
+      } on SocketException {
+        if (retryCount >= maxRetries) {
+          throw Exception('No internet connection');
+        }
+        
+        final delay = Duration(
+          seconds: initialDelay.inSeconds * (1 << retryCount),
+        );
+        debugPrint('Network error. Retrying in ${delay.inSeconds}s...');
+        await Future.delayed(delay);
+        retryCount++;
+      }
+    }
   }
 
   /// Clear stored credentials

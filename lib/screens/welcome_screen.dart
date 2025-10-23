@@ -91,14 +91,17 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ShaderMask(
-                shaderCallback: (bounds) => AppTheme.premiumGoldGradient.createShader(bounds),
-                child: Text(
-                  'MyTradeMate',
-                  style: AppTheme.displayLarge.copyWith(
-                    fontSize: 42,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+              Flexible(
+                child: ShaderMask(
+                  shaderCallback: (bounds) => AppTheme.premiumGoldGradient.createShader(bounds),
+                  child: Text(
+                    'MyTradeMate',
+                    style: AppTheme.displayLarge.copyWith(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

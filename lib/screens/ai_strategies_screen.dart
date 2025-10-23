@@ -509,6 +509,56 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     );
   }
 
+  /// PHASE 4: Generate dynamic HOLD explanation based on market context
+  String _generateHoldExplanation({
+    required String coin,
+    required String timeframe,
+    double? atr,
+    double? volumePercentile,
+    required double sellProb,
+    required double buyProb,
+  }) {
+    final coinName = coin.replaceAll(RegExp(r'(USDT|EUR|USDC|USD)$'), '');
+    final buffer = StringBuffer();
+    
+    // Market condition
+    if (atr != null && atr > 0.025) {
+      buffer.write('$coinName is in a high-volatility phase (${(atr * 100).toStringAsFixed(2)}% ATR). ');
+    } else {
+      buffer.write('$coinName is trading in a stable range. ');
+    }
+    
+    // Liquidity context
+    if (volumePercentile != null) {
+      if (volumePercentile > 0.70) {
+        buffer.write('High liquidity (${(volumePercentile * 100).toStringAsFixed(0)}% percentile) ensures reliable signals. ');
+      } else if (volumePercentile < 0.30) {
+        buffer.write('Low liquidity (${(volumePercentile * 100).toStringAsFixed(0)}% percentile) suggests caution on large moves. ');
+      }
+    }
+    
+    // Signal balance explanation
+    final diff = (sellProb - buyProb).abs();
+    if (diff < 0.15) {
+      buffer.write('BUY and SELL signals are nearly balanced (${(buyProb * 100).toStringAsFixed(1)}% vs ${(sellProb * 100).toStringAsFixed(1)}%), indicating market indecision. ');
+    } else if (sellProb > buyProb) {
+      buffer.write('Slight bearish bias (${(sellProb * 100).toStringAsFixed(1)}% SELL vs ${(buyProb * 100).toStringAsFixed(1)}% BUY), but not strong enough for action. ');
+    } else {
+      buffer.write('Slight bullish bias (${(buyProb * 100).toStringAsFixed(1)}% BUY vs ${(sellProb * 100).toStringAsFixed(1)}% SELL), but confidence below threshold. ');
+    }
+    
+    // Timeframe-specific advice
+    if (timeframe == '5m' || timeframe == '15m') {
+      buffer.write('Short-term consolidation detected. Await clearer momentum on $timeframe chart.');
+    } else if (timeframe == '1h' || timeframe == '4h') {
+      buffer.write('Mid-term range-bound trading. Wait for breakout confirmation on $timeframe timeframe.');
+    } else {
+      buffer.write('Long-term consolidation. Market awaiting catalyst for directional move.');
+    }
+    
+    return buffer.toString();
+  }
+
   /// PHASE 4: Build market context badge (volatility or liquidity)
   Widget _buildMarketBadge({
     required IconData icon,
@@ -876,7 +926,15 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
       signalProb = holdProb;
       signalColor = AppTheme.holdYellow;
       signalIcon = Icons.pause;
-      signalDescription = 'Neutral market conditions. Consolidation phase, awaiting breakout confirmation. Mixed signals from technical indicators.';
+      // PHASE 4: Dynamic HOLD explanation based on coin + ATR + volume
+      signalDescription = _generateHoldExplanation(
+        coin: _selectedSymbol,
+        timeframe: _interval,
+        atr: prediction.atr,
+        volumePercentile: prediction.volumePercentile,
+        sellProb: sellProb,
+        buyProb: buyProb,
+      );
     }
 
     return GlassCard(

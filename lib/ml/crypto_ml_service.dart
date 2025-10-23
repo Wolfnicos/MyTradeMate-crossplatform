@@ -523,6 +523,11 @@ class CryptoMLService {
       print('   📉 BUY:  ${(ensemble.probabilities["BUY"]! * 100).toStringAsFixed(1)}%');
       // ignore: avoid_print
       print('🎯 ==========================================');
+      // PHASE 4: Preview market context
+      // ignore: avoid_print
+      print('');
+      // ignore: avoid_print
+      print('🔮 Phase 4 preview: ATR=${(volatility * 100).toStringAsFixed(2)}%, liquidity=${(volumePercentile * 100).toStringAsFixed(0)}%');
       // ignore: avoid_print
       print('');
     }

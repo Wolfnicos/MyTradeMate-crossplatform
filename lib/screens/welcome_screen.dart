@@ -296,13 +296,14 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
                 children: [
                   Text(
                     'Get Started',
-                    style: AppTheme.headingMedium.copyWith(
+                    style: TextStyle(
                       color: Colors.white,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(width: AppTheme.spacing8),
-                  const Icon(Icons.arrow_forward, color: Colors.white),
+                  const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
                 ],
               ),
             ),
@@ -1024,7 +1025,7 @@ class _AuthPageState extends State<_AuthPage> {
                       height: 24,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : const Text('Sign In', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  : const Text('Sign In', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: AppTheme.spacing8),
@@ -1042,7 +1043,7 @@ class _AuthPageState extends State<_AuthPage> {
                   borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                 ),
               ),
-              child: const Text('Create Account', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              child: const Text('Create Account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ),
           ),
 

@@ -308,7 +308,7 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing24),
+          const SizedBox(height: AppTheme.spacing40),
         ],
       ),
     );
@@ -1096,6 +1096,7 @@ class _AuthPageState extends State<_AuthPage> {
               ),
             ),
           ],
+          const SizedBox(height: AppTheme.spacing40),
         ],
       ),
     );
@@ -1162,18 +1163,18 @@ class _BottomIndicator extends StatelessWidget {
               }),
             ),
 
-            // Next/Skip Button
+            // Next/Skip Button (hidden on page 0 - use Get Started instead)
             TextButton(
-              onPressed: currentPage < (totalPages - 1)
+              onPressed: (currentPage > 0 && currentPage < (totalPages - 1))
                   ? () => pageController.nextPage(
                         duration: AppTheme.animationNormal,
                         curve: Curves.easeInOut,
                       )
                   : null,
               child: Text(
-                currentPage < (totalPages - 1) ? 'Next' : '',
+                (currentPage > 0 && currentPage < (totalPages - 1)) ? 'Next' : '',
                 style: AppTheme.labelLarge.copyWith(
-                  color: currentPage < (totalPages - 1) ? AppTheme.primary : Colors.transparent,
+                  color: (currentPage > 0 && currentPage < (totalPages - 1)) ? AppTheme.primary : Colors.transparent,
                 ),
               ),
             ),

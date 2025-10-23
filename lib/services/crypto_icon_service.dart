@@ -9,8 +9,8 @@ class CryptoIconService {
       'ETH': 'ethereum',
       'BNB': 'binancecoin',
       'SOL': 'solana',
-      'WLFI': 'world-liberty-financial',
-      'TRUMP': 'official-trump',
+      'WLFI': 'world-liberty-financial-wlfi',  // Updated slug
+      'TRUMP': 'maga-trump',                    // Updated slug (MAGA Trump is the main one)
       'ADA': 'cardano',
       'DOT': 'polkadot',
       'LINK': 'chainlink',
@@ -21,6 +21,12 @@ class CryptoIconService {
       'MATIC': 'matic-network',
       'AVAX': 'avalanche-2',
       'ATOM': 'cosmos',
+      'XRP': 'ripple',
+      'LTC': 'litecoin',
+      'BCH': 'bitcoin-cash',
+      'USDT': 'tether',
+      'USDC': 'usd-coin',
+      'DAI': 'dai',
       // Add more as needed
     };
     
@@ -28,44 +34,47 @@ class CryptoIconService {
     return map[upper] ?? symbol.toLowerCase();
   }
 
-  /// Map symbols to CoinGecko numeric IDs (for image URLs)
-  static String getCoinGeckoImageId(String symbol) {
-    final map = <String, String>{
-      'BTC': '1',           // Bitcoin
-      'ETH': '279',         // Ethereum
-      'BNB': '825',         // Binance Coin
-      'SOL': '4128',        // Solana
-      'WLFI': '38036',      // World Liberty Financial
-      'TRUMP': '38103',     // Official Trump
-      'ADA': '975',         // Cardano
-      'DOT': '12171',       // Polkadot
-      'LINK': '1975',       // Chainlink
-      'UNI': '12504',       // Uniswap
-      'DOGE': '5',          // Dogecoin
-      'SHIB': '11939',      // Shiba Inu
-      'PEPE': '29850',      // Pepe
-      'MATIC': '4713',      // Polygon
-      'AVAX': '12559',      // Avalanche
-      'ATOM': '3794',       // Cosmos
-      'XRP': '44',          // Ripple
-      'LTC': '2',           // Litecoin
-      'BCH': '1',           // Bitcoin Cash (uses same as BTC for fallback)
-      'USDT': '325',        // Tether
-      'USDC': '6319',       // USD Coin
-      'DAI': '4943',        // Dai
-      // Add more as needed
-    };
-    
-    final upper = symbol.toUpperCase();
-    return map[upper] ?? '1'; // Default to Bitcoin ID if unknown
-  }
-
-  /// Get logo URL for a coin (small: 64x64, large: 256x256)
+  /// Get logo URL for a coin using CoinGecko CDN
+  /// Uses both numeric ID and slug for maximum compatibility
   static String getLogoUrl(String symbol, {bool large = false}) {
-    final imageId = getCoinGeckoImageId(symbol);
     final coinId = getCoinGeckoId(symbol);
     final size = large ? 'large' : 'small';
-    return 'https://assets.coingecko.com/coins/images/$imageId/$size/$coinId.png';
+    
+    // Map of coin slug to image ID (from CoinGecko)
+    final imageIds = <String, String>{
+      'bitcoin': '1',
+      'ethereum': '279',
+      'binancecoin': '825',
+      'solana': '4128',
+      'cardano': '975',
+      'polkadot': '12171',
+      'chainlink': '1975',
+      'uniswap': '12504',
+      'dogecoin': '5',
+      'shiba-inu': '11939',
+      'pepe': '29850',
+      'matic-network': '4713',
+      'avalanche-2': '12559',
+      'cosmos': '3794',
+      'ripple': '44',
+      'litecoin': '2',
+      'tether': '325',
+      'usd-coin': '6319',
+      'dai': '4943',
+      'world-liberty-financial-wlfi': '38036',
+      'maga-trump': '37967',  // MAGA Trump token
+    };
+    
+    final imageId = imageIds[coinId];
+    
+    if (imageId != null) {
+      // Use standard CoinGecko CDN URL
+      return 'https://assets.coingecko.com/coins/images/$imageId/$size/$coinId.png';
+    } else {
+      // Fallback: try to construct URL with coin ID as image ID
+      // This works for some newer coins
+      return 'https://coin-images.coingecko.com/coins/images/1/$size/$coinId.png';
+    }
   }
 
   /// Get brand color for fallback letter avatars

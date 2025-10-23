@@ -14,7 +14,7 @@ import '../widgets/orders/achievement_toast.dart';
 import '../widgets/orders/open_orders_card.dart';
 import '../utils/responsive.dart';
 
-enum OrderType { hybrid, aiModel, market }
+enum OrderType { market, limit, stopLimit, stopMarket }
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -32,6 +32,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   final TextEditingController _amountCtrl = TextEditingController();
   final TextEditingController _priceCtrl = TextEditingController();
   final TextEditingController _totalCtrl = TextEditingController();
+  final TextEditingController _limitPriceCtrl = TextEditingController();
+  final TextEditingController _stopPriceCtrl = TextEditingController();
   bool _updatingFields = false;
   final String _aiInterval = '1h';
   final bool _ocoEnabled = false;
@@ -54,11 +56,17 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     if (saved != null) {
       setState(() {
         switch (saved) {
-          case 'hybrid':
-            _orderType = OrderType.hybrid;
+          case 'market':
+            _orderType = OrderType.market;
             break;
-          case 'ai_model':
-            _orderType = OrderType.aiModel;
+          case 'limit':
+            _orderType = OrderType.limit;
+            break;
+          case 'stop_limit':
+            _orderType = OrderType.stopLimit;
+            break;
+          case 'stop_market':
+            _orderType = OrderType.stopMarket;
             break;
           default:
             _orderType = OrderType.market;
@@ -266,6 +274,63 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(height: AppTheme.spacing16),
+                        
+                        // Order Type Selector (only in PREMIUM mode)
+                        if (AppSettingsService().isTradingEnabled)
+                          RepaintBoundary(
+                            child: GlassCard(
+                              padding: const EdgeInsets.all(AppTheme.spacing16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Order Type',
+                                    style: AppTheme.labelMedium.copyWith(
+                                      color: AppTheme.textTertiary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppTheme.spacing12),
+                                  Wrap(
+                                    spacing: AppTheme.spacing8,
+                                    runSpacing: AppTheme.spacing8,
+                                    children: [
+                                      _buildOrderTypeChip('Market', OrderType.market),
+                                      _buildOrderTypeChip('Limit', OrderType.limit),
+                                      _buildOrderTypeChip('Stop-Limit', OrderType.stopLimit),
+                                      _buildOrderTypeChip('Stop-Market', OrderType.stopMarket),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppTheme.spacing12),
+                                  // Order Type Explanation
+                                  Container(
+                                    padding: const EdgeInsets.all(AppTheme.spacing12),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                      border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.info_outline, color: AppTheme.primary, size: 18),
+                                        const SizedBox(width: AppTheme.spacing8),
+                                        Expanded(
+                                          child: Text(
+                                            _getOrderTypeExplanation(_orderType),
+                                            style: AppTheme.bodySmall.copyWith(
+                                              color: AppTheme.textSecondary,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        
                         FutureBuilder<SharedPreferences>(
                           future: SharedPreferences.getInstance(),
                           builder: (context, snap) {
@@ -340,6 +405,80 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               ),
 
                               const SizedBox(height: AppTheme.spacing20),
+
+                              // Limit Price (for Limit and Stop-Limit orders)
+                              if (_orderType == OrderType.limit || _orderType == OrderType.stopLimit) ...[
+                                Text(
+                                  'Limit Price',
+                                  style: AppTheme.labelMedium.copyWith(
+                                    color: AppTheme.textTertiary,
+                                  ),
+                                ),
+                                const SizedBox(height: AppTheme.spacing8),
+                                TextField(
+                                  controller: _limitPriceCtrl,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  style: AppTheme.bodyLarge,
+                                  decoration: InputDecoration(
+                                    hintText: 'Enter limit price',
+                                    hintStyle: AppTheme.bodyLarge.copyWith(
+                                      color: AppTheme.textDisabled,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppTheme.surfaceVariant,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.spacing16,
+                                      vertical: AppTheme.spacing16,
+                                    ),
+                                    prefixText: AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency),
+                                    prefixStyle: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: AppTheme.spacing20),
+                              ],
+
+                              // Stop Price (for Stop-Limit and Stop-Market orders)
+                              if (_orderType == OrderType.stopLimit || _orderType == OrderType.stopMarket) ...[
+                                Text(
+                                  'Stop Price',
+                                  style: AppTheme.labelMedium.copyWith(
+                                    color: AppTheme.textTertiary,
+                                  ),
+                                ),
+                                const SizedBox(height: AppTheme.spacing8),
+                                TextField(
+                                  controller: _stopPriceCtrl,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  style: AppTheme.bodyLarge,
+                                  decoration: InputDecoration(
+                                    hintText: 'Enter stop price',
+                                    hintStyle: AppTheme.bodyLarge.copyWith(
+                                      color: AppTheme.textDisabled,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppTheme.surfaceVariant,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.spacing16,
+                                      vertical: AppTheme.spacing16,
+                                    ),
+                                    prefixText: AppSettingsService.currencyPrefix(AppSettingsService().quoteCurrency),
+                                    prefixStyle: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: AppTheme.spacing20),
+                              ],
 
                               // Current Price Display
                               Row(
@@ -522,48 +661,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                     }
                                   }
                                 }
-                              } else if (_orderType == OrderType.hybrid) {
-                                _hybridSub?.cancel();
-                                _hybridSub = hybridStrategiesService.signalsStream.listen((signals) {
-                                  final StrategySignal m = signals.firstWhere(
-                                    (s) => (isBuy && s.type == SignalType.BUY) || (!isBuy && s.type == SignalType.SELL),
-                                    orElse: () => StrategySignal(strategyName: 'none', type: SignalType.HOLD, confidence: 0.0, reason: 'no match'),
-                                  );
-                                  if (((isBuy && m.type == SignalType.BUY) || (!isBuy && m.type == SignalType.SELL))) {
-                                    final price = double.tryParse(_priceCtrl.text) ?? 0.0;
-                                    final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
-                                    PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
-                                    _hybridSub?.cancel();
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hybrid signal executed (${m.type.name})')));
-                                    }
-                                  }
-                                });
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: waiting for Hybrid strategy signal...')));
-                                }
-                              } else {
-                                _aiTimer?.cancel();
-                                _aiTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
-                                  try {
-                                    final feats = await BinanceService().getFeaturesForModel(_selectedPair, interval: _aiInterval);
-                                    final res = globalMlService.getSignal(feats, symbol: _selectedPair);
-                                    final TradingSignal sig = res['signal'] as TradingSignal;
-                                    if ((isBuy && sig == TradingSignal.BUY) || (!isBuy && sig == TradingSignal.SELL)) {
-                                      final price = double.tryParse(_priceCtrl.text) ?? 0.0;
-                                      final qty = double.tryParse(_amountCtrl.text) ?? 0.0;
-                                      PaperBroker().execute(Trade(time: DateTime.now(), side: isBuy ? 'BUY' : 'SELL', price: price, quantity: qty));
-                                      _aiTimer?.cancel();
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('AI Model signal executed (${sig.name})')));
-                                      }
-                                    }
-                                  } catch (_) {}
-                                });
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Armed: AI Model monitoring...')));
-                                }
                               }
+                              // TODO: Implement Limit, Stop-Limit, Stop-Market order execution
+                              // For now, only Market orders are fully implemented
                             },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
@@ -765,23 +865,27 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   String _orderTypeLabel(OrderType t) {
     switch (t) {
-      case OrderType.hybrid:
-        return 'Hybrid (Strategies)';
-      case OrderType.aiModel:
-        return 'AI Model';
       case OrderType.market:
         return 'Market';
+      case OrderType.limit:
+        return 'Limit';
+      case OrderType.stopLimit:
+        return 'Stop-Limit';
+      case OrderType.stopMarket:
+        return 'Stop-Market';
     }
   }
 
   IconData _orderTypeIcon(OrderType t) {
     switch (t) {
-      case OrderType.hybrid:
-        return Icons.auto_graph;
-      case OrderType.aiModel:
-        return Icons.smart_toy_outlined;
       case OrderType.market:
-        return Icons.show_chart;
+        return Icons.flash_on;
+      case OrderType.limit:
+        return Icons.price_check;
+      case OrderType.stopLimit:
+        return Icons.stop_circle;
+      case OrderType.stopMarket:
+        return Icons.stop;
     }
   }
 
@@ -806,9 +910,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              tile(OrderType.hybrid, 'Hybrid (Strategies)', 'Combines rule-based logic with ML signal'),
-              tile(OrderType.aiModel, 'AI Model', 'Folosește doar modelul TFLite'),
-              tile(OrderType.market, 'Market', 'Immediate execution at market price'),
+              tile(OrderType.market, 'Market', 'Executes immediately at current price'),
+              tile(OrderType.limit, 'Limit', 'Executes at your specified price or better'),
+              tile(OrderType.stopLimit, 'Stop-Limit', 'Activates limit order at stop price'),
+              tile(OrderType.stopMarket, 'Stop-Market', 'Activates market order at stop price'),
               const SizedBox(height: 8),
             ],
           ),
@@ -961,6 +1066,52 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     if (sym.endsWith('USDC')) return sym.replaceAll('USDC', '/USDC');
     if (sym.endsWith('EUR')) return sym.replaceAll('EUR', '/EUR');
     return sym;
+  }
+  
+  /// Build Order Type chip
+  Widget _buildOrderTypeChip(String label, OrderType type) {
+    final bool selected = _orderType == type;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _orderType = type);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing16,
+          vertical: AppTheme.spacing8,
+        ),
+        decoration: BoxDecoration(
+          gradient: selected ? AppTheme.primaryGradient : null,
+          color: selected ? null : AppTheme.glassWhite,
+          borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+          border: Border.all(
+            color: selected ? Colors.transparent : AppTheme.glassBorder,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTheme.bodyMedium.copyWith(
+            color: selected ? Colors.white : AppTheme.textSecondary,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+  
+  /// Get explanation for each order type
+  String _getOrderTypeExplanation(OrderType type) {
+    switch (type) {
+      case OrderType.market:
+        return 'Market order executes immediately at current market price. Best for quick trades.';
+      case OrderType.limit:
+        return 'Limit order executes only at your specified price or better. Good for getting exact entry price.';
+      case OrderType.stopLimit:
+        return 'Stop-Limit activates a limit order when price reaches stop price. Used for stop-loss or breakout entries.';
+      case OrderType.stopMarket:
+        return 'Stop-Market activates a market order when price reaches stop price. Guarantees execution but not price.';
+    }
   }
 }
 

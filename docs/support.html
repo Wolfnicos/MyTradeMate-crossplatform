@@ -2,12 +2,294 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Support - MyTradeMate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support & FAQ - MyTradeMate</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { font-size: 3em; margin-bottom: 10px; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h2 { color: #667eea; margin-top: 40px; margin-bottom: 20px; font-size: 2em; }
+        h3 { color: #764ba2; margin-top: 25px; margin-bottom: 15px; font-size: 1.5em; }
+        p { margin-bottom: 15px; }
+        ul { margin-left: 30px; margin-bottom: 20px; }
+        li { margin-bottom: 10px; }
+        .contact-box { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center; border: 2px solid #667eea; }
+        .contact-box h3 { color: #667eea; margin-bottom: 15px; font-size: 1.8em; }
+        .contact-box a { color: #667eea; text-decoration: none; font-weight: 600; font-size: 1.3em; }
+        .contact-box a:hover { text-decoration: underline; }
+        .faq-item { background: #f9f9f9; padding: 25px; margin-bottom: 20px; border-radius: 10px; border-left: 5px solid #667eea; transition: all 0.3s; }
+        .faq-item:hover { box-shadow: 0 3px 15px rgba(102, 126, 234, 0.2); }
+        .faq-question { font-weight: 600; color: #667eea; margin-bottom: 12px; font-size: 1.2em; }
+        .faq-answer { color: #555; }
+        .faq-answer table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .faq-answer th { padding: 12px; text-align: left; border: 1px solid #ddd; background: #f0f0ff; }
+        .faq-answer td { padding: 12px; border: 1px solid #ddd; }
+        .back-link { display: inline-block; margin-top: 40px; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; }
+        .back-link:hover { background: #764ba2; transform: translateY(-2px); }
+        .highlight { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 25px; border-left: 5px solid #667eea; margin: 30px 0; border-radius: 8px; }
+        @media (max-width: 768px) { .container { margin: 20px; padding: 25px; } .header h1 { font-size: 2em; } }
+    </style>
 </head>
 <body>
-    <h1>Support & FAQ</h1>
-    <p><strong>Email:</strong> mytrademate.app@gmail.com</p>
-    <p><strong>Response Time:</strong> Within 24-48 hours</p>
-    <p><a href="index.html">← Back to Home</a></p>
+    <div class="header">
+        <h1>💬 Support & FAQ</h1>
+        <p>Get Help with MyTradeMate</p>
+    </div>
+    
+    <div class="container">
+        <div class="contact-box">
+            <h3>📧 Need Help?</h3>
+            <p>Email us at:</p>
+            <a href="mailto:mytrademate.app@gmail.com">mytrademate.app@gmail.com</a>
+            <p style="margin-top: 15px; color: #666; font-size: 1.1em;">Response time: Within 24-48 hours</p>
+        </div>
+        
+        <h2>🚀 Getting Started</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: How do I get started with MyTradeMate?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> Follow these steps:</p>
+                <ol>
+                    <li>Download the app from App Store or Google Play</li>
+                    <li>Complete the onboarding and accept the risk disclaimer</li>
+                    <li>Create a Binance account (if you don't have one)</li>
+                    <li>Create Binance API keys</li>
+                    <li>Add your API keys in Settings → API Configuration</li>
+                    <li>Start trading!</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: Do I need a Binance account?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> Yes, MyTradeMate connects to Binance API to fetch market data and execute trades.</p>
+                <p>Create a free account at: <a href="https://www.binance.com" target="_blank">https://www.binance.com</a></p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: How do I create Binance API keys?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong></p>
+                <ol>
+                    <li>Log in to Binance</li>
+                    <li>Go to Profile → API Management</li>
+                    <li>Click "Create API"</li>
+                    <li>Set permissions:
+                        <ul>
+                            <li><strong>FREE mode:</strong> Enable "Read Info" only</li>
+                            <li><strong>PREMIUM mode:</strong> Enable "Enable Spot & Margin Trading"</li>
+                            <li><strong>Important:</strong> Do NOT enable "Enable Withdrawals"</li>
+                        </ul>
+                    </li>
+                    <li>Copy API Key and Secret Key</li>
+                    <li>Add them to MyTradeMate in Settings</li>
+                </ol>
+            </div>
+        </div>
+        
+        <h2>💎 FREE vs PREMIUM</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: What's the difference between FREE and PREMIUM mode?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong></p>
+                <table>
+                    <tr>
+                        <th>Feature</th>
+                        <th style="text-align: center;">FREE</th>
+                        <th style="text-align: center;">PREMIUM</th>
+                    </tr>
+                    <tr>
+                        <td>Portfolio Viewing</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Real-time Prices</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Charts (all timeframes)</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>AI Predictions (1D)</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>AI Predictions (5m-4h)</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Trading Orders</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 15px;"><strong>How to upgrade:</strong> Create a Binance API key with TRADING permission and add it to MyTradeMate.</p>
+            </div>
+        </div>
+        
+        <h2>🤖 AI Predictions</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: How accurate are AI predictions?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> AI predictions are based on 76 technical indicators and historical data. However:</p>
+                <ul>
+                    <li>⚠️ Past performance ≠ future results</li>
+                    <li>⚠️ AI is not 100% accurate</li>
+                    <li>⚠️ Markets are unpredictable</li>
+                    <li>⚠️ Always do your own research</li>
+                </ul>
+                <p><strong>Use AI as ONE tool in your decision-making, not the only tool.</strong></p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: What do BUY/SELL/HOLD signals mean?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong></p>
+                <ul>
+                    <li><strong>BUY:</strong> AI predicts price will go UP. Consider entering a long position.</li>
+                    <li><strong>SELL:</strong> AI predicts price will go DOWN. Consider exiting positions.</li>
+                    <li><strong>HOLD:</strong> AI predicts sideways movement. Wait for clearer signals.</li>
+                </ul>
+                <p><strong>Important:</strong> These are suggestions, not commands. You decide!</p>
+            </div>
+        </div>
+        
+        <h2>📊 Trading</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: What order types are supported?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> MyTradeMate supports 4 order types:</p>
+                <ul>
+                    <li><strong>Market Order:</strong> Executes immediately at current price</li>
+                    <li><strong>Limit Order:</strong> Executes only at your specified price (or better)</li>
+                    <li><strong>Stop-Limit Order:</strong> Triggers a limit order when price hits stop price</li>
+                    <li><strong>Stop-Market Order:</strong> Triggers a market order when price hits stop price</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: What is paper trading mode?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> Paper trading uses <strong>simulated funds</strong> ($10,000 virtual USDT) to practice trading without risking real money.</p>
+                <p><strong>How to enable:</strong> Go to Settings → Toggle "Paper Trading Mode" ON</p>
+                <p><strong>Perfect for:</strong> Beginners learning to trade, testing strategies, building confidence</p>
+            </div>
+        </div>
+        
+        <h2>🔒 Security</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: Is MyTradeMate safe?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> Yes! We take security seriously:</p>
+                <ul>
+                    <li>✅ No data collection (everything stays on your device)</li>
+                    <li>✅ API keys encrypted with FlutterSecureStorage</li>
+                    <li>✅ No passwords stored (only hashes)</li>
+                    <li>✅ Biometric authentication option</li>
+                    <li>✅ Order confirmation dialogs</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: Can MyTradeMate withdraw my funds?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> <strong>NO!</strong> We strongly recommend:</p>
+                <ul>
+                    <li>❌ Do NOT enable "Enable Withdrawals" permission on your Binance API key</li>
+                    <li>✅ Only enable "Read Info" and "Enable Spot & Margin Trading"</li>
+                </ul>
+                <p>MyTradeMate code does NOT have withdrawal functions. We cannot access your API keys (they're on your device).</p>
+            </div>
+        </div>
+        
+        <h2>🐛 Troubleshooting</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: App won't connect to Binance</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> Try these solutions:</p>
+                <ol>
+                    <li>Check your internet connection</li>
+                    <li>Verify API keys are correct (no extra spaces)</li>
+                    <li>Check if keys are still active in Binance</li>
+                    <li>Verify API permissions are enabled</li>
+                    <li>Restart the app</li>
+                    <li>Check Binance status: <a href="https://www.binance.com/en/support/announcement" target="_blank">Binance Status</a></li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: Orders not executing</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> Check these:</p>
+                <ul>
+                    <li>FREE mode (READ ONLY) cannot place orders - need TRADING permission</li>
+                    <li>Check if you have enough funds</li>
+                    <li>Binance has minimum order sizes (~$10-20 USD)</li>
+                    <li>If paper trading mode is enabled, orders use virtual funds</li>
+                </ul>
+            </div>
+        </div>
+        
+        <h2>💰 Fees & Costs</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">Q: Does MyTradeMate charge fees?</div>
+            <div class="faq-answer">
+                <p><strong>A:</strong> <strong>No!</strong> MyTradeMate is completely free.</p>
+                <ul>
+                    <li>❌ No subscription fees</li>
+                    <li>❌ No in-app purchases</li>
+                    <li>❌ No hidden charges</li>
+                    <li>❌ No commission on trades</li>
+                </ul>
+                <p><strong>What Binance charges:</strong></p>
+                <ul>
+                    <li>Trading fees: ~0.1% per trade</li>
+                    <li>Withdrawal fees: Vary by cryptocurrency</li>
+                </ul>
+            </div>
+        </div>
+        
+        <h2>📞 Contact Support</h2>
+        
+        <div class="contact-box">
+            <h3>Still Need Help?</h3>
+            <p>Email us at:</p>
+            <a href="mailto:mytrademate.app@gmail.com">mytrademate.app@gmail.com</a>
+            <p style="margin-top: 15px; color: #666;">
+                <strong>Response Time:</strong> Within 24-48 hours<br>
+                <strong>Support Hours:</strong> Monday-Friday, 9 AM - 6 PM EST
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>When contacting support, include:</strong><br>
+                • Device model and OS version<br>
+                • App version<br>
+                • Description of issue<br>
+                • Screenshots (if applicable)
+            </p>
+        </div>
+        
+        <a href="index.html" class="back-link">← Back to Home</a>
+    </div>
 </body>
 </html>

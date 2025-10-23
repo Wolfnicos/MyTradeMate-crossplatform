@@ -928,12 +928,11 @@ class _AuthPageState extends State<_AuthPage> {
     final textTheme = Theme.of(context).textTheme;
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: AppTheme.spacing8),
           Text(
             'Sign in to continue',
               style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(

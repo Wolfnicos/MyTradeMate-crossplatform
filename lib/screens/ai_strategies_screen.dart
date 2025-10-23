@@ -250,9 +250,20 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               _buildPredictionCard(),
               const SizedBox(height: AppTheme.spacing16),
 
-              // Model Contributions (only for short-term trading signals, not long-term trends)
+              // What does this mean? - User-friendly explanation
+              if (_lastPrediction != null)
+                _buildWhatDoesThisMean(),
+              const SizedBox(height: AppTheme.spacing16),
+
+              // Model Contributions / AI Technical Analysis (only for short-term trading signals, not long-term trends)
               if (_lastPrediction != null && _interval != '1d' && _interval != '1w')
                 _buildModelContributions(),
+              
+              // Upgrade to Premium CTA (FREE mode only)
+              if (!AppSettingsService().isTradingEnabled) ...[
+                const SizedBox(height: AppTheme.spacing16),
+                _buildUpgradeToPremiumCTA(),
+              ],
             ]),
           ),
         ),
@@ -315,36 +326,84 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               {'label': '1D', 'value': '1d'},
             ].map((item) {
               final bool selected = _interval == item['value'];
+              // Lock short-term timeframes in FREE mode (only 1D available)
+              final bool isLocked = !AppSettingsService().isTradingEnabled && 
+                                    item['value'] != '1d';
+              
               return GestureDetector(
-                onTap: () {
+                onTap: isLocked ? null : () {
                   HapticFeedback.selectionClick();
                   setState(() => _interval = item['value'] as String);
                   _runInference();
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing12,
-                    vertical: AppTheme.spacing8,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: selected ? AppTheme.primaryGradient : null,
-                    color: selected ? null : AppTheme.glassWhite,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                    border: Border.all(
-                      color: selected ? Colors.transparent : AppTheme.glassBorder,
+                child: Opacity(
+                  opacity: isLocked ? 0.5 : 1.0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing12,
+                      vertical: AppTheme.spacing8,
                     ),
-                  ),
-                  child: Text(
-                    item['label'] as String,
-                    style: AppTheme.bodyMedium.copyWith(
-                      color: selected ? Colors.white : AppTheme.textSecondary,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                    decoration: BoxDecoration(
+                      gradient: selected ? AppTheme.primaryGradient : null,
+                      color: selected ? null : AppTheme.glassWhite,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      border: Border.all(
+                        color: selected ? Colors.transparent : AppTheme.glassBorder,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          item['label'] as String,
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: selected ? Colors.white : AppTheme.textSecondary,
+                            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                        if (isLocked) ...[
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.lock,
+                            size: 14,
+                            color: AppTheme.warning,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
               );
             }).toList(),
           ),
+          
+          // Explanation for locked timeframes in FREE mode
+          if (!AppSettingsService().isTradingEnabled) ...[
+            const SizedBox(height: AppTheme.spacing12),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing12),
+              decoration: BoxDecoration(
+                color: AppTheme.warning.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                border: Border.all(color: AppTheme.warning.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: AppTheme.warning, size: 18),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: Text(
+                      '🔒 Short-term timeframes (5m-4h) are Premium only. Upgrade to unlock day trading signals.',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1120,5 +1179,211 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
         ],
       ),
     );
+  }
+  
+  /// Build "What does this mean?" section
+  Widget _buildWhatDoesThisMean() {
+    final prediction = _lastPrediction!;
+    final action = prediction.action;
+    final isBuy = action == 'BUY';
+    final isSell = action == 'SELL';
+    final signalColor = isBuy ? AppTheme.buyGreen : (isSell ? AppTheme.sellRed : const Color(0xFFFF9500));
+    
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb_outline, color: signalColor, size: 20),
+              const SizedBox(width: AppTheme.spacing8),
+              Text(
+                'What does this mean?',
+                style: AppTheme.headingMedium.copyWith(
+                  color: signalColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacing12),
+          Text(
+            _getActionExplanation(action, _selectedSymbol, _interval),
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textSecondary,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing12),
+          
+          // Action instruction based on mode
+          if (!AppSettingsService().isTradingEnabled) ...[
+            // FREE mode - show upgrade message
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing12),
+              decoration: BoxDecoration(
+                color: AppTheme.warning.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                border: Border.all(color: AppTheme.warning.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lock_outline, color: AppTheme.warning, size: 18),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: Text(
+                      '💡 To act on this signal, upgrade to Premium and enable trading in Settings.',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.warning,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // PREMIUM mode - show action instruction
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing12),
+              decoration: BoxDecoration(
+                color: signalColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                border: Border.all(color: signalColor.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.touch_app, color: signalColor, size: 18),
+                  const SizedBox(width: AppTheme.spacing8),
+                  Expanded(
+                    child: Text(
+                      action == 'HOLD' 
+                        ? '💡 Wait for a clearer signal before trading.'
+                        : '💡 Go to Orders tab to manually place a ${action.toLowerCase()} order.',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: signalColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  
+  /// Build "Upgrade to Premium" CTA
+  Widget _buildUpgradeToPremiumCTA() {
+    return GlassCard(
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.spacing16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.primary.withOpacity(0.1),
+              AppTheme.secondary.withOpacity(0.1),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, color: AppTheme.primary, size: 20),
+                const SizedBox(width: AppTheme.spacing8),
+                Expanded(
+                  child: Text(
+                    'Want more AI predictions?',
+                    style: AppTheme.headingSmall.copyWith(
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacing8),
+            Text(
+              'Upgrade to Premium for:\n'
+              '• 5m, 15m, 1h, 4h predictions (day trading)\n'
+              '• Volatility & liquidity indicators\n'
+              '• Model contributions breakdown\n'
+              '• Trading capabilities',
+              style: AppTheme.bodySmall.copyWith(
+                color: AppTheme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/settings');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Upgrade to Premium'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Generate user-friendly explanation of AI recommendation
+  String _getActionExplanation(String action, String symbol, String timeframe) {
+    final coin = symbol.replaceAll(RegExp(r'(USDT|EUR|USDC|USD)'), '');
+    final tfDisplay = timeframe == '5m' ? '5-minute' :
+                      timeframe == '15m' ? '15-minute' :
+                      timeframe == '1h' ? '1-hour' :
+                      timeframe == '4h' ? '4-hour' :
+                      timeframe == '1d' ? 'daily' : timeframe;
+    
+    switch (action) {
+      case 'BUY':
+        return 'AI analysis suggests $coin is in an uptrend on the $tfDisplay timeframe. '
+               'This means the price is likely to increase in the coming ${_getTimeHorizon(timeframe)}. '
+               'Consider buying $coin now and holding for potential gains.\n\n'
+               '⚠️ Always do your own research and only invest what you can afford to lose.';
+      
+      case 'SELL':
+        return 'AI analysis suggests $coin is in a downtrend on the $tfDisplay timeframe. '
+               'This means the price is likely to decrease in the coming ${_getTimeHorizon(timeframe)}. '
+               'If you own $coin, consider selling to protect your capital.\n\n'
+               '⚠️ Always do your own research and only invest what you can afford to lose.';
+      
+      case 'HOLD':
+        return 'AI analysis suggests $coin is in a consolidation phase on the $tfDisplay timeframe. '
+               'This means the price is moving sideways without clear direction. '
+               'Wait for a clearer signal before buying or selling.\n\n'
+               '💡 Check back later or try a different timeframe for more insights.';
+      
+      default:
+        return 'AI is analyzing market conditions for $coin. Check back soon for updated signals.';
+    }
+  }
+  
+  /// Get time horizon description based on timeframe
+  String _getTimeHorizon(String timeframe) {
+    switch (timeframe) {
+      case '5m':
+      case '15m':
+        return 'minutes to hours';
+      case '1h':
+        return 'hours';
+      case '4h':
+        return 'hours to days';
+      case '1d':
+        return 'days to weeks';
+      default:
+        return 'period';
+    }
   }
 }

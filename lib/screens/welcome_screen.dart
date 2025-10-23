@@ -308,8 +308,6 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
             ),
           ),
           const SizedBox(height: AppTheme.spacing24),
-          // Extra space for bottom navigation bar
-          const SizedBox(height: 60),
         ],
       ),
     ),
@@ -929,12 +927,12 @@ class _AuthPageState extends State<_AuthPage> {
     final textTheme = Theme.of(context).textTheme;
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16, vertical: AppTheme.spacing4),
+        padding: const EdgeInsets.all(AppTheme.spacing16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: AppTheme.spacing4),
+            const SizedBox(height: AppTheme.spacing24),
           Text(
             'Sign in to continue',
               style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(
@@ -1103,8 +1101,6 @@ class _AuthPageState extends State<_AuthPage> {
             ),
           ],
           const SizedBox(height: AppTheme.spacing24),
-          // Extra space for bottom navigation bar
-          const SizedBox(height: 60),
         ],
       ),
     ),

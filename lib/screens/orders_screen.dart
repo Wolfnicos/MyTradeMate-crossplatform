@@ -699,9 +699,147 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                     }
                                   }
                                 }
+                              } else if (_orderType == OrderType.limit) {
+                                // LIMIT ORDER
+                                try {
+                                  final double? qty = double.tryParse(_amountCtrl.text);
+                                  final double? limitPrice = double.tryParse(_limitPriceCtrl.text);
+                                  
+                                  if (qty == null || qty <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid amount')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  if (limitPrice == null || limitPrice <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid limit price')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  final res = await BinanceService().placeLimitOrder(
+                                    symbol: _selectedPair,
+                                    side: isBuy ? 'BUY' : 'SELL',
+                                    quantity: qty,
+                                    price: limitPrice,
+                                  );
+                                  
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Limit order placed: ${res['status']?.toString() ?? 'OK'}')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Limit order error: $e')),
+                                    );
+                                  }
+                                }
+                              } else if (_orderType == OrderType.stopLimit) {
+                                // STOP-LIMIT ORDER
+                                try {
+                                  final double? qty = double.tryParse(_amountCtrl.text);
+                                  final double? limitPrice = double.tryParse(_limitPriceCtrl.text);
+                                  final double? stopPrice = double.tryParse(_stopPriceCtrl.text);
+                                  
+                                  if (qty == null || qty <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid amount')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  if (limitPrice == null || limitPrice <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid limit price')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  if (stopPrice == null || stopPrice <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid stop price')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  final res = await BinanceService().placeStopLimitOrder(
+                                    symbol: _selectedPair,
+                                    side: isBuy ? 'BUY' : 'SELL',
+                                    quantity: qty,
+                                    price: limitPrice,
+                                    stopPrice: stopPrice,
+                                  );
+                                  
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Stop-Limit order placed: ${res['status']?.toString() ?? 'OK'}')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Stop-Limit order error: $e')),
+                                    );
+                                  }
+                                }
+                              } else if (_orderType == OrderType.stopMarket) {
+                                // STOP-MARKET ORDER
+                                try {
+                                  final double? qty = double.tryParse(_amountCtrl.text);
+                                  final double? stopPrice = double.tryParse(_stopPriceCtrl.text);
+                                  
+                                  if (qty == null || qty <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid amount')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  if (stopPrice == null || stopPrice <= 0) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a valid stop price')),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
+                                  final res = await BinanceService().placeStopMarketOrder(
+                                    symbol: _selectedPair,
+                                    side: isBuy ? 'BUY' : 'SELL',
+                                    quantity: qty,
+                                    stopPrice: stopPrice,
+                                  );
+                                  
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Stop-Market order placed: ${res['status']?.toString() ?? 'OK'}')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Stop-Market order error: $e')),
+                                    );
+                                  }
+                                }
                               }
-                              // TODO: Implement Limit, Stop-Limit, Stop-Market order execution
-                              // For now, only Market orders are fully implemented
                             },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,

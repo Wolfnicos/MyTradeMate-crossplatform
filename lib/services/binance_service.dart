@@ -217,6 +217,156 @@ class BinanceService {
     return json.decode(res.body) as Map<String, dynamic>;
   }
 
+  /// Place a LIMIT order (BUY/SELL) on spot
+  /// Order will execute only at specified price or better
+  Future<Map<String, dynamic>> placeLimitOrder({
+    required String symbol,
+    required String side, // 'BUY' | 'SELL'
+    required double quantity,
+    required double price,
+    String timeInForce = 'GTC', // GTC (Good Till Cancel), IOC, FOK
+    int recvWindowMs = 5000,
+  }) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    if (quantity <= 0) {
+      throw Exception('Quantity must be > 0');
+    }
+    if (price <= 0) {
+      throw Exception('Price must be > 0');
+    }
+
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'symbol': symbol,
+      'side': side.toUpperCase(),
+      'type': 'LIMIT',
+      'timeInForce': timeInForce,
+      'quantity': quantity.toString(),
+      'price': price.toString(),
+      'newOrderRespType': 'RESULT',
+      'recvWindow': recvWindowMs.toString(),
+      'timestamp': timestamp.toString(),
+    };
+
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/order');
+    final String body = '$queryString&signature=$signature';
+    final res = await http.post(
+      uri,
+      headers: <String, String>{
+        'X-MBX-APIKEY': _apiKey!,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Binance limit order error ${res.statusCode}: ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
+  /// Place a STOP_LOSS_LIMIT order
+  /// Activates a limit order when price reaches stopPrice
+  Future<Map<String, dynamic>> placeStopLimitOrder({
+    required String symbol,
+    required String side, // 'BUY' | 'SELL'
+    required double quantity,
+    required double price, // Limit price
+    required double stopPrice, // Trigger price
+    String timeInForce = 'GTC',
+    int recvWindowMs = 5000,
+  }) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    if (quantity <= 0 || price <= 0 || stopPrice <= 0) {
+      throw Exception('Quantity, price, and stopPrice must be > 0');
+    }
+
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'symbol': symbol,
+      'side': side.toUpperCase(),
+      'type': 'STOP_LOSS_LIMIT',
+      'timeInForce': timeInForce,
+      'quantity': quantity.toString(),
+      'price': price.toString(),
+      'stopPrice': stopPrice.toString(),
+      'newOrderRespType': 'RESULT',
+      'recvWindow': recvWindowMs.toString(),
+      'timestamp': timestamp.toString(),
+    };
+
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/order');
+    final String body = '$queryString&signature=$signature';
+    final res = await http.post(
+      uri,
+      headers: <String, String>{
+        'X-MBX-APIKEY': _apiKey!,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Binance stop-limit order error ${res.statusCode}: ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
+  /// Place a STOP_LOSS (market) order
+  /// Activates a market order when price reaches stopPrice
+  Future<Map<String, dynamic>> placeStopMarketOrder({
+    required String symbol,
+    required String side, // 'BUY' | 'SELL'
+    required double quantity,
+    required double stopPrice, // Trigger price
+    int recvWindowMs = 5000,
+  }) async {
+    if (_apiKey == null || _apiSecret == null) {
+      throw Exception('API credentials not set');
+    }
+    if (quantity <= 0 || stopPrice <= 0) {
+      throw Exception('Quantity and stopPrice must be > 0');
+    }
+
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, String> params = <String, String>{
+      'symbol': symbol,
+      'side': side.toUpperCase(),
+      'type': 'STOP_LOSS',
+      'quantity': quantity.toString(),
+      'stopPrice': stopPrice.toString(),
+      'newOrderRespType': 'RESULT',
+      'recvWindow': recvWindowMs.toString(),
+      'timestamp': timestamp.toString(),
+    };
+
+    final String queryString = params.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final String signature = _generateSignature(queryString);
+
+    final uri = Uri.https(_baseHost, '/api/v3/order');
+    final String body = '$queryString&signature=$signature';
+    final res = await http.post(
+      uri,
+      headers: <String, String>{
+        'X-MBX-APIKEY': _apiKey!,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Binance stop-market order error ${res.statusCode}: ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
   /// Fetch open spot orders (signed). If [symbol] provided, filters by symbol.
   Future<List<Map<String, dynamic>>> fetchOpenOrders({String? symbol, int recvWindowMs = 5000}) async {
     if (_apiKey == null || _apiSecret == null) {

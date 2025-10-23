@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Biometric Authentication - REQUIRED for Face ID / Touch ID -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>We use Face ID to securely authenticate you and protect your crypto portfolio.</string>
 </dict>
 </plist>

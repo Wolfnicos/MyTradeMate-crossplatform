@@ -455,14 +455,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Select the currency for prices and totals',
+                    'Select the currency for prices and totals (Binance supported)',
                     style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: AppTheme.spacing16),
                   Wrap(
                     spacing: AppTheme.spacing8,
                     runSpacing: AppTheme.spacing8,
-                    children: ['USDT', 'USDC', 'USD', 'EUR'].map((q) {
+                    children: ['USDT', 'EUR', 'USDC'].map((q) {
                       final isSelected = _quote == q;
                       return GestureDetector(
                         onTap: () async {

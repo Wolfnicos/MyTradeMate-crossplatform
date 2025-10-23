@@ -45,8 +45,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    // Set initial pair based on quote currency (normalize USD -> USDT for Binance)
-    final quote = _normalizeQuoteCurrency(AppSettingsService().quoteCurrency);
+    // Set initial pair based on quote currency
+    final quote = AppSettingsService().quoteCurrency.toUpperCase();
     _selectedPair = 'BTC$quote';
     
     // Load last order type preference
@@ -59,21 +59,13 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   
   void _onQuoteCurrencyChanged() {
     // Reload pairs when quote currency changes
-    final quote = _normalizeQuoteCurrency(AppSettingsService().quoteCurrency);
+    final quote = AppSettingsService().quoteCurrency.toUpperCase();
     setState(() {
       _selectedPair = 'BTC$quote';
       _loadingPairs = true;
     });
     _loadPairs();
     _loadCurrentPrice();
-  }
-  
-  /// Normalize quote currency for Binance (USD -> USDT)
-  String _normalizeQuoteCurrency(String quote) {
-    final upper = quote.toUpperCase();
-    // Binance doesn't have USD pairs, only USDT
-    if (upper == 'USD') return 'USDT';
-    return upper;
   }
 
   Future<void> _loadSavedOrderType() async {
@@ -111,8 +103,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
       // Get all available trading pairs
       final all = await binance.fetchTradingPairs();
-      // Normalize quote currency (USD -> USDT for Binance)
-      final String selectedQuote = _normalizeQuoteCurrency(AppSettingsService().quoteCurrency);
+      final String selectedQuote = AppSettingsService().quoteCurrency.toUpperCase();
 
       // Extract base currencies from user's portfolio (excluding quote currency and coins below $5)
       final Set<String> allowedBases = <String>{};

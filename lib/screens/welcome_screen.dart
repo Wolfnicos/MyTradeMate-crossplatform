@@ -309,9 +309,9 @@ class _PremiumIntroPageState extends State<_PremiumIntroPage> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing40),
+          const SizedBox(height: AppTheme.spacing24),
           // Extra space for bottom navigation bar
-          const SizedBox(height: 80),
+          const SizedBox(height: 60),
         ],
       ),
     ),
@@ -1104,9 +1104,9 @@ class _AuthPageState extends State<_AuthPage> {
               ),
             ),
           ],
-          const SizedBox(height: AppTheme.spacing40),
+          const SizedBox(height: AppTheme.spacing24),
           // Extra space for bottom navigation bar
-          const SizedBox(height: 80),
+          const SizedBox(height: 60),
         ],
       ),
     ),

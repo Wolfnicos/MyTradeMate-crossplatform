@@ -94,12 +94,17 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   Future<void> _loadPairs() async {
+    if (!mounted) return;
+    setState(() => _loadingPairs = true);
+    
     try {
       final binance = BinanceService();
 
       // Get user's portfolio balances from Binance
       await binance.loadCredentials();
       final balances = await binance.getAccountBalances();
+      
+      debugPrint('Orders: Loaded ${balances.length} balances');
 
       // Get all available trading pairs
       final all = await binance.fetchTradingPairs();
@@ -150,6 +155,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         }
       }
       filtered.sort((a, b) => (a['base'] ?? '').compareTo(b['base'] ?? ''));
+      
+      debugPrint('Orders: Filtered ${filtered.length} pairs for quote $selectedQuote');
+      
       if (!mounted) return;
       setState(() {
         _pairs = filtered;
@@ -164,7 +172,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     } catch (e) {
       debugPrint('Orders: Error loading pairs: $e');
       if (!mounted) return;
-      setState(() => _loadingPairs = false);
+      setState(() {
+        _pairs = [];
+        _loadingPairs = false;
+      });
     }
   }
 
@@ -1021,24 +1032,48 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                     height: MediaQuery.of(context).size.height * 0.6,
                     child: _loadingPairs
                         ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            itemCount: _pairs.length,
-                            itemBuilder: (context, index) {
-                              final m = _pairs[index];
-                              final sym = m['symbol'] ?? '';
-                              final base = m['base'] ?? '';
-                              final quote = m['quote'] ?? '';
-                              return ListTile(
-                                title: Text('$base/$quote', style: AppTheme.bodyLarge),
-                                subtitle: Text(sym, style: AppTheme.bodySmall),
-                                onTap: () {
-                                  setState(() => _selectedPair = sym);
-                                  Navigator.of(context).pop();
-                                  _loadCurrentPrice();
+                        : _pairs.isEmpty
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppTheme.spacing24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.info_outline, size: 48, color: AppTheme.textTertiary),
+                                      const SizedBox(height: AppTheme.spacing16),
+                                      Text(
+                                        'No trading pairs available',
+                                        style: AppTheme.headingMedium,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: AppTheme.spacing8),
+                                      Text(
+                                        'Make sure you have coins in your portfolio (>$5 value)',
+                                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: _pairs.length,
+                                itemBuilder: (context, index) {
+                                  final m = _pairs[index];
+                                  final sym = m['symbol'] ?? '';
+                                  final base = m['base'] ?? '';
+                                  final quote = m['quote'] ?? '';
+                                  return ListTile(
+                                    title: Text('$base/$quote', style: AppTheme.bodyLarge),
+                                    subtitle: Text(sym, style: AppTheme.bodySmall),
+                                    onTap: () {
+                                      setState(() => _selectedPair = sym);
+                                      Navigator.of(context).pop();
+                                      _loadCurrentPrice();
+                                    },
+                                  );
                                 },
-                              );
-                            },
-                          ),
+                              ),
                   ),
                 ],
               ),

@@ -45,8 +45,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    // Set initial pair based on quote currency
-    final quote = AppSettingsService().quoteCurrency.toUpperCase();
+    // Set initial pair based on quote currency (normalize USD -> USDT for Binance)
+    final quote = _normalizeQuoteCurrency(AppSettingsService().quoteCurrency);
     _selectedPair = 'BTC$quote';
     
     // Load last order type preference
@@ -59,13 +59,21 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   
   void _onQuoteCurrencyChanged() {
     // Reload pairs when quote currency changes
-    final quote = AppSettingsService().quoteCurrency.toUpperCase();
+    final quote = _normalizeQuoteCurrency(AppSettingsService().quoteCurrency);
     setState(() {
       _selectedPair = 'BTC$quote';
       _loadingPairs = true;
     });
     _loadPairs();
     _loadCurrentPrice();
+  }
+  
+  /// Normalize quote currency for Binance (USD -> USDT)
+  String _normalizeQuoteCurrency(String quote) {
+    final upper = quote.toUpperCase();
+    // Binance doesn't have USD pairs, only USDT
+    if (upper == 'USD') return 'USDT';
+    return upper;
   }
 
   Future<void> _loadSavedOrderType() async {
@@ -103,7 +111,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
       // Get all available trading pairs
       final all = await binance.fetchTradingPairs();
-      final String selectedQuote = AppSettingsService().quoteCurrency.toUpperCase();
+      // Normalize quote currency (USD -> USDT for Binance)
+      final String selectedQuote = _normalizeQuoteCurrency(AppSettingsService().quoteCurrency);
 
       // Extract base currencies from user's portfolio (excluding quote currency and coins below $5)
       final Set<String> allowedBases = <String>{};
@@ -159,7 +168,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           _selectedPair = _pairs.first['symbol'] ?? _selectedPair;
         }
       });
+      // Load current price after pairs are loaded
+      _loadCurrentPrice();
     } catch (e) {
+      debugPrint('Orders: Error loading pairs: $e');
       if (!mounted) return;
       setState(() => _loadingPairs = false);
     }

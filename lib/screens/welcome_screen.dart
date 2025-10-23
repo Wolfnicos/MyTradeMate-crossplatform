@@ -1003,12 +1003,12 @@ class _AuthPageState extends State<_AuthPage> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacing12),
+          const SizedBox(height: AppTheme.spacing8),
 
           // Sign In Button
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 44,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _signIn,
               style: ElevatedButton.styleFrom(
@@ -1032,7 +1032,7 @@ class _AuthPageState extends State<_AuthPage> {
           // Register Button
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 44,
             child: OutlinedButton(
               onPressed: _isLoading ? null : _register,
               style: OutlinedButton.styleFrom(
@@ -1067,7 +1067,7 @@ class _AuthPageState extends State<_AuthPage> {
 
           // Biometric Login (if available)
           if (_canUseBiometrics) ...[
-            const SizedBox(height: AppTheme.spacing12),
+            const SizedBox(height: AppTheme.spacing8),
             Row(
               children: [
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
@@ -1078,10 +1078,10 @@ class _AuthPageState extends State<_AuthPage> {
                 Expanded(child: Divider(color: AppTheme.glassBorder)),
               ],
             ),
-            const SizedBox(height: AppTheme.spacing12),
+            const SizedBox(height: AppTheme.spacing8),
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: 44,
               child: OutlinedButton.icon(
                 onPressed: _isLoading ? null : _signInWithBiometrics,
                 icon: Icon(

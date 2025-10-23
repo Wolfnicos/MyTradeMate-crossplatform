@@ -50,6 +50,7 @@ dependencies:
   http: ^1.2.2
   dio: ^5.4.0  # Better HTTP client with interceptors and retry logic
   xml: ^6.5.0
+  cached_network_image: ^3.3.1  # Crypto coin logos from CoinGecko
 
   # State Management
   provider: ^6.1.2

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/crypto_avatar.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
 import '../utils/responsive.dart';
@@ -555,20 +556,8 @@ class _HoldingCard extends StatelessWidget {
     return GlassCard(
       child: Row(
         children: [
-          // Icon
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-            ),
-            child: Icon(
-              _getIcon(asset),
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
+          // Crypto logo from CoinGecko
+          CryptoAvatar(symbol: asset, size: 48),
           const SizedBox(width: AppTheme.spacing16),
 
           // Name & Amount

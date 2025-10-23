@@ -4,6 +4,7 @@ import '../services/app_settings_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/ai_indicator.dart';
+import '../widgets/crypto_avatar.dart';
 import '../ml/ensemble_predictor.dart';
 import '../utils/responsive.dart';
 
@@ -773,35 +774,8 @@ class _PnLTodaySectionState extends State<PnLTodaySection> {
       padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing12),
       child: Row(
         children: [
-          // Coin avatar
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  color.withOpacity(0.3),
-                  color.withOpacity(0.1),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              border: Border.all(
-                color: color.withOpacity(0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                coin.substring(0, 1),
-                style: AppTheme.headingSmall.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+          // Coin avatar with CoinGecko logo
+          CryptoAvatar(symbol: coin, size: 40),
 
           const SizedBox(width: AppTheme.spacing12),
 

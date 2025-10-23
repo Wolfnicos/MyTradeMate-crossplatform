@@ -34,13 +34,13 @@ class CryptoIconService {
     return map[upper] ?? symbol.toLowerCase();
   }
 
-  /// Get logo URL for a coin using CoinGecko CDN
-  /// Uses both numeric ID and slug for maximum compatibility
+  /// Get logo URL for a coin using CoinGecko public CDN
+  /// Uses coin-images.coingecko.com which allows public access (no 403)
   static String getLogoUrl(String symbol, {bool large = false}) {
     final coinId = getCoinGeckoId(symbol);
-    final size = large ? 'large' : 'small';
+    final size = large ? 'large' : 'thumb';  // thumb = 64x64, small = 32x32, large = 256x256
     
-    // Map of coin slug to image ID (from CoinGecko)
+    // Map of coin slug to image ID (from CoinGecko API)
     final imageIds = <String, String>{
       'bitcoin': '1',
       'ethereum': '279',
@@ -62,18 +62,17 @@ class CryptoIconService {
       'usd-coin': '6319',
       'dai': '4943',
       'world-liberty-financial-wlfi': '38036',
-      'maga-trump': '37967',  // MAGA Trump token
+      'maga-trump': '37967',
     };
     
     final imageId = imageIds[coinId];
     
     if (imageId != null) {
-      // Use standard CoinGecko CDN URL
-      return 'https://assets.coingecko.com/coins/images/$imageId/$size/$coinId.png';
+      // Use public CDN (no authentication required, no 403 errors)
+      return 'https://coin-images.coingecko.com/coins/images/$imageId/$size/$coinId.png';
     } else {
-      // Fallback: try to construct URL with coin ID as image ID
-      // This works for some newer coins
-      return 'https://coin-images.coingecko.com/coins/images/1/$size/$coinId.png';
+      // Fallback for unknown coins
+      return 'https://coin-images.coingecko.com/coins/images/1/$size/bitcoin.png';
     }
   }
 

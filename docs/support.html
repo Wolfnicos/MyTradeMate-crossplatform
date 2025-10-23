@@ -1,43 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support & FAQ - MyTradeMate</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
-        .header h1 { font-size: 3em; margin-bottom: 10px; }
-        .container { max-width: 1000px; margin: 40px auto; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        h2 { color: #667eea; margin-top: 40px; margin-bottom: 20px; font-size: 2em; }
-        h3 { color: #764ba2; margin-top: 25px; margin-bottom: 15px; font-size: 1.5em; }
-        p { margin-bottom: 15px; }
-        ul { margin-left: 30px; margin-bottom: 20px; }
-        li { margin-bottom: 10px; }
-        .contact-box { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center; border: 2px solid #667eea; }
-        .contact-box h3 { color: #667eea; margin-bottom: 15px; font-size: 1.8em; }
-        .contact-box a { color: #667eea; text-decoration: none; font-weight: 600; font-size: 1.3em; }
-        .contact-box a:hover { text-decoration: underline; }
-        .faq-item { background: #f9f9f9; padding: 25px; margin-bottom: 20px; border-radius: 10px; border-left: 5px solid #667eea; transition: all 0.3s; }
-        .faq-item:hover { box-shadow: 0 3px 15px rgba(102, 126, 234, 0.2); }
-        .faq-question { font-weight: 600; color: #667eea; margin-bottom: 12px; font-size: 1.2em; }
-        .faq-answer { color: #555; }
-        .faq-answer table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .faq-answer th { padding: 12px; text-align: left; border: 1px solid #ddd; background: #f0f0ff; }
-        .faq-answer td { padding: 12px; border: 1px solid #ddd; }
-        .back-link { display: inline-block; margin-top: 40px; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; }
-        .back-link:hover { background: #764ba2; transform: translateY(-2px); }
-        .highlight { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 25px; border-left: 5px solid #667eea; margin: 30px 0; border-radius: 8px; }
-        @media (max-width: 768px) { .container { margin: 20px; padding: 25px; } .header h1 { font-size: 2em; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            text-align: center;
+            border: 2px solid #667eea;
+        }
+
+        .contact-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .contact-box a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.3em;
+        }
+
+        .contact-box a:hover {
+            text-decoration: underline;
+        }
+
+        .faq-item {
+            background: #f9f9f9;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 3px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .faq-question {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+
+        .faq-answer {
+            color: #555;
+        }
+
+        .faq-answer table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .faq-answer th {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            background: #f0f0ff;
+        }
+
+        .faq-answer td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>💬 Support & FAQ</h1>
         <p>Get Help with MyTradeMate</p>
     </div>
-    
+
     <div class="container">
         <div class="contact-box">
             <h3>📧 Need Help?</h3>
@@ -45,9 +186,9 @@
             <a href="mailto:mytrademate.app@gmail.com">mytrademate.app@gmail.com</a>
             <p style="margin-top: 15px; color: #666; font-size: 1.1em;">Response time: Within 24-48 hours</p>
         </div>
-        
+
         <h2>🚀 Getting Started</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: How do I get started with MyTradeMate?</div>
             <div class="faq-answer">
@@ -62,15 +203,17 @@
                 </ol>
             </div>
         </div>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: Do I need a Binance account?</div>
             <div class="faq-answer">
-                <p><strong>A:</strong> Yes, MyTradeMate connects to Binance API to fetch market data and execute trades.</p>
-                <p>Create a free account at: <a href="https://www.binance.com" target="_blank">https://www.binance.com</a></p>
+                <p><strong>A:</strong> Yes, MyTradeMate connects to Binance API to fetch market data and execute trades.
+                </p>
+                <p>Create a free account at: <a href="https://www.binance.com"
+                        target="_blank">https://www.binance.com</a></p>
             </div>
         </div>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: How do I create Binance API keys?</div>
             <div class="faq-answer">
@@ -91,9 +234,9 @@
                 </ol>
             </div>
         </div>
-        
+
         <h2>💎 FREE vs PREMIUM</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: What's the difference between FREE and PREMIUM mode?</div>
             <div class="faq-answer">
@@ -135,16 +278,18 @@
                         <td style="text-align: center;">✅</td>
                     </tr>
                 </table>
-                <p style="margin-top: 15px;"><strong>How to upgrade:</strong> Create a Binance API key with TRADING permission and add it to MyTradeMate.</p>
+                <p style="margin-top: 15px;"><strong>How to upgrade:</strong> Create a Binance API key with TRADING
+                    permission and add it to MyTradeMate.</p>
             </div>
         </div>
-        
+
         <h2>🤖 AI Predictions</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: How accurate are AI predictions?</div>
             <div class="faq-answer">
-                <p><strong>A:</strong> AI predictions are based on 76 technical indicators and historical data. However:</p>
+                <p><strong>A:</strong> AI predictions are based on 76 technical indicators and historical data. However:
+                </p>
                 <ul>
                     <li>⚠️ Past performance ≠ future results</li>
                     <li>⚠️ AI is not 100% accurate</li>
@@ -154,7 +299,7 @@
                 <p><strong>Use AI as ONE tool in your decision-making, not the only tool.</strong></p>
             </div>
         </div>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: What do BUY/SELL/HOLD signals mean?</div>
             <div class="faq-answer">
@@ -167,9 +312,9 @@
                 <p><strong>Important:</strong> These are suggestions, not commands. You decide!</p>
             </div>
         </div>
-        
+
         <h2>📊 Trading</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: What order types are supported?</div>
             <div class="faq-answer">
@@ -182,18 +327,24 @@
                 </ul>
             </div>
         </div>
-        
+
         <div class="faq-item">
-            <div class="faq-question">Q: What is paper trading mode?</div>
+            <div class="faq-question">Q: What is API Mode?</div>
             <div class="faq-answer">
-                <p><strong>A:</strong> Paper trading uses <strong>simulated funds</strong> ($10,000 virtual USDT) to practice trading without risking real money.</p>
-                <p><strong>How to enable:</strong> Go to Settings → Toggle "Paper Trading Mode" ON</p>
-                <p><strong>Perfect for:</strong> Beginners learning to trade, testing strategies, building confidence</p>
+                <p><strong>A:</strong> API Mode determines how MyTradeMate connects to Binance:</p>
+                <ul>
+                    <li><strong>FREE Mode (Read-Only):</strong> View portfolio and AI predictions only. No trading.</li>
+                    <li><strong>PREMIUM Mode (Trading):</strong> Full trading capabilities with real orders.</li>
+                </ul>
+                <p><strong>How to switch:</strong> Go to Settings → API Configuration → Add API keys with appropriate
+                    permissions</p>
+                <p><strong>Tip:</strong> Start with FREE mode to learn the app, then upgrade to PREMIUM when ready to
+                    trade.</p>
             </div>
         </div>
-        
+
         <h2>🔒 Security</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: Is MyTradeMate safe?</div>
             <div class="faq-answer">
@@ -207,7 +358,7 @@
                 </ul>
             </div>
         </div>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: Can MyTradeMate withdraw my funds?</div>
             <div class="faq-answer">
@@ -216,12 +367,13 @@
                     <li>❌ Do NOT enable "Enable Withdrawals" permission on your Binance API key</li>
                     <li>✅ Only enable "Read Info" and "Enable Spot & Margin Trading"</li>
                 </ul>
-                <p>MyTradeMate code does NOT have withdrawal functions. We cannot access your API keys (they're on your device).</p>
+                <p>MyTradeMate code does NOT have withdrawal functions. We cannot access your API keys (they're on your
+                    device).</p>
             </div>
         </div>
-        
+
         <h2>🐛 Troubleshooting</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: App won't connect to Binance</div>
             <div class="faq-answer">
@@ -232,11 +384,12 @@
                     <li>Check if keys are still active in Binance</li>
                     <li>Verify API permissions are enabled</li>
                     <li>Restart the app</li>
-                    <li>Check Binance status: <a href="https://www.binance.com/en/support/announcement" target="_blank">Binance Status</a></li>
+                    <li>Check Binance status: <a href="https://www.binance.com/en/support/announcement"
+                            target="_blank">Binance Status</a></li>
                 </ol>
             </div>
         </div>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: Orders not executing</div>
             <div class="faq-answer">
@@ -245,13 +398,13 @@
                     <li>FREE mode (READ ONLY) cannot place orders - need TRADING permission</li>
                     <li>Check if you have enough funds</li>
                     <li>Binance has minimum order sizes (~$10-20 USD)</li>
-                    <li>If paper trading mode is enabled, orders use virtual funds</li>
+                    <li>Verify your API key has "Enable Spot & Margin Trading" permission</li>
                 </ul>
             </div>
         </div>
-        
+
         <h2>💰 Fees & Costs</h2>
-        
+
         <div class="faq-item">
             <div class="faq-question">Q: Does MyTradeMate charge fees?</div>
             <div class="faq-answer">
@@ -269,9 +422,9 @@
                 </ul>
             </div>
         </div>
-        
+
         <h2>📞 Contact Support</h2>
-        
+
         <div class="contact-box">
             <h3>Still Need Help?</h3>
             <p>Email us at:</p>
@@ -288,8 +441,9 @@
                 • Screenshots (if applicable)
             </p>
         </div>
-        
+
         <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 </body>
+
 </html>

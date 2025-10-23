@@ -925,15 +925,17 @@ class _AuthPageState extends State<_AuthPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppTheme.spacing24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          const SizedBox(height: AppTheme.spacing24),
           Text(
             'Sign in to continue',
               style: (textTheme.headlineSmall ?? AppTheme.displayLarge).copyWith(
-                fontSize: 28,
+                fontSize: 24,
                 color: colors.onBackground,
                 fontWeight: FontWeight.w800,
               ),
@@ -941,11 +943,11 @@ class _AuthPageState extends State<_AuthPage> {
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
-            'Use email or quick biometric login. You can enable trading later in Settings.',
+            'Use email or quick biometric login',
             style: (textTheme.bodyMedium ?? AppTheme.bodyLarge).copyWith(color: colors.onBackground.withOpacity(0.7)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppTheme.spacing32),
+          const SizedBox(height: AppTheme.spacing24),
 
           // Email Field
           GlassCard(

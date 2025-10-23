@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/crypto_icon_service.dart';
 import '../theme/app_theme.dart';
@@ -47,7 +48,17 @@ class CryptoAvatar extends StatelessWidget {
           imageUrl: logoUrl,
           fit: BoxFit.cover,
           placeholder: (context, url) => _buildLetterFallback(brandColor),
-          errorWidget: (context, url, error) => _buildLetterFallback(brandColor),
+          errorWidget: (context, url, error) {
+            // Debug: print error to see what's wrong
+            debugPrint('CryptoAvatar: Failed to load $symbol from $logoUrl - Error: $error');
+            return _buildLetterFallback(brandColor);
+          },
+          // Add cache key to force refresh when URL changes
+          cacheKey: logoUrl,
+          // Retry failed images
+          errorListener: (error) {
+            debugPrint('CryptoAvatar: Error loading $symbol: $error');
+          },
         ),
       ),
     );

@@ -820,7 +820,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _openPrivacyPolicy() async {
-    final Uri url = Uri.parse('https://mytrademate.app/privacy');
+    final Uri url = Uri.parse('https://mytrademate.app/privacy.html');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -829,7 +829,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _openTermsOfService() async {
-    final Uri url = Uri.parse('https://mytrademate.app/terms');
+    final Uri url = Uri.parse('https://mytrademate.app/terms.html');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -838,7 +838,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _openSupport() async {
-    final Uri url = Uri.parse('https://mytrademate.app/support');
+    final Uri url = Uri.parse('https://mytrademate.app/support.html');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {

@@ -21,6 +21,7 @@ import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/navigation_provider.dart';
 import 'services/achievement_service.dart';
+import 'widgets/risk_disclaimer_dialog.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -114,6 +115,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _disclaimerChecked = false;
+  
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardScreen(),
     MarketScreen(),
@@ -131,7 +134,34 @@ class _HomePageState extends State<HomePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _checkDisclaimer();
+  }
+  
+  Future<void> _checkDisclaimer() async {
+    // Import at top of file: import 'widgets/risk_disclaimer_dialog.dart';
+    final accepted = await RiskDisclaimerDialog.showIfNeeded(context);
+    if (!accepted && mounted) {
+      // User declined - sign them out
+      await context.read<AuthService>().signOut();
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/welcome');
+      }
+    }
+    if (mounted) {
+      setState(() => _disclaimerChecked = true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!_disclaimerChecked) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    
     final nav = Provider.of<NavigationProvider>(context);
     return Scaffold(
       extendBody: true,

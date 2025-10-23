@@ -96,7 +96,9 @@ class MyTradeMateApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           localeResolutionCallback: (locale, supportedLocales) => const Locale('en', 'US'),
-          home: authService.isAuthenticated ? const HomePage() : const WelcomeScreen(),
+          // TEMPORARY: Force Welcome Screen for testing (remove after testing)
+          home: const WelcomeScreen(),
+          // ORIGINAL: home: authService.isAuthenticated ? const HomePage() : const WelcomeScreen(),
           routes: {
             '/home': (context) => const HomePage(),
             '/welcome': (context) => const WelcomeScreen(),

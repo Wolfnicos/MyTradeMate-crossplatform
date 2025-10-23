@@ -1,0 +1,40 @@
+10-22 19:50:51.608 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:50:52.331 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.76}
+10-22 19:50:56.000 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:50:56.012 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.76}
+10-22 19:50:57.409 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:50:57.422 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.76}
+10-22 19:50:58.630 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:50:58.643 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.76}
+10-22 19:51:01.247 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-22 19:51:02.021 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4023,"atr":0.97}
+10-22 19:51:03.333 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-22 19:51:03.345 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4023,"atr":0.97}
+10-22 19:51:04.646 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-22 19:51:04.659 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4027,"atr":0.97}
+10-22 19:51:06.255 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-22 19:51:06.267 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4026,"atr":0.97}
+10-22 19:51:08.584 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-22 19:51:09.360 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4040,"atr":1.03}
+10-22 19:51:10.701 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-22 19:51:10.713 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4040,"atr":1.03}
+10-22 19:51:12.166 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-22 19:51:12.180 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4040,"atr":1.03}
+10-22 19:51:13.336 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-22 19:51:13.349 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4040,"atr":1.03}
+10-22 19:51:15.914 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:51:16.623 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5162,"atr":0.39}
+10-22 19:51:18.034 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:51:18.046 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5162,"atr":0.39}
+10-22 19:51:19.368 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:51:19.380 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5162,"atr":0.39}
+10-22 19:51:20.934 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:51:20.951 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5162,"atr":0.39}
+10-22 19:51:23.566 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-22 19:51:24.331 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.77}
+10-22 19:51:25.830 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-22 19:51:25.843 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.77}
+10-22 19:51:27.115 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-22 19:51:27.128 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.77}
+10-22 19:51:28.492 22544 22544 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-22 19:51:28.507 22544 22544 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.77}

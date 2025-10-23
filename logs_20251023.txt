@@ -1,0 +1,342 @@
+10-23 08:05:50.868 26133 26133 I flutter : 📈 ATR (volatility): 21.72% (from candles)
+10-23 08:05:50.887 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1d","action":"BUY","confidence":0.3600,"atr":21.72}
+10-23 08:05:52.647 26133 26133 I flutter : 📈 ATR (volatility): 21.72% (from candles)
+10-23 08:05:52.658 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1d","action":"BUY","confidence":0.3600,"atr":21.72}
+10-23 08:05:53.757 26133 26133 I flutter : 📈 ATR (volatility): 21.72% (from candles)
+10-23 08:05:53.768 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1d","action":"BUY","confidence":0.3600,"atr":21.72}
+10-23 08:05:54.991 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@4h
+10-23 08:05:54.991 26133 26133 I flutter : 📈 ATR (volatility): 2.81% (from candles)
+10-23 08:05:55.739 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"4h","action":"HOLD","confidence":0.5219,"atr":2.81}
+10-23 08:05:57.125 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@4h
+10-23 08:05:57.125 26133 26133 I flutter : 📈 ATR (volatility): 2.81% (from candles)
+10-23 08:05:57.137 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"4h","action":"HOLD","confidence":0.5211,"atr":2.81}
+10-23 08:05:58.696 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@4h
+10-23 08:05:58.696 26133 26133 I flutter : 📈 ATR (volatility): 2.81% (from candles)
+10-23 08:05:58.709 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"4h","action":"HOLD","confidence":0.5206,"atr":2.81}
+10-23 08:06:00.092 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-23 08:06:00.092 26133 26133 I flutter : 📈 ATR (volatility): 0.82% (from candles)
+10-23 08:06:00.105 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4009,"atr":0.82}
+10-23 08:06:01.467 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-23 08:06:01.467 26133 26133 I flutter : 📈 ATR (volatility): 0.82% (from candles)
+10-23 08:06:01.482 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4009,"atr":0.82}
+10-23 08:06:02.626 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-23 08:06:02.626 26133 26133 I flutter : 📈 ATR (volatility): 0.82% (from candles)
+10-23 08:06:02.641 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4009,"atr":0.82}
+10-23 08:06:03.749 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@1h
+10-23 08:06:03.749 26133 26133 I flutter : 📈 ATR (volatility): 0.82% (from candles)
+10-23 08:06:03.765 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"1h","action":"HOLD","confidence":0.4009,"atr":0.82}
+10-23 08:06:04.955 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@15m
+10-23 08:06:04.955 26133 26133 I flutter : 📈 ATR (volatility): 0.34% (from candles)
+10-23 08:06:04.972 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"15m","action":"HOLD","confidence":0.5032,"atr":0.34}
+10-23 08:06:06.585 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@15m
+10-23 08:06:06.585 26133 26133 I flutter : 📈 ATR (volatility): 0.34% (from candles)
+10-23 08:06:06.597 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"15m","action":"HOLD","confidence":0.5032,"atr":0.34}
+10-23 08:06:07.745 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@15m
+10-23 08:06:07.745 26133 26133 I flutter : 📈 ATR (volatility): 0.34% (from candles)
+10-23 08:06:07.757 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"15m","action":"HOLD","confidence":0.5032,"atr":0.34}
+10-23 08:06:08.969 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@15m
+10-23 08:06:08.969 26133 26133 I flutter : 📈 ATR (volatility): 0.34% (from candles)
+10-23 08:06:08.981 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"15m","action":"HOLD","confidence":0.5032,"atr":0.34}
+10-23 08:06:10.272 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@15m
+10-23 08:06:10.272 26133 26133 I flutter : 📈 ATR (volatility): 0.34% (from candles)
+10-23 08:06:10.287 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"15m","action":"HOLD","confidence":0.5032,"atr":0.34}
+10-23 08:06:11.770 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@15m
+10-23 08:06:11.770 26133 26133 I flutter : 📈 ATR (volatility): 0.34% (from candles)
+10-23 08:06:11.785 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"15m","action":"HOLD","confidence":0.5032,"atr":0.34}
+10-23 08:06:13.155 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@5m
+10-23 08:06:13.155 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:13.169 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"5m","action":"HOLD","confidence":0.5527,"atr":0.20}
+10-23 08:06:14.460 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@5m
+10-23 08:06:14.460 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:14.472 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"5m","action":"HOLD","confidence":0.5527,"atr":0.20}
+10-23 08:06:15.615 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@5m
+10-23 08:06:15.615 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:15.627 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"5m","action":"HOLD","confidence":0.5527,"atr":0.20}
+10-23 08:06:16.760 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@5m
+10-23 08:06:16.760 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:16.775 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"5m","action":"HOLD","confidence":0.5527,"atr":0.20}
+10-23 08:06:17.905 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@5m
+10-23 08:06:17.905 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:17.923 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"5m","action":"HOLD","confidence":0.5527,"atr":0.20}
+10-23 08:06:19.090 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BNB@5m
+10-23 08:06:19.090 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:19.104 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BNB","timeframe":"5m","action":"HOLD","confidence":0.5527,"atr":0.20}
+10-23 08:06:21.911 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@5m
+10-23 08:06:21.911 26133 26133 I flutter : 📈 ATR (volatility): 0.08% (from candles)
+10-23 08:06:22.724 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"5m","action":"BUY","confidence":0.5643,"atr":0.08}
+10-23 08:06:24.119 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@5m
+10-23 08:06:24.119 26133 26133 I flutter : 📈 ATR (volatility): 0.08% (from candles)
+10-23 08:06:24.132 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"5m","action":"BUY","confidence":0.5643,"atr":0.08}
+10-23 08:06:25.174 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@5m
+10-23 08:06:25.174 26133 26133 I flutter : 📈 ATR (volatility): 0.08% (from candles)
+10-23 08:06:25.187 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"5m","action":"BUY","confidence":0.5643,"atr":0.08}
+10-23 08:06:26.709 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@5m
+10-23 08:06:26.709 26133 26133 I flutter : 📈 ATR (volatility): 0.08% (from candles)
+10-23 08:06:26.721 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"5m","action":"BUY","confidence":0.5643,"atr":0.08}
+10-23 08:06:27.975 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@5m
+10-23 08:06:27.975 26133 26133 I flutter : 📈 ATR (volatility): 0.08% (from candles)
+10-23 08:06:27.989 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"5m","action":"BUY","confidence":0.5643,"atr":0.08}
+10-23 08:06:29.103 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@5m
+10-23 08:06:29.103 26133 26133 I flutter : 📈 ATR (volatility): 0.08% (from candles)
+10-23 08:06:29.120 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"5m","action":"BUY","confidence":0.5643,"atr":0.08}
+10-23 08:06:30.429 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@15m
+10-23 08:06:30.429 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:30.441 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"15m","action":"HOLD","confidence":0.7578,"atr":0.20}
+10-23 08:06:31.688 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@15m
+10-23 08:06:31.688 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:31.702 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"15m","action":"HOLD","confidence":0.7578,"atr":0.20}
+10-23 08:06:32.785 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@15m
+10-23 08:06:32.785 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:32.797 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"15m","action":"HOLD","confidence":0.7578,"atr":0.20}
+10-23 08:06:34.076 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@15m
+10-23 08:06:34.076 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:34.090 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"15m","action":"HOLD","confidence":0.7578,"atr":0.20}
+10-23 08:06:35.184 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@15m
+10-23 08:06:35.184 26133 26133 I flutter : 📈 ATR (volatility): 0.20% (from candles)
+10-23 08:06:35.199 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"15m","action":"HOLD","confidence":0.7578,"atr":0.20}
+10-23 08:06:36.448 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-23 08:06:36.448 26133 26133 I flutter : 📈 ATR (volatility): 0.53% (from candles)
+10-23 08:06:36.461 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.53}
+10-23 08:06:37.748 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-23 08:06:37.748 26133 26133 I flutter : 📈 ATR (volatility): 0.53% (from candles)
+10-23 08:06:37.759 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.53}
+10-23 08:06:38.850 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-23 08:06:38.850 26133 26133 I flutter : 📈 ATR (volatility): 0.53% (from candles)
+10-23 08:06:38.863 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.53}
+10-23 08:06:41.658 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-23 08:06:41.658 26133 26133 I flutter : 📈 ATR (volatility): 0.53% (from candles)
+10-23 08:06:41.669 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4054,"atr":0.53}
+10-23 08:06:43.009 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@4h
+10-23 08:06:43.009 26133 26133 I flutter : 📈 ATR (volatility): 1.66% (from candles)
+10-23 08:06:43.025 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"4h","action":"SELL","confidence":0.5953,"atr":1.66}
+10-23 08:06:44.259 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@4h
+10-23 08:06:44.259 26133 26133 I flutter : 📈 ATR (volatility): 1.66% (from candles)
+10-23 08:06:44.273 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"4h","action":"SELL","confidence":0.5953,"atr":1.66}
+10-23 08:06:45.507 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@4h
+10-23 08:06:45.507 26133 26133 I flutter : 📈 ATR (volatility): 1.66% (from candles)
+10-23 08:06:45.521 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"4h","action":"SELL","confidence":0.5953,"atr":1.66}
+10-23 08:06:46.683 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@4h
+10-23 08:06:46.683 26133 26133 I flutter : 📈 ATR (volatility): 1.66% (from candles)
+10-23 08:06:46.696 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"4h","action":"SELL","confidence":0.5953,"atr":1.66}
+10-23 08:06:47.927 26133 26133 I flutter : 📈 ATR (volatility): 6.96% (from candles)
+10-23 08:06:47.939 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1d","action":"SELL","confidence":0.4993,"atr":6.96}
+10-23 08:06:49.474 26133 26133 I flutter : 📈 ATR (volatility): 6.96% (from candles)
+10-23 08:06:49.499 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1d","action":"SELL","confidence":0.4993,"atr":6.96}
+10-23 08:06:50.565 26133 26133 I flutter : 📈 ATR (volatility): 6.96% (from candles)
+10-23 08:06:50.581 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1d","action":"SELL","confidence":0.4993,"atr":6.96}
+10-23 08:06:52.059 26133 26133 I flutter : 📈 ATR (volatility): 6.96% (from candles)
+10-23 08:06:52.073 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1d","action":"SELL","confidence":0.4993,"atr":6.96}
+10-23 08:06:54.267 26133 26133 I flutter : 📈 ATR (volatility): 10.47% (from candles)
+10-23 08:06:54.281 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1d","action":"SELL","confidence":0.4421,"atr":10.47}
+10-23 08:06:55.797 26133 26133 I flutter : 📈 ATR (volatility): 10.47% (from candles)
+10-23 08:06:55.809 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1d","action":"SELL","confidence":0.4421,"atr":10.47}
+10-23 08:06:56.894 26133 26133 I flutter : 📈 ATR (volatility): 10.47% (from candles)
+10-23 08:06:56.905 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1d","action":"SELL","confidence":0.4421,"atr":10.47}
+10-23 08:06:57.979 26133 26133 I flutter : 📈 ATR (volatility): 10.47% (from candles)
+10-23 08:06:57.991 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1d","action":"SELL","confidence":0.4421,"atr":10.47}
+10-23 08:06:59.145 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@4h
+10-23 08:06:59.145 26133 26133 I flutter : 📈 ATR (volatility): 2.56% (from candles)
+10-23 08:06:59.833 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"4h","action":"HOLD","confidence":0.5466,"atr":2.56}
+10-23 08:07:01.394 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@4h
+10-23 08:07:01.394 26133 26133 I flutter : 📈 ATR (volatility): 2.56% (from candles)
+10-23 08:07:01.406 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"4h","action":"HOLD","confidence":0.5466,"atr":2.56}
+10-23 08:07:02.619 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@4h
+10-23 08:07:02.619 26133 26133 I flutter : 📈 ATR (volatility): 2.56% (from candles)
+10-23 08:07:02.631 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"4h","action":"HOLD","confidence":0.5466,"atr":2.56}
+10-23 08:07:03.744 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@4h
+10-23 08:07:03.744 26133 26133 I flutter : 📈 ATR (volatility): 2.56% (from candles)
+10-23 08:07:03.757 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"4h","action":"HOLD","confidence":0.5466,"atr":2.56}
+10-23 08:07:05.035 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-23 08:07:05.035 26133 26133 I flutter : 📈 ATR (volatility): 0.76% (from candles)
+10-23 08:07:05.048 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4022,"atr":0.76}
+10-23 08:07:06.596 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-23 08:07:06.596 26133 26133 I flutter : 📈 ATR (volatility): 0.76% (from candles)
+10-23 08:07:06.607 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4022,"atr":0.76}
+10-23 08:07:07.891 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-23 08:07:07.891 26133 26133 I flutter : 📈 ATR (volatility): 0.76% (from candles)
+10-23 08:07:07.903 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4022,"atr":0.76}
+10-23 08:07:09.099 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-23 08:07:09.099 26133 26133 I flutter : 📈 ATR (volatility): 0.76% (from candles)
+10-23 08:07:09.111 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4022,"atr":0.76}
+10-23 08:07:10.336 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-23 08:07:10.336 26133 26133 I flutter : 📈 ATR (volatility): 0.76% (from candles)
+10-23 08:07:10.347 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4022,"atr":0.76}
+10-23 08:07:11.593 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@1h
+10-23 08:07:11.593 26133 26133 I flutter : 📈 ATR (volatility): 0.76% (from candles)
+10-23 08:07:11.605 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"1h","action":"HOLD","confidence":0.4022,"atr":0.76}
+10-23 08:07:13.065 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@15m
+10-23 08:07:13.065 26133 26133 I flutter : 📈 ATR (volatility): 0.25% (from candles)
+10-23 08:07:13.077 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"15m","action":"HOLD","confidence":0.5316,"atr":0.25}
+10-23 08:07:14.451 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@15m
+10-23 08:07:14.451 26133 26133 I flutter : 📈 ATR (volatility): 0.25% (from candles)
+10-23 08:07:14.464 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"15m","action":"HOLD","confidence":0.5316,"atr":0.25}
+10-23 08:07:15.684 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@15m
+10-23 08:07:15.684 26133 26133 I flutter : 📈 ATR (volatility): 0.25% (from candles)
+10-23 08:07:15.697 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"15m","action":"HOLD","confidence":0.5316,"atr":0.25}
+10-23 08:07:17.017 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@15m
+10-23 08:07:17.017 26133 26133 I flutter : 📈 ATR (volatility): 0.25% (from candles)
+10-23 08:07:17.031 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"15m","action":"HOLD","confidence":0.5316,"atr":0.25}
+10-23 08:07:18.184 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@15m
+10-23 08:07:18.184 26133 26133 I flutter : 📈 ATR (volatility): 0.25% (from candles)
+10-23 08:07:18.196 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"15m","action":"HOLD","confidence":0.5316,"atr":0.25}
+10-23 08:07:19.385 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@15m
+10-23 08:07:19.385 26133 26133 I flutter : 📈 ATR (volatility): 0.25% (from candles)
+10-23 08:07:19.397 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"15m","action":"HOLD","confidence":0.5316,"atr":0.25}
+10-23 08:07:20.960 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@5m
+10-23 08:07:20.960 26133 26133 I flutter : 📈 ATR (volatility): 0.11% (from candles)
+10-23 08:07:20.972 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"5m","action":"HOLD","confidence":0.6817,"atr":0.11}
+10-23 08:07:22.209 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@5m
+10-23 08:07:22.209 26133 26133 I flutter : 📈 ATR (volatility): 0.11% (from candles)
+10-23 08:07:22.221 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"5m","action":"HOLD","confidence":0.6817,"atr":0.11}
+10-23 08:07:23.454 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@5m
+10-23 08:07:23.454 26133 26133 I flutter : 📈 ATR (volatility): 0.11% (from candles)
+10-23 08:07:23.470 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"5m","action":"HOLD","confidence":0.6817,"atr":0.11}
+10-23 08:07:24.672 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@5m
+10-23 08:07:24.672 26133 26133 I flutter : 📈 ATR (volatility): 0.11% (from candles)
+10-23 08:07:24.692 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"5m","action":"HOLD","confidence":0.6815,"atr":0.11}
+10-23 08:07:25.942 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@5m
+10-23 08:07:25.942 26133 26133 I flutter : 📈 ATR (volatility): 0.11% (from candles)
+10-23 08:07:25.957 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"5m","action":"HOLD","confidence":0.6817,"atr":0.11}
+10-23 08:07:27.255 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for ETH@5m
+10-23 08:07:27.255 26133 26133 I flutter : 📈 ATR (volatility): 0.11% (from candles)
+10-23 08:07:27.270 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"ETH","timeframe":"5m","action":"HOLD","confidence":0.6822,"atr":0.11}
+10-23 08:07:30.159 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@5m
+10-23 08:07:30.159 26133 26133 I flutter : 📈 ATR (volatility): 0.04% (from candles)
+10-23 08:07:30.903 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"5m","action":"HOLD","confidence":0.5821,"atr":0.04}
+10-23 08:07:32.158 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@5m
+10-23 08:07:32.158 26133 26133 I flutter : 📈 ATR (volatility): 0.04% (from candles)
+10-23 08:07:32.175 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"5m","action":"HOLD","confidence":0.5821,"atr":0.04}
+10-23 08:07:33.296 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@5m
+10-23 08:07:33.296 26133 26133 I flutter : 📈 ATR (volatility): 0.04% (from candles)
+10-23 08:07:33.308 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"5m","action":"HOLD","confidence":0.5821,"atr":0.04}
+10-23 08:07:34.354 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@5m
+10-23 08:07:34.354 26133 26133 I flutter : 📈 ATR (volatility): 0.04% (from candles)
+10-23 08:07:34.365 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"5m","action":"HOLD","confidence":0.5821,"atr":0.04}
+10-23 08:07:35.414 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@5m
+10-23 08:07:35.414 26133 26133 I flutter : 📈 ATR (volatility): 0.04% (from candles)
+10-23 08:07:35.427 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"5m","action":"HOLD","confidence":0.5821,"atr":0.04}
+10-23 08:07:36.511 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@5m
+10-23 08:07:36.511 26133 26133 I flutter : 📈 ATR (volatility): 0.04% (from candles)
+10-23 08:07:36.525 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"5m","action":"HOLD","confidence":0.5821,"atr":0.04}
+10-23 08:07:37.963 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@15m
+10-23 08:07:37.963 26133 26133 I flutter : 📈 ATR (volatility): 0.07% (from candles)
+10-23 08:07:37.974 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"15m","action":"HOLD","confidence":0.4183,"atr":0.07}
+10-23 08:07:39.065 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@15m
+10-23 08:07:39.065 26133 26133 I flutter : 📈 ATR (volatility): 0.07% (from candles)
+10-23 08:07:39.076 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"15m","action":"HOLD","confidence":0.4183,"atr":0.07}
+10-23 08:07:40.144 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@15m
+10-23 08:07:40.144 26133 26133 I flutter : 📈 ATR (volatility): 0.07% (from candles)
+10-23 08:07:40.155 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"15m","action":"HOLD","confidence":0.4183,"atr":0.07}
+10-23 08:07:41.354 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@15m
+10-23 08:07:41.354 26133 26133 I flutter : 📈 ATR (volatility): 0.07% (from candles)
+10-23 08:07:41.367 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"15m","action":"HOLD","confidence":0.4183,"atr":0.07}
+10-23 08:07:42.242 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@15m
+10-23 08:07:42.242 26133 26133 I flutter : 📈 ATR (volatility): 0.07% (from candles)
+10-23 08:07:42.255 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"15m","action":"HOLD","confidence":0.4183,"atr":0.07}
+10-23 08:07:43.526 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@15m
+10-23 08:07:43.526 26133 26133 I flutter : 📈 ATR (volatility): 0.07% (from candles)
+10-23 08:07:43.538 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"15m","action":"HOLD","confidence":0.4183,"atr":0.07}
+10-23 08:07:45.598 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-23 08:07:45.598 26133 26133 I flutter : 📈 ATR (volatility): 0.45% (from candles)
+10-23 08:07:45.611 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5249,"atr":0.45}
+10-23 08:07:47.373 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-23 08:07:47.373 26133 26133 I flutter : 📈 ATR (volatility): 0.45% (from candles)
+10-23 08:07:47.387 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5249,"atr":0.45}
+10-23 08:07:48.514 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-23 08:07:48.515 26133 26133 I flutter : 📈 ATR (volatility): 0.45% (from candles)
+10-23 08:07:48.528 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5249,"atr":0.45}
+10-23 08:07:49.757 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-23 08:07:49.757 26133 26133 I flutter : 📈 ATR (volatility): 0.45% (from candles)
+10-23 08:07:49.772 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5249,"atr":0.45}
+10-23 08:07:50.901 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-23 08:07:50.901 26133 26133 I flutter : 📈 ATR (volatility): 0.45% (from candles)
+10-23 08:07:50.915 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5249,"atr":0.45}
+10-23 08:07:52.162 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-23 08:07:52.162 26133 26133 I flutter : 📈 ATR (volatility): 0.45% (from candles)
+10-23 08:07:52.176 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5249,"atr":0.45}
+10-23 08:07:53.652 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@4h
+10-23 08:07:53.652 26133 26133 I flutter : 📈 ATR (volatility): 1.10% (from candles)
+10-23 08:07:53.663 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"4h","action":"BUY","confidence":0.5394,"atr":1.10}
+10-23 08:07:55.118 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@4h
+10-23 08:07:55.118 26133 26133 I flutter : 📈 ATR (volatility): 1.10% (from candles)
+10-23 08:07:55.129 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"4h","action":"BUY","confidence":0.5394,"atr":1.10}
+10-23 08:07:56.284 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@4h
+10-23 08:07:56.284 26133 26133 I flutter : 📈 ATR (volatility): 1.10% (from candles)
+10-23 08:07:56.297 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"4h","action":"BUY","confidence":0.5394,"atr":1.10}
+10-23 08:07:57.439 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@4h
+10-23 08:07:57.439 26133 26133 I flutter : 📈 ATR (volatility): 1.10% (from candles)
+10-23 08:07:57.452 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"4h","action":"BUY","confidence":0.5394,"atr":1.10}
+10-23 08:07:58.504 26133 26133 I flutter : 📈 ATR (volatility): 8.66% (from candles)
+10-23 08:07:58.517 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1d","action":"SELL","confidence":0.3571,"atr":8.66}
+10-23 08:07:59.732 26133 26133 I flutter : 📈 ATR (volatility): 8.66% (from candles)
+10-23 08:07:59.748 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1d","action":"SELL","confidence":0.3571,"atr":8.66}
+10-23 08:08:00.839 26133 26133 I flutter : 📈 ATR (volatility): 8.66% (from candles)
+10-23 08:08:00.853 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1d","action":"SELL","confidence":0.3571,"atr":8.66}
+10-23 08:08:02.086 26133 26133 I flutter : 📈 ATR (volatility): 8.66% (from candles)
+10-23 08:08:02.101 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1d","action":"SELL","confidence":0.3571,"atr":8.66}
+10-23 08:08:05.703 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@4h
+10-23 08:08:05.703 26133 26133 I flutter : 📈 ATR (volatility): 1.81% (from candles)
+10-23 08:08:06.367 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"4h","action":"SELL","confidence":0.6063,"atr":1.81}
+10-23 08:08:07.801 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@4h
+10-23 08:08:07.801 26133 26133 I flutter : 📈 ATR (volatility): 1.81% (from candles)
+10-23 08:08:07.819 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"4h","action":"SELL","confidence":0.6063,"atr":1.81}
+10-23 08:08:08.953 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@4h
+10-23 08:08:08.953 26133 26133 I flutter : 📈 ATR (volatility): 1.81% (from candles)
+10-23 08:08:08.966 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"4h","action":"SELL","confidence":0.6063,"atr":1.81}
+10-23 08:08:10.068 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@4h
+10-23 08:08:10.068 26133 26133 I flutter : 📈 ATR (volatility): 1.81% (from candles)
+10-23 08:08:10.083 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"4h","action":"SELL","confidence":0.6063,"atr":1.81}
+10-23 08:08:11.380 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-23 08:08:11.380 26133 26133 I flutter : 📈 ATR (volatility): 0.64% (from candles)
+10-23 08:08:11.394 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.64}
+10-23 08:08:12.709 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-23 08:08:12.709 26133 26133 I flutter : 📈 ATR (volatility): 0.64% (from candles)
+10-23 08:08:12.721 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.64}
+10-23 08:08:13.902 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-23 08:08:13.902 26133 26133 I flutter : 📈 ATR (volatility): 0.64% (from candles)
+10-23 08:08:13.921 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.64}
+10-23 08:08:15.041 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-23 08:08:15.041 26133 26133 I flutter : 📈 ATR (volatility): 0.64% (from candles)
+10-23 08:08:15.058 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.64}
+10-23 08:08:16.977 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-23 08:08:16.977 26133 26133 I flutter : 📈 ATR (volatility): 0.64% (from candles)
+10-23 08:08:16.989 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.64}
+10-23 08:08:18.352 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@1h
+10-23 08:08:18.352 26133 26133 I flutter : 📈 ATR (volatility): 0.64% (from candles)
+10-23 08:08:18.366 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"1h","action":"SELL","confidence":0.7659,"atr":0.64}
+10-23 08:08:19.669 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@15m
+10-23 08:08:19.669 26133 26133 I flutter : 📈 ATR (volatility): 0.09% (from candles)
+10-23 08:08:19.681 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"15m","action":"SELL","confidence":0.3862,"atr":0.09}
+10-23 08:08:21.318 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@15m
+10-23 08:08:21.318 26133 26133 I flutter : 📈 ATR (volatility): 0.09% (from candles)
+10-23 08:08:21.330 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"15m","action":"SELL","confidence":0.3862,"atr":0.09}
+10-23 08:08:22.585 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@15m
+10-23 08:08:22.585 26133 26133 I flutter : 📈 ATR (volatility): 0.09% (from candles)
+10-23 08:08:22.598 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"15m","action":"SELL","confidence":0.3862,"atr":0.09}
+10-23 08:08:23.954 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@15m
+10-23 08:08:23.955 26133 26133 I flutter : 📈 ATR (volatility): 0.09% (from candles)
+10-23 08:08:23.968 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"15m","action":"SELL","confidence":0.3862,"atr":0.09}
+10-23 08:08:25.108 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@15m
+10-23 08:08:25.108 26133 26133 I flutter : 📈 ATR (volatility): 0.09% (from candles)
+10-23 08:08:25.121 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"15m","action":"SELL","confidence":0.3862,"atr":0.09}
+10-23 08:08:26.262 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@15m
+10-23 08:08:26.262 26133 26133 I flutter : 📈 ATR (volatility): 0.09% (from candles)
+10-23 08:08:26.276 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"15m","action":"SELL","confidence":0.3862,"atr":0.09}
+10-23 08:08:28.625 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@5m
+10-23 08:08:28.625 26133 26133 I flutter : 📈 ATR (volatility): 0.02% (from candles)
+10-23 08:08:28.639 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"5m","action":"HOLD","confidence":0.4639,"atr":0.02}
+10-23 08:08:30.446 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@5m
+10-23 08:08:30.446 26133 26133 I flutter : 📈 ATR (volatility): 0.02% (from candles)
+10-23 08:08:30.458 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"5m","action":"HOLD","confidence":0.4639,"atr":0.02}
+10-23 08:08:31.789 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@5m
+10-23 08:08:31.789 26133 26133 I flutter : 📈 ATR (volatility): 0.02% (from candles)
+10-23 08:08:31.802 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"5m","action":"HOLD","confidence":0.4639,"atr":0.02}
+10-23 08:08:32.849 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@5m
+10-23 08:08:32.849 26133 26133 I flutter : 📈 ATR (volatility): 0.02% (from candles)
+10-23 08:08:32.860 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"5m","action":"HOLD","confidence":0.4639,"atr":0.02}
+10-23 08:08:34.029 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@5m
+10-23 08:08:34.029 26133 26133 I flutter : 📈 ATR (volatility): 0.02% (from candles)
+10-23 08:08:34.041 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"5m","action":"HOLD","confidence":0.4639,"atr":0.02}
+10-23 08:08:35.995 26133 26133 I flutter : 🚀 Phase 3 PILOT ACTIVE for WLFI@5m
+10-23 08:08:35.995 26133 26133 I flutter : 📈 ATR (volatility): 0.02% (from candles)
+10-23 08:08:36.011 26133 26133 I flutter : JSON_AI_STRATEGIES: {"coin":"WLFI","timeframe":"5m","action":"HOLD","confidence":0.4639,"atr":0.02}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Services
 import '../services/app_settings_service.dart';
@@ -11,6 +12,7 @@ import '../ml/crypto_ml_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/risk_disclaimer.dart';
+import '../utils/responsive.dart';
 
 class AiStrategiesScreen extends StatefulWidget {
   const AiStrategiesScreen({super.key});
@@ -179,7 +181,9 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Column(
+        child: Responsive.constrainWidth(
+          context,
+          Column(
           children: [
             // Header
             Padding(
@@ -211,6 +215,8 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               child: _buildPredictionsTab(),
             ),
           ],
+        ),
+          ),
         ),
       ),
     );
@@ -312,6 +318,7 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
               final bool selected = _interval == item['value'];
               return GestureDetector(
                 onTap: () {
+                  HapticFeedback.selectionClick();
                   setState(() => _interval = item['value'] as String);
                   _runInference();
                 },

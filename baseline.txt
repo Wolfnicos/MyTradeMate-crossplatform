@@ -1,0 +1,16 @@
+10-22 19:22:59.610 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+10-22 19:22:59.637 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5252}
+10-22 19:23:03.461 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+10-22 19:23:03.475 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5252}
+10-22 19:23:07.353 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 90.9%
+10-22 19:23:07.374 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4090}
+10-22 19:23:09.767 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 100.0%
+10-22 19:23:09.782 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4090}
+10-22 19:23:15.219 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+10-22 19:23:15.235 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5252}
+10-22 19:23:19.834 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+10-22 19:23:19.849 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5252}
+10-22 19:23:25.576 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 100.0%
+10-22 19:23:25.589 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4090}
+10-22 19:23:28.989 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 90.9%
+10-22 19:23:29.014 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.4090}

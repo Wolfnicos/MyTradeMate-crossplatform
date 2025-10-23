@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
+import '../utils/responsive.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -93,7 +94,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       child: Scaffold(
         
         body: SafeArea(
-          child: NestedScrollView(
+          child: Responsive.constrainWidth(
+            context,
+            NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 // Header
@@ -168,6 +171,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 ),
                 _buildHistoryTab(context),
               ],
+            ),
+          ),
             ),
           ),
         ),

@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/ai_indicator.dart';
 import '../ml/ensemble_predictor.dart';
+import '../utils/responsive.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -14,7 +15,9 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: CustomScrollView(
+        child: Responsive.constrainWidth(
+          context,
+          CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             // Header
@@ -89,6 +92,8 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+          ),
         ),
       ),
     );

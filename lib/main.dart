@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
@@ -295,7 +296,10 @@ class _BottomNavItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.selectionClick(); // Haptic feedback for premium feel
+            onTap();
+          },
           borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           child: AnimatedContainer(
             duration: AppTheme.animationNormal,
@@ -339,7 +343,7 @@ class _BottomNavItem extends StatelessWidget {
                   style: AppTheme.labelSmall.copyWith(
                     color: isActive ? AppTheme.textPrimary : AppTheme.textTertiary,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    fontSize: 9,
+                    fontSize: 11, // Increased from 9px for accessibility (WCAG 2.1 AA)
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

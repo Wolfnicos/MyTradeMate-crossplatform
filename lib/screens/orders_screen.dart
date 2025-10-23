@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../backtest/backtester.dart';
 import '../services/paper_broker.dart';
@@ -11,6 +12,7 @@ import '../widgets/glass_card.dart';
 import '../services/app_settings_service.dart';
 import '../widgets/orders/achievement_toast.dart';
 import '../widgets/orders/open_orders_card.dart';
+import '../utils/responsive.dart';
 
 enum OrderType { hybrid, aiModel, market }
 
@@ -166,9 +168,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
     return Scaffold(
       body: SafeArea(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: CustomScrollView(
+        child: Responsive.constrainWidth(
+          context,
+          GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               // Header
@@ -202,7 +206,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               children: [
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => isBuy = true),
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      setState(() => isBuy = true);
+                                    },
                                     child: AnimatedContainer(
                                       duration: AppTheme.animationNormal,
                                       curve: Curves.easeInOut,
@@ -228,7 +235,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                 const SizedBox(width: AppTheme.spacing12),
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => isBuy = false),
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      setState(() => isBuy = false);
+                                    },
                                     child: AnimatedContainer(
                                       duration: AppTheme.animationNormal,
                                       curve: Curves.easeInOut,
@@ -589,6 +599,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 ),
               ),
             ],
+          ),
+        ),
           ),
         ),
       ),

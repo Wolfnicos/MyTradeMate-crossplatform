@@ -5,6 +5,7 @@ import '../services/binance_service.dart';
 import '../services/app_settings_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../utils/responsive.dart';
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -134,7 +135,9 @@ class _MarketScreenState extends State<MarketScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: CustomScrollView(
+        child: Responsive.constrainWidth(
+          context,
+          CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             // Header
@@ -293,6 +296,8 @@ class _MarketScreenState extends State<MarketScreen> {
 
             const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacing32)),
           ],
+        ),
+          ),
         ),
       ),
     );

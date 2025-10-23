@@ -1,0 +1,32 @@
+10-22 19:37:10.315 29461 29461 I flutter : 📈 ATR (volatility): Infinity%
+10-22 19:37:11.456 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 90.9%
+10-22 19:37:11.456 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:37:11.504 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.3935}
+10-22 19:37:14.530 29461 29461 I flutter : 📈 ATR (volatility): Infinity%
+10-22 19:37:14.530 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 90.9% (cached)
+10-22 19:37:14.530 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:37:14.543 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.3935}
+10-22 19:37:16.734 29461 29461 I flutter : 📈 ATR (volatility): Infinity%
+10-22 19:37:16.734 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 90.9% (cached)
+10-22 19:37:16.734 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:37:16.748 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.3935}
+10-22 19:37:18.959 29461 29461 I flutter : 📈 ATR (volatility): Infinity%
+10-22 19:37:18.959 29461 29461 I flutter : 📊 Phase 3: Volume percentile for BTCEUR: 90.9% (cached)
+10-22 19:37:18.960 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for BTC@1h
+10-22 19:37:18.973 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"BTC","timeframe":"1h","action":"HOLD","confidence":0.3935}
+10-22 19:37:22.556 29461 29461 I flutter : 📈 ATR (volatility): NaN%
+10-22 19:37:23.608 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0%
+10-22 19:37:23.608 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:37:23.625 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5180}
+10-22 19:37:25.734 29461 29461 I flutter : 📈 ATR (volatility): NaN%
+10-22 19:37:25.734 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0% (cached)
+10-22 19:37:25.734 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:37:25.746 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5180}
+10-22 19:37:28.539 29461 29461 I flutter : 📈 ATR (volatility): NaN%
+10-22 19:37:28.539 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0% (cached)
+10-22 19:37:28.539 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:37:28.554 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5180}
+10-22 19:37:29.892 29461 29461 I flutter : 📈 ATR (volatility): NaN%
+10-22 19:37:29.892 29461 29461 I flutter : 📊 Phase 3: Volume percentile for TRUMPEUR: 0.0% (cached)
+10-22 19:37:29.892 29461 29461 I flutter : 🚀 Phase 3 PILOT ACTIVE for TRUMP@1h
+10-22 19:37:29.908 29461 29461 I flutter : JSON_AI_STRATEGIES: {"coin":"TRUMP","timeframe":"1h","action":"BUY","confidence":0.5180}

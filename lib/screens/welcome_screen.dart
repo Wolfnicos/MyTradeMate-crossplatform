@@ -26,15 +26,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: PageView(
-          controller: _pageController,
-          onPageChanged: (index) => setState(() => _currentPage = index),
-          children: const [
-            _PremiumIntroPage(),
-            _AuthPage(),
-          ],
-        ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) => setState(() => _currentPage = index),
+        children: const [
+          _PremiumIntroPage(),
+          _AuthPage(),
+        ],
       ),
       bottomNavigationBar: _BottomIndicator(
         currentPage: _currentPage,

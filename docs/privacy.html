@@ -2,13 +2,408 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Privacy Policy - MyTradeMate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MyTradeMate - AI-Powered Crypto Trading Assistant. Get real-time BUY/SELL signals, track your portfolio, and trade with confidence.">
+    <title>MyTradeMate - AI-Powered Crypto Trading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            padding: 20px 0;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 3em;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            margin: 20px 0;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .tagline {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            opacity: 0.95;
+        }
+        
+        .description {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Badges */
+        .badges {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 60px 0;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .feature h3 {
+            font-size: 1.4em;
+            margin-bottom: 12px;
+        }
+        
+        .feature p {
+            font-size: 1em;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        /* CTA Buttons */
+        .cta-section {
+            text-align: center;
+            margin: 60px 0;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 18px 40px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        /* Comparison Table */
+        .comparison {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 50px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            margin: 60px 0;
+        }
+        
+        .comparison h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .plan {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .plan.premium {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 3px solid #ffd700;
+            transform: scale(1.05);
+        }
+        
+        .plan h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .plan .price {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .plan ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .plan li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .plan li:before {
+            content: "✓ ";
+            color: #4ade80;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 80px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            opacity: 0.6;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .tagline {
+                font-size: 1.3em;
+            }
+            
+            .description {
+                font-size: 1.1em;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan.premium {
+                transform: scale(1);
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Privacy Policy</h1>
-    <p><strong>Last Updated:</strong> October 23, 2025</p>
-    <p><strong>TL;DR:</strong> We don't collect, store, or transmit any of your personal data. Everything stays on your device.</p>
-    <p>MyTradeMate does not collect any personal information. All data is stored locally on your device.</p>
-    <p><a href="index.html">← Back to Home</a></p>
+    <div class="container">
+        <header>
+            <div class="logo">🤖</div>
+            <h1>MyTradeMate</h1>
+            <p class="tagline">AI-Powered Crypto Trading Assistant</p>
+            <p class="description">
+                Get real-time BUY/SELL signals powered by machine learning.<br>
+                Track your portfolio and trade with confidence.
+            </p>
+            
+            <div class="badges">
+                <div class="badge">🔒 Bank-Level Security</div>
+                <div class="badge">🤖 76 AI Indicators</div>
+                <div class="badge">📊 4 Order Types</div>
+                <div class="badge">💼 Real-Time Portfolio</div>
+            </div>
+        </header>
+        
+        <section class="cta-section">
+            <h2 style="font-size: 2em; margin-bottom: 20px;">📱 Coming Soon to App Store & Google Play</h2>
+            <div class="cta-buttons">
+                <a href="#" class="btn btn-primary">
+                    <span>📱</span>
+                    <span>Download on App Store</span>
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <span>🤖</span>
+                    <span>Get it on Google Play</span>
+                </a>
+            </div>
+        </section>
+        
+        <section class="features">
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Neural Engine</h3>
+                <p>Multi-timeframe predictions (5m to 7d) powered by ensemble ML models trained on millions of data points.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>4 Order Types</h3>
+                <p>Market, Limit, Stop-Limit, and Stop-Market orders. Full control over your trading strategy.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">💼</div>
+                <h3>Portfolio Tracking</h3>
+                <p>Real-time portfolio valuation, profit/loss tracking, and asset distribution analytics.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📈</div>
+                <h3>Professional Charts</h3>
+                <p>Candlestick charts with multiple timeframes and technical indicators for deep market analysis.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>Bank-Level Security</h3>
+                <p>Encrypted API keys, biometric authentication, and no data collection. Your keys, your crypto.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>Paper Trading</h3>
+                <p>Practice with $10,000 virtual funds. Test strategies risk-free before trading real money.</p>
+            </div>
+        </section>
+        
+        <section class="comparison">
+            <h2>💎 Choose Your Plan</h2>
+            <div class="comparison-grid">
+                <div class="plan">
+                    <h3>🆓 FREE</h3>
+                    <p class="price">$0 Forever</p>
+                    <ul>
+                        <li>Portfolio Viewing</li>
+                        <li>Real-time Prices</li>
+                        <li>Charts (All Timeframes)</li>
+                        <li>AI Predictions (Daily Only)</li>
+                        <li>Paper Trading Mode</li>
+                        <li>Basic Analytics</li>
+                    </ul>
+                </div>
+                
+                <div class="plan premium">
+                    <h3>💎 PREMIUM</h3>
+                    <p class="price">Use Your Own API</p>
+                    <ul>
+                        <li>Everything in FREE</li>
+                        <li>AI Predictions (ALL Timeframes)</li>
+                        <li>Trading Capabilities</li>
+                        <li>4 Order Types</li>
+                        <li>Advanced Indicators</li>
+                        <li>Volatility & Liquidity Analysis</li>
+                        <li>Priority Support</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <div class="footer-links">
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+                <a href="support.html">Support & FAQ</a>
+                <a href="mailto:mytrademate.app@gmail.com">Contact Us</a>
+            </div>
+            <p class="copyright">
+                © 2025 MyTradeMate. All rights reserved.<br>
+                ⚠️ Cryptocurrency trading involves substantial risk. Trade responsibly.
+            </p>
+        </footer>
+    </div>
 </body>
 </html>

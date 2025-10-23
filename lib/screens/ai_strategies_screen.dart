@@ -216,7 +216,6 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             ),
           ],
         ),
-          ),
         ),
       ),
     );

@@ -297,7 +297,6 @@ class _MarketScreenState extends State<MarketScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacing32)),
           ],
         ),
-          ),
         ),
       ),
     );

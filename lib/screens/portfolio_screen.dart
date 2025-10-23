@@ -173,7 +173,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ],
             ),
           ),
-            ),
           ),
         ),
       ),

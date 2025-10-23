@@ -1048,7 +1048,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                       ),
                                       const SizedBox(height: AppTheme.spacing8),
                                       Text(
-                                        'Make sure you have coins in your portfolio (>$5 value)',
+                                        'Make sure you have coins in your portfolio (>\$5 value)',
                                         style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
                                         textAlign: TextAlign.center,
                                       ),

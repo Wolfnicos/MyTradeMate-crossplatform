@@ -774,14 +774,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(color: AppTheme.glassBorder),
                 ListTile(
-                  leading: const Icon(Icons.bug_report, color: AppTheme.primary),
-                  title: Text('Report a Problem', style: AppTheme.bodyMedium),
-                  trailing: const Icon(Icons.chevron_right, color: AppTheme.textTertiary),
-                  onTap: () {
-                    _showSnackBar('Coming soon', isError: false);
-                  },
-                ),
-                ListTile(
                   leading: const Icon(Icons.privacy_tip, color: AppTheme.primary),
                   title: Text('Privacy Policy', style: AppTheme.bodyMedium),
                   subtitle: Text('How we handle your data', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
@@ -803,11 +795,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => _openSupport(),
                 ),
                 ListTile(
+                  leading: const Icon(Icons.email, color: AppTheme.primary),
+                  title: Text('Contact Us', style: AppTheme.bodyMedium),
+                  subtitle: Text('Get in touch with support', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  trailing: const Icon(Icons.open_in_new, color: AppTheme.textTertiary),
+                  onTap: () => _openContact(),
+                ),
+                ListTile(
                   leading: const Icon(Icons.info_outline, color: AppTheme.primary),
                   title: Text('About MyTradeMate', style: AppTheme.bodyMedium),
-                  subtitle: Text('Version 1.0.0+1', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
-                  trailing: const Icon(Icons.chevron_right, color: AppTheme.textTertiary),
-                  onTap: () => _showAboutDialog(),
+                  subtitle: Text('Visit our website', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  trailing: const Icon(Icons.open_in_new, color: AppTheme.textTertiary),
+                  onTap: () => _openWebsite(),
                 ),
               ],
             ),
@@ -839,6 +838,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _openSupport() async {
     final Uri url = Uri.parse('https://mytrademate.app/support.html');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      _showSnackBar('Could not open Support', isError: true);
+    }
+  }
+
+  Future<void> _openContact() async {
+    final Uri url = Uri.parse('https://mytrademate.app/contact.html');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      _showSnackBar('Could not open Contact page', isError: true);
+    }
+  }
+
+  Future<void> _openWebsite() async {
+    final Uri url = Uri.parse('https://mytrademate.app');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {

@@ -1197,11 +1197,14 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
             children: [
               Icon(Icons.lightbulb_outline, color: signalColor, size: 20),
               const SizedBox(width: AppTheme.spacing8),
-              Text(
-                'What does this mean?',
-                style: AppTheme.headingMedium.copyWith(
-                  color: signalColor,
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: Text(
+                  'What does this mean?',
+                  style: AppTheme.headingMedium.copyWith(
+                    color: signalColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

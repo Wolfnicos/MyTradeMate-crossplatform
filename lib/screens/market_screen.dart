@@ -317,17 +317,23 @@ class _MarketScreenState extends State<MarketScreen> {
         ),
         decoration: BoxDecoration(
           gradient: selected ? AppTheme.primaryGradient : null,
-          color: selected ? null : AppTheme.glassWhite,
+          color: selected ? null : (Theme.of(context).brightness == Brightness.dark 
+              ? AppTheme.glassWhite 
+              : Colors.grey[100]),
           borderRadius: BorderRadius.circular(AppTheme.radiusSM),
           border: Border.all(
-            color: selected ? Colors.transparent : AppTheme.glassBorder,
+            color: selected ? Colors.transparent : (Theme.of(context).brightness == Brightness.dark 
+                ? AppTheme.glassBorder 
+                : Colors.grey[300]!),
             width: 1,
           ),
         ),
         child: Text(
           label,
           style: AppTheme.bodyMedium.copyWith(
-            color: selected ? Colors.white : AppTheme.textSecondary,
+            color: selected ? Colors.white : (Theme.of(context).brightness == Brightness.dark 
+                ? AppTheme.textSecondary 
+                : AppTheme.textPrimaryLight),
             fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -358,10 +364,14 @@ class _MarketScreenState extends State<MarketScreen> {
           padding: const EdgeInsets.all(AppTheme.spacing12),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
-            color: isSelected ? null : AppTheme.glassWhite,
+            color: isSelected ? null : (Theme.of(context).brightness == Brightness.dark 
+                ? AppTheme.glassWhite 
+                : Colors.grey[100]),
             borderRadius: BorderRadius.circular(AppTheme.radiusMD),
             border: Border.all(
-              color: isSelected ? Colors.transparent : AppTheme.glassBorder,
+              color: isSelected ? Colors.transparent : (Theme.of(context).brightness == Brightness.dark 
+                  ? AppTheme.glassBorder 
+                  : Colors.grey[300]!),
               width: 1.5,
             ),
           ),
@@ -383,7 +393,9 @@ class _MarketScreenState extends State<MarketScreen> {
                     child: Text(
                       base,
                       style: AppTheme.bodyMedium.copyWith(
-                        color: isSelected ? Colors.white : AppTheme.textPrimary,
+                        color: isSelected ? Colors.white : (Theme.of(context).brightness == Brightness.dark 
+                            ? AppTheme.textPrimary 
+                            : AppTheme.textPrimaryLight),
                         fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -398,7 +410,9 @@ class _MarketScreenState extends State<MarketScreen> {
               Text(
                 price > 0 ? prefix + (price >= 100 ? price.toStringAsFixed(0) : price.toStringAsFixed(4)) : '—',
                 style: AppTheme.monoMedium.copyWith(
-                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                  color: isSelected ? Colors.white : (Theme.of(context).brightness == Brightness.dark 
+                      ? AppTheme.textPrimary 
+                      : AppTheme.textPrimaryLight),
                   fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,

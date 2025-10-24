@@ -283,21 +283,35 @@ class _AiStrategiesScreenState extends State<AiStrategiesScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing12),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppTheme.surface 
+                  : Colors.grey[100],
               borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-              border: Border.all(color: AppTheme.glassBorder),
+              border: Border.all(color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppTheme.glassBorder 
+                  : Colors.grey[300]!),
             ),
             child: DropdownButton<String>(
               value: _selectedSymbol,
               isExpanded: true,
               underline: const SizedBox(),
-              dropdownColor: AppTheme.surface,
-              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+              dropdownColor: Theme.of(context).brightness == Brightness.dark 
+                  ? AppTheme.surface 
+                  : Colors.white,
+              style: AppTheme.bodyMedium.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppTheme.textPrimary 
+                    : AppTheme.textPrimaryLight,
+              ),
               items: _buildPairs().map((e) => DropdownMenuItem(
                 value: e,
                 child: Text(
                   e,
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppTheme.textPrimary 
+                        : AppTheme.textPrimaryLight,
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),

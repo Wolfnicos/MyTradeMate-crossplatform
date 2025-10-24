@@ -1227,10 +1227,14 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       child: Container(
         padding: const EdgeInsets.all(AppTheme.spacing16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceVariant,
+          color: Theme.of(context).brightness == Brightness.dark 
+              ? AppTheme.surfaceVariant 
+              : Colors.grey[100],
           borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           border: Border.all(
-            color: AppTheme.glassBorder,
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? AppTheme.glassBorder 
+                : Colors.grey[300]!,
             width: 1,
           ),
         ),
@@ -1246,13 +1250,24 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Coin/Pair', style: AppTheme.bodySmall.copyWith(color: AppTheme.textTertiary)),
+                  Text('Coin/Pair', style: AppTheme.bodySmall.copyWith(
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppTheme.textTertiary 
+                        : AppTheme.textTertiaryLight,
+                  )),
                   const SizedBox(height: 2),
-                  Text(_formatPairLabel(_selectedPair), style: AppTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+                  Text(_formatPairLabel(_selectedPair), style: AppTheme.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppTheme.textPrimary 
+                        : AppTheme.textPrimaryLight,
+                  )),
                 ],
               ),
             ),
-            Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textSecondary),
+            Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).brightness == Brightness.dark 
+                ? AppTheme.textSecondary 
+                : AppTheme.textSecondaryLight),
           ],
         ),
       ),

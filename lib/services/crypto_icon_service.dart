@@ -70,6 +70,12 @@ class CryptoIconService {
       return 'https://static.coinpaprika.com/coin/$coinpaprikaId/logo.png';
     }
     
+    // For new/meme coins without logos, return empty URL to trigger letter fallback immediately
+    final newCoins = {'TRUMP', 'WLFI'};
+    if (newCoins.contains(sym)) {
+      return ''; // Empty URL triggers immediate fallback to letter avatar
+    }
+    
     // Fallback: return a URL that will fail and trigger letter avatar
     return 'https://static.coinpaprika.com/coin/${sym.toLowerCase()}/logo.png';
   }

@@ -29,11 +29,17 @@ class AppTheme {
   static const Color secondary = Color(0xFF8B5CF6); // Purple
   static const Color secondaryDark = Color(0xFF7C3AED);
 
-  // Text Colors
+  // Text Colors - Dark Mode
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFFB4B8C5);
   static const Color textTertiary = Color(0xFF6B7280);
   static const Color textDisabled = Color(0xFF4B5563);
+
+  // Text Colors - Light Mode
+  static const Color textPrimaryLight = Color(0xFF1F2937);
+  static const Color textSecondaryLight = Color(0xFF4B5563);
+  static const Color textTertiaryLight = Color(0xFF9CA3AF);
+  static const Color textDisabledLight = Color(0xFFD1D5DB);
 
   // Semantic Colors
   static const Color success = buyGreen;
@@ -48,6 +54,39 @@ class AppTheme {
   // Charts
   static const Color chartGreen = buyGreen;
   static const Color chartRed = sellRed;
+
+  // ============ ADAPTIVE COLORS ============
+  
+  /// Get text color based on theme brightness
+  static Color getTextPrimary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? textPrimary 
+        : textPrimaryLight;
+  }
+  
+  static Color getTextSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? textSecondary 
+        : textSecondaryLight;
+  }
+  
+  static Color getTextTertiary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? textTertiary 
+        : textTertiaryLight;
+  }
+  
+  static Color getSurface(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? surface 
+        : Colors.white;
+  }
+  
+  static Color getBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? background 
+        : Colors.grey[50]!;
+  }
   static const Color chartBlue = primary;
   static const Color chartPurple = secondary;
   static const Color chartGrid = Color(0x0AFFFFFF); // 4% white
@@ -259,11 +298,15 @@ class AppTheme {
         primary: primary,
         secondary: secondary,
         surface: Colors.white,
+        background: Colors.grey[50]!,
         error: error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: Colors.grey[900]!,
+        onSurface: textPrimaryLight,
+        onBackground: textPrimaryLight,
         onError: Colors.white,
+        outline: textTertiaryLight,
+        outlineVariant: textDisabledLight,
       ),
 
       appBarTheme: AppBarTheme(
@@ -282,6 +325,20 @@ class AppTheme {
           borderRadius: BorderRadius.circular(radiusLG),
         ),
         surfaceTintColor: Colors.transparent,
+      ),
+
+      textTheme: TextTheme(
+        displayLarge: displayLarge.copyWith(color: textPrimaryLight),
+        displayMedium: displayMedium.copyWith(color: textPrimaryLight),
+        headlineLarge: headingLarge.copyWith(color: textPrimaryLight),
+        headlineMedium: headingMedium.copyWith(color: textPrimaryLight),
+        headlineSmall: headingSmall.copyWith(color: textPrimaryLight),
+        bodyLarge: bodyLarge.copyWith(color: textPrimaryLight),
+        bodyMedium: bodyMedium.copyWith(color: textSecondaryLight),
+        bodySmall: bodySmall.copyWith(color: textTertiaryLight),
+        labelLarge: labelLarge.copyWith(color: textPrimaryLight),
+        labelMedium: labelMedium.copyWith(color: textSecondaryLight),
+        labelSmall: labelSmall.copyWith(color: textTertiaryLight),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(

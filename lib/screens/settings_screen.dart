@@ -301,10 +301,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          'READ ONLY',
-                                          style: AppTheme.labelLarge.copyWith(
-                                            color: _permissionLevel == 'read' ? Colors.white : AppTheme.textPrimary,
+                                        Flexible(
+                                          child: Text(
+                                            'READ ONLY',
+                                            style: AppTheme.labelLarge.copyWith(
+                                              color: _permissionLevel == 'read' ? Colors.white : AppTheme.textPrimary,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         const SizedBox(width: AppTheme.spacing8),

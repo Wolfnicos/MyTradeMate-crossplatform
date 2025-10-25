@@ -21,45 +21,23 @@ import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/navigation_provider.dart';
 import 'services/achievement_service.dart';
+import 'services/ml_loading_state.dart';
 import 'widgets/risk_disclaimer_dialog.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize services
+  // Initialize ONLY fast, essential services in main()
+  // This allows the app to start in <1 second
   await AppSettingsService().load();
   await AuthService().load();
-  await globalPredictor.init();
-  try { await unifiedMLService.initialize(); } catch (_) {}
-  // Legacy model kept for compatibility; unifiedMLService will be used by UI
-  await globalMlService.loadModel();
-
-  // Initialize NEW Ensemble Predictor (Transformer + LSTM + RF)
-  try {
-    await globalEnsemblePredictor.loadModels();
-    debugPrint('🚀 NEW AI models activated!');
-  } catch (e) {
-    debugPrint('⚠️ Ensemble predictor failed to load: $e');
-    debugPrint('   Falling back to legacy TCN model');
-  }
-
-  // Initialize multi-coin Crypto ML service with new models in assets/ml/
-  debugPrint('🔄 MAIN: About to initialize CryptoMLService...');
-  try {
-    await CryptoMLService().initialize();
-    debugPrint('✅ MAIN: CryptoMLService.initialize() completed successfully');
-  } catch (e, stackTrace) {
-    debugPrint('⚠️ MAIN: CryptoMLService initialization FAILED with error: $e');
-    debugPrint('   Stack trace: $stackTrace');
-  }
-  debugPrint('🔄 MAIN: CryptoMLService initialization block finished');
-
   await AchievementService().load();
 
   // Initialize theme provider
   final themeProvider = ThemeProvider();
   await themeProvider.init();
 
+  // Start the app immediately
   runApp(
     MultiProvider(
       providers: [
@@ -72,6 +50,64 @@ Future<void> main() async {
       child: const MyTradeMateApp(),
     ),
   );
+
+  // Load ML models in background AFTER app is visible
+  // This prevents blocking the UI thread during startup
+  _loadMLModelsInBackground();
+}
+
+/// Load ML models in background after app startup
+/// This improves perceived performance by showing the app immediately
+/// while models load asynchronously
+Future<void> _loadMLModelsInBackground() async {
+  final loadingState = MLLoadingState();
+  debugPrint('🔄 BACKGROUND: Starting ML model loading...');
+
+  try {
+    loadingState.updateStatus('Loading legacy predictor...', 0.1);
+    await globalPredictor.init();
+    debugPrint('✅ BACKGROUND: globalPredictor initialized');
+  } catch (e) {
+    debugPrint('⚠️ BACKGROUND: globalPredictor failed: $e');
+  }
+
+  try {
+    loadingState.updateStatus('Loading unified ML service...', 0.2);
+    await unifiedMLService.initialize();
+    debugPrint('✅ BACKGROUND: unifiedMLService initialized');
+  } catch (e) {
+    debugPrint('⚠️ BACKGROUND: unifiedMLService failed: $e');
+  }
+
+  try {
+    loadingState.updateStatus('Loading legacy model...', 0.3);
+    await globalMlService.loadModel();
+    debugPrint('✅ BACKGROUND: globalMlService loaded');
+  } catch (e) {
+    debugPrint('⚠️ BACKGROUND: globalMlService failed: $e');
+  }
+
+  try {
+    loadingState.updateStatus('Loading Ensemble models (Transformer, LSTM, Random Forest)...', 0.5);
+    await globalEnsemblePredictor.loadModels();
+    debugPrint('✅ BACKGROUND: Ensemble predictor loaded (Transformer + LSTM + RF)');
+  } catch (e) {
+    debugPrint('⚠️ BACKGROUND: Ensemble predictor failed: $e');
+  }
+
+  try {
+    loadingState.updateStatus('Loading CryptoML service (18+ models)...', 0.7);
+    await CryptoMLService().initialize();
+    debugPrint('✅ BACKGROUND: CryptoMLService initialized - All 18+ models loaded!');
+    debugPrint('🚀 BACKGROUND: ML initialization complete - App ready for AI predictions');
+  } catch (e, stackTrace) {
+    debugPrint('⚠️ BACKGROUND: CryptoMLService failed: $e');
+    debugPrint('   Stack trace: $stackTrace');
+  }
+
+  // Mark as loaded
+  loadingState.setLoaded();
+  debugPrint('✅ BACKGROUND: All ML services ready');
 }
 
 class MyTradeMateApp extends StatelessWidget {
@@ -133,13 +169,14 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    
+
     final nav = Provider.of<NavigationProvider>(context);
     return Scaffold(
       extendBody: true,
       appBar: _PremiumAppBar(),
-      body: Center(
-        child: _widgetOptions.elementAt(nav.index),
+      body: IndexedStack(
+        index: nav.index,
+        children: _widgetOptions,
       ),
       bottomNavigationBar: _PremiumBottomNav(
         currentIndex: nav.index,

@@ -49,5 +49,11 @@
 	<!-- Biometric Authentication - REQUIRED for Face ID / Touch ID -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>We use Face ID to securely authenticate you and protect your crypto portfolio.</string>
+
+	<!-- Encryption Export Compliance - REQUIRED for App Store -->
+	<!-- Set to false because we only use standard iOS encryption (HTTPS/TLS, Keychain) -->
+	<!-- No custom encryption algorithms implemented -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

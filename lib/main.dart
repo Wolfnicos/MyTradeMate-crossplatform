@@ -15,7 +15,7 @@ import 'screens/ai_strategies_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/portfolio_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/app_settings_service.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
@@ -132,10 +132,10 @@ class MyTradeMateApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           localeResolutionCallback: (locale, supportedLocales) => const Locale('en', 'US'),
-          home: authService.isAuthenticated ? const HomePage() : const WelcomeScreen(),
+          home: authService.isAuthenticated ? const HomePage() : const OnboardingScreen(),
           routes: {
             '/home': (context) => const HomePage(),
-            '/welcome': (context) => const WelcomeScreen(),
+            '/onboarding': (context) => const OnboardingScreen(),
           },
         );
       },

@@ -20,3 +20,13 @@
 
 # Flutter tflite_flutter plugin
 -keep class org.tensorflow.lite.flutter.** { *; }
+
+# Suppress warnings for missing TensorFlow Lite GPU classes
+-dontwarn org.tensorflow.lite.gpu.GpuDelegateFactory$Options
+-dontwarn org.tensorflow.lite.gpu.**
+
+# Additional TensorFlow Lite GPU delegate rules
+-keep class org.tensorflow.lite.gpu.GpuDelegateFactory { *; }
+-keep class org.tensorflow.lite.gpu.GpuDelegateFactory$Options { *; }
+-keep class org.tensorflow.lite.gpu.GpuDelegate { *; }
+-keep class org.tensorflow.lite.gpu.GpuDelegate$Options { *; }

@@ -744,7 +744,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // Sign out
                   await context.read<AuthService>().signOut();
                   if (mounted) {
-                    Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
+                    Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
                   }
                 }
               },

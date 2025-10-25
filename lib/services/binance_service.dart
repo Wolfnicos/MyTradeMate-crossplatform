@@ -55,15 +55,67 @@ class BinanceService {
   String? _apiKey;
   String? _apiSecret;
 
+  // Time synchronization
+  int _serverTimeOffset = 0; // Milliseconds offset between server and local time
+  DateTime? _lastTimeSyncTime;
+  static const Duration _timeSyncInterval = Duration(minutes: 30);
+
   String? get apiKey => _apiKey;
   String? get apiSecret => _apiSecret;
   bool get hasCredentials => (_apiKey != null && _apiKey!.isNotEmpty && _apiSecret != null && _apiSecret!.isNotEmpty);
+
+  /// Synchronize local time with Binance server time
+  /// This prevents "Timestamp out of recvWindow" errors due to clock skew
+  Future<void> syncServerTime() async {
+    try {
+      final uri = Uri.https(_baseHost, '/api/v3/time');
+      final localBefore = DateTime.now().millisecondsSinceEpoch;
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode != 200) {
+        debugPrint('⚠️ Failed to sync server time: ${response.statusCode}');
+        return;
+      }
+
+      final localAfter = DateTime.now().millisecondsSinceEpoch;
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final serverTime = data['serverTime'] as int;
+
+      // Calculate offset accounting for network latency
+      final networkLatency = (localAfter - localBefore) ~/ 2;
+      final localTimeApprox = localBefore + networkLatency;
+      _serverTimeOffset = serverTime - localTimeApprox;
+
+      _lastTimeSyncTime = DateTime.now();
+      debugPrint('✅ Time synchronized with Binance server (offset: ${_serverTimeOffset}ms)');
+    } catch (e) {
+      debugPrint('⚠️ Time sync failed: $e (will use local time)');
+    }
+  }
+
+  /// Get current timestamp synchronized with Binance server
+  /// Automatically syncs if needed (first call or >30 mins since last sync)
+  Future<int> getSynchronizedTimestamp() async {
+    // Sync time on first call or if >30 mins since last sync
+    if (_lastTimeSyncTime == null ||
+        DateTime.now().difference(_lastTimeSyncTime!) > _timeSyncInterval) {
+      await syncServerTime();
+    }
+
+    return DateTime.now().millisecondsSinceEpoch + _serverTimeOffset;
+  }
 
   /// Load API credentials from secure storage
   Future<void> loadCredentials() async {
     try {
       _apiKey = await _secureStorage.read(key: 'binance_api_key');
       _apiSecret = await _secureStorage.read(key: 'binance_api_secret');
+
+      // Sync time when loading credentials (prepares for API calls)
+      if (_apiKey != null && _apiSecret != null) {
+        await syncServerTime();
+      }
     } catch (e) {
       debugPrint('Error loading credentials: $e');
     }
@@ -156,7 +208,7 @@ class BinanceService {
     }
 
     try {
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final timestamp = await getSynchronizedTimestamp();
       final queryString = 'timestamp=$timestamp';
       final signature = _generateSignature(queryString);
 
@@ -185,7 +237,7 @@ class BinanceService {
     }
 
     try {
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final timestamp = await getSynchronizedTimestamp();
       final queryString = 'timestamp=$timestamp';
       final signature = _generateSignature(queryString);
 
@@ -232,8 +284,145 @@ class BinanceService {
     return digest.toString();
   }
 
+  // Cache for exchange info to avoid repeated API calls
+  Map<String, dynamic>? _exchangeInfoCache;
+  DateTime? _exchangeInfoCacheTime;
+  static const Duration _cacheExpiry = Duration(hours: 1);
+
+  /// Fetch exchange information for symbols (LOT_SIZE, PRICE_FILTER, etc.)
+  /// Cached for 1 hour to avoid excessive API calls
+  Future<Map<String, dynamic>> getExchangeInfo({String? symbol}) async {
+    // Return cached data if still valid
+    if (_exchangeInfoCache != null &&
+        _exchangeInfoCacheTime != null &&
+        DateTime.now().difference(_exchangeInfoCacheTime!) < _cacheExpiry) {
+      return _exchangeInfoCache!;
+    }
+
+    try {
+      final uri = symbol != null
+          ? Uri.https(_baseHost, '/api/v3/exchangeInfo', {'symbol': symbol})
+          : Uri.https(_baseHost, '/api/v3/exchangeInfo');
+
+      final response = await http.get(uri);
+
+      if (response.statusCode != 200) {
+        throw Exception('Exchange info error ${response.statusCode}: ${response.body}');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+
+      // Cache the result
+      _exchangeInfoCache = data;
+      _exchangeInfoCacheTime = DateTime.now();
+
+      return data;
+    } catch (e) {
+      debugPrint('Failed to fetch exchange info: $e');
+      rethrow;
+    }
+  }
+
+  /// Get symbol-specific filters (LOT_SIZE, PRICE_FILTER, MIN_NOTIONAL)
+  Future<Map<String, dynamic>?> getSymbolFilters(String symbol) async {
+    try {
+      final exchangeInfo = await getExchangeInfo(symbol: symbol);
+      final symbols = exchangeInfo['symbols'] as List<dynamic>;
+
+      if (symbols.isEmpty) {
+        return null;
+      }
+
+      final symbolData = symbols.first as Map<String, dynamic>;
+      final filters = symbolData['filters'] as List<dynamic>;
+
+      final Map<String, dynamic> result = {
+        'baseAsset': symbolData['baseAsset'],
+        'quoteAsset': symbolData['quoteAsset'],
+        'status': symbolData['status'],
+      };
+
+      // Extract important filters
+      for (final filter in filters) {
+        final filterMap = filter as Map<String, dynamic>;
+        final filterType = filterMap['filterType'] as String;
+
+        if (filterType == 'LOT_SIZE') {
+          result['lotSize'] = {
+            'minQty': double.parse(filterMap['minQty'].toString()),
+            'maxQty': double.parse(filterMap['maxQty'].toString()),
+            'stepSize': double.parse(filterMap['stepSize'].toString()),
+          };
+        } else if (filterType == 'PRICE_FILTER') {
+          result['priceFilter'] = {
+            'minPrice': double.parse(filterMap['minPrice'].toString()),
+            'maxPrice': double.parse(filterMap['maxPrice'].toString()),
+            'tickSize': double.parse(filterMap['tickSize'].toString()),
+          };
+        } else if (filterType == 'MIN_NOTIONAL') {
+          result['minNotional'] = double.parse(filterMap['minNotional'].toString());
+        }
+      }
+
+      return result;
+    } catch (e) {
+      debugPrint('Failed to get symbol filters: $e');
+      return null;
+    }
+  }
+
+  /// Validate and round quantity to comply with LOT_SIZE filter
+  Future<double?> validateQuantity(String symbol, double quantity) async {
+    final filters = await getSymbolFilters(symbol);
+    if (filters == null || !filters.containsKey('lotSize')) {
+      debugPrint('⚠️ Could not fetch LOT_SIZE filter for $symbol, using quantity as-is');
+      return quantity;
+    }
+
+    final lotSize = filters['lotSize'] as Map<String, dynamic>;
+    final minQty = lotSize['minQty'] as double;
+    final maxQty = lotSize['maxQty'] as double;
+    final stepSize = lotSize['stepSize'] as double;
+
+    // Check minimum quantity
+    if (quantity < minQty) {
+      throw Exception('Quantity $quantity is below minimum $minQty for $symbol');
+    }
+
+    // Check maximum quantity
+    if (quantity > maxQty) {
+      throw Exception('Quantity $quantity exceeds maximum $maxQty for $symbol');
+    }
+
+    // Round to stepSize precision
+    final precision = _getDecimalPlaces(stepSize);
+    final rounded = _roundToStep(quantity, stepSize, precision);
+
+    debugPrint('✅ Quantity validation: $quantity → $rounded (stepSize: $stepSize)');
+    return rounded;
+  }
+
+  /// Calculate number of decimal places needed for a step size
+  int _getDecimalPlaces(double stepSize) {
+    final str = stepSize.toStringAsFixed(10);
+    final parts = str.split('.');
+    if (parts.length < 2) return 0;
+
+    // Count non-zero decimals
+    final decimals = parts[1].replaceAll(RegExp(r'0+$'), '');
+    return decimals.length;
+  }
+
+  /// Round quantity to nearest step size
+  double _roundToStep(double value, double stepSize, int precision) {
+    final multiplier = 1 / stepSize;
+    final rounded = (value * multiplier).round() / multiplier;
+    return double.parse(rounded.toStringAsFixed(precision));
+  }
+
   /// Place a MARKET order (BUY/SELL) on spot. Uses testnet when selected in settings.
   /// Either [quantity] (base units) or [quoteOrderQty] (quote currency) must be provided.
+  /// Quantity will be automatically validated and rounded to comply with LOT_SIZE filter.
   Future<Map<String, dynamic>> placeMarketOrder({
     required String symbol,
     required String side, // 'BUY' | 'SELL'
@@ -248,7 +437,18 @@ class BinanceService {
       throw Exception('Provide quantity (base) or quoteOrderQty (>0)');
     }
 
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    // Validate and round quantity to comply with LOT_SIZE filter
+    if (quantity != null && quantity > 0) {
+      try {
+        quantity = await validateQuantity(symbol, quantity);
+        debugPrint('✅ Validated quantity for $symbol: $quantity');
+      } catch (e) {
+        debugPrint('⚠️ Quantity validation failed: $e');
+        rethrow; // Re-throw to show user-friendly error
+      }
+    }
+
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'symbol': symbol,
       'side': side.toUpperCase(),
@@ -303,7 +503,7 @@ class BinanceService {
       throw Exception('Price must be > 0');
     }
 
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'symbol': symbol,
       'side': side.toUpperCase(),
@@ -353,7 +553,7 @@ class BinanceService {
       throw Exception('Quantity, price, and stopPrice must be > 0');
     }
 
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'symbol': symbol,
       'side': side.toUpperCase(),
@@ -402,7 +602,7 @@ class BinanceService {
       throw Exception('Quantity and stopPrice must be > 0');
     }
 
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'symbol': symbol,
       'side': side.toUpperCase(),
@@ -438,7 +638,7 @@ class BinanceService {
     if (_apiKey == null || _apiSecret == null) {
       throw Exception('API credentials not set');
     }
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'timestamp': timestamp.toString(),
       'recvWindow': recvWindowMs.toString(),
@@ -474,7 +674,7 @@ class BinanceService {
     if (orderId == null && (origClientOrderId == null || origClientOrderId.isEmpty)) {
       throw Exception('Provide orderId or origClientOrderId');
     }
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'symbol': symbol,
       'recvWindow': recvWindowMs.toString(),
@@ -512,7 +712,7 @@ class BinanceService {
     if (_apiKey == null || _apiSecret == null) {
       throw Exception('API credentials not set');
     }
-    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final int timestamp = await getSynchronizedTimestamp();
     final Map<String, String> params = <String, String>{
       'symbol': symbol,
       'side': side.toUpperCase(),

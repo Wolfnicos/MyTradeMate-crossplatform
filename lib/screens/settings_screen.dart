@@ -823,46 +823,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _openPrivacyPolicy() async {
     final Uri url = Uri.parse('https://mytrademate.app/privacy.html');
-    if (await canLaunchUrl(url)) {
+    try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    } catch (e) {
       _showSnackBar('Could not open Privacy Policy', isError: true);
     }
   }
 
   Future<void> _openTermsOfService() async {
     final Uri url = Uri.parse('https://mytrademate.app/terms.html');
-    if (await canLaunchUrl(url)) {
+    try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    } catch (e) {
       _showSnackBar('Could not open Terms of Service', isError: true);
     }
   }
 
   Future<void> _openSupport() async {
     final Uri url = Uri.parse('https://mytrademate.app/support.html');
-    if (await canLaunchUrl(url)) {
+    try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    } catch (e) {
       _showSnackBar('Could not open Support', isError: true);
     }
   }
 
   Future<void> _openContact() async {
     final Uri url = Uri.parse('https://mytrademate.app/contact.html');
-    if (await canLaunchUrl(url)) {
+    try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    } catch (e) {
       _showSnackBar('Could not open Contact page', isError: true);
     }
   }
 
   Future<void> _openWebsite() async {
     final Uri url = Uri.parse('https://mytrademate.app');
-    if (await canLaunchUrl(url)) {
+    try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      _showSnackBar('Could not open Support page', isError: true);
+    } catch (e) {
+      _showSnackBar('Could not open website', isError: true);
     }
   }
 

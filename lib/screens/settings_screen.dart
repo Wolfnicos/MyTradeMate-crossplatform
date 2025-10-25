@@ -34,8 +34,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _checkBiometricSupport();
-    _loadSettings();
+    // Load settings after frame is rendered (non-blocking)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkBiometricSupport();
+      _loadSettings();
+    });
   }
 
   @override
@@ -58,19 +61,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
-      _permissionLevel = AppSettingsService().permissionLevel;
-      _quote = AppSettingsService().quoteCurrency;
-    });
+    // Load settings and credentials in parallel for faster startup
+    final results = await Future.wait([
+      SharedPreferences.getInstance(),
+      _binanceService.loadCredentials(),
+    ]);
 
-    // Load API credentials
-    await _binanceService.loadCredentials();
-    setState(() {
-      _apiKeyController.text = _binanceService.apiKey ?? '';
-      _apiSecretController.text = _binanceService.apiSecret ?? '';
-    });
+    final prefs = results[0] as SharedPreferences;
+
+    // Single setState to avoid multiple rebuilds
+    if (mounted) {
+      setState(() {
+        _biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+        _permissionLevel = AppSettingsService().permissionLevel;
+        _quote = AppSettingsService().quoteCurrency;
+        _apiKeyController.text = _binanceService.apiKey ?? '';
+        _apiSecretController.text = _binanceService.apiSecret ?? '';
+      });
+    }
   }
 
   Future<void> _toggleBiometric(bool value) async {
